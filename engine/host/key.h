@@ -3,7 +3,7 @@
 
 #include <GLFW/glfw3.h>
 
-typedef enum
+typedef enum Key
 {
     KeyUnknown = GLFW_KEY_UNKNOWN,
 

@@ -4,7 +4,7 @@
 #include <cglm/cglm.h>
 #include "glad/glad.h"
 
-typedef enum
+typedef enum TextureWrap
 {
     TextureWrapRepeat            = GL_REPEAT,
     TextureWrapMirroredRepeat    = GL_MIRRORED_REPEAT,
@@ -13,7 +13,7 @@ typedef enum
     TextureWrapMirrorClampToEdge = GL_MIRROR_CLAMP_TO_EDGE,
 } TextureWrap;
 
-typedef enum
+typedef enum TextureMinFilter
 {
     TextureMinFilterNearest              = GL_NEAREST,
     TextureMinFilterLinear               = GL_LINEAR,
@@ -23,13 +23,13 @@ typedef enum
     TextureMinFilterLinearMipmapLinear   = GL_LINEAR_MIPMAP_LINEAR,
 } TextureMinFilter;
 
-typedef enum
+typedef enum TextureMagFilter
 {
     TextureMagFilterNearest = GL_NEAREST,
     TextureMagFilterLinear  = GL_LINEAR,
 } TextureMagFilter;
 
-typedef struct
+typedef struct Texture
 {
     GLuint ID;
 } Texture;
@@ -46,7 +46,7 @@ void TextureDelete(Texture texture);
 
 void TextureBind(Texture texture, unsigned int unit);
 
-typedef struct
+typedef struct CubeMap
 {
     GLuint ID;
 } CubeMap;

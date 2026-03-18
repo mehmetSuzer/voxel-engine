@@ -6,7 +6,7 @@
 #include "joystick.h"
 #include "gamepad.h"
 
-typedef enum
+typedef enum WindowFlag
 {
     WindowFlagResizable        = GLFW_RESIZABLE,
     WindowFlagDecorated        = GLFW_DECORATED,
@@ -16,7 +16,7 @@ typedef enum
     WindowFlagMousePassThrough = GLFW_MOUSE_PASSTHROUGH,
 } WindowFlag;
 
-typedef enum
+typedef enum WindowState
 {
     WindowStateFocused                   = GLFW_FOCUSED,
     WindowStateIconified                 = GLFW_ICONIFIED,
@@ -26,7 +26,7 @@ typedef enum
     WindowStateHasTransparentFramebuffer = GLFW_TRANSPARENT_FRAMEBUFFER,
 } WindowState;
 
-typedef enum
+typedef enum CursorMode
 {
     CursorModeNormal      = GLFW_CURSOR_NORMAL,      // Visible,   free
     CursorModeHidden      = GLFW_CURSOR_HIDDEN,      // Invisible, free

@@ -4,7 +4,7 @@
 #include <cglm/cglm.h>
 #include "glad/glad.h"
 
-typedef struct 
+typedef struct ShaderProgram
 {
     GLuint ID;
 } ShaderProgram;

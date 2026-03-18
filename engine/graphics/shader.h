@@ -3,7 +3,7 @@
 
 #include "glad/glad.h"
 
-typedef enum
+typedef enum ShaderType
 {
     ShaderTypeVertex         = GL_VERTEX_SHADER,
     ShaderTypeTessControl    = GL_TESS_CONTROL_SHADER,
@@ -13,7 +13,7 @@ typedef enum
     ShaderTypeCompute        = GL_COMPUTE_SHADER,
 } ShaderType;
 
-typedef struct 
+typedef struct Shader
 {
     GLuint ID;
 } Shader;

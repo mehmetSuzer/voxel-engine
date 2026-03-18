@@ -1,14 +1,11 @@
 
 #pragma once
 
-#include "camera.h"
-#include "chunk.h"
-#include "light.h"
-#include "shader_program.h"
-#include "texture.h"
+#include <cglm/cglm.h>
+#include "glad/glad.h"
 
 // TODO: Check out these capabilities
-typedef enum
+typedef enum Capability
 {
     CapabilityDepthClamp             = GL_DEPTH_CLAMP,              // Prevents geometry from being clipped by near/far planes
     CapabilityMultisample            = GL_MULTISAMPLE,              // Enables MSAA anti-aliasing
@@ -21,7 +18,7 @@ typedef enum
     CapabilityDebugOutputSynchronous = GL_DEBUG_OUTPUT_SYNCHRONOUS  // Makes debug output synchronous
 } Capability;
 
-typedef enum
+typedef enum TestFunc
 {
     TestFuncNever        = GL_NEVER,
     TestFuncEqual        = GL_EQUAL,
@@ -33,7 +30,7 @@ typedef enum
     TestFuncAlways       = GL_ALWAYS,
 } TestFunc;
 
-typedef enum
+typedef enum StencilOp
 {
     StencilOpKeep          = GL_KEEP,
     StencilOpZero          = GL_ZERO,
@@ -45,20 +42,20 @@ typedef enum
     StencilOpInvert        = GL_INVERT,
 } StencilOp;
 
-typedef enum
+typedef enum Face
 {
     FaceFront = GL_FRONT,
     FaceBack  = GL_BACK,
     FaceBoth  = GL_FRONT_AND_BACK,
 } Face;
 
-typedef enum
+typedef enum FrontFace
 {
     FrontFaceCW  = GL_CW,
     FrontFaceCCW = GL_CCW,
 } FrontFace;
 
-typedef enum
+typedef enum BlendFactor
 {
     BlendFactorZero                   = GL_ZERO,
     BlendFactorOne                    = GL_ONE,
@@ -77,7 +74,7 @@ typedef enum
     BlendFactorSrcAlphaSaturate       = GL_SRC_ALPHA_SATURATE,
 } BlendFactor;
 
-typedef enum
+typedef enum BlendEquation
 {
     BlendEquationAdd             = GL_FUNC_ADD,
     BlendEquationSubtract        = GL_FUNC_SUBTRACT,
@@ -86,21 +83,21 @@ typedef enum
     BlendEquationMax             = GL_MAX,
 } BlendEquation;
 
-typedef enum
+typedef enum PolygonDrawMode
 {
     PolygonDrawModePoint = GL_POINT,
     PolygonDrawModeLine  = GL_LINE,
     PolygonDrawModeFill  = GL_FILL,
 } PolygonDrawMode;
 
-typedef enum
+typedef enum BufferBit
 {
     BufferBitColour  = GL_COLOR_BUFFER_BIT,
     BufferBitDepth   = GL_DEPTH_BUFFER_BIT,
     BufferBitStencil = GL_STENCIL_BUFFER_BIT,
 } BufferBit;
 
-typedef struct
+typedef struct Rectangle
 {
     int x;
     int y;
@@ -108,14 +105,14 @@ typedef struct
     int height;
 } Rectangle;
 
-typedef struct
+typedef struct DepthTest
 {
     int enabled;
     int writeEnabled;
     TestFunc func;
 } DepthTest; 
 
-typedef struct
+typedef struct StencilTest
 {
     int enabled;
     TestFunc func;
@@ -126,13 +123,13 @@ typedef struct
     StencilOp depthPass;
 } StencilTest;
 
-typedef struct
+typedef struct ScissorTest
 {
     int enabled;
     Rectangle rect;
 } ScissorTest;
 
-typedef struct
+typedef struct ColourBlend
 {
     int enabled;
     BlendFactor srcFactor;
@@ -140,27 +137,30 @@ typedef struct
     BlendEquation equation;
 } ColourBlend;
 
-typedef struct
+typedef struct FaceCull
 {
     int enabled;
     Face cullFace;
     FrontFace frontFace;
 } FaceCull;
 
-typedef struct
+typedef struct PolygonMode
 {
     Face face;
     PolygonDrawMode mode;
 } PolygonMode;
 
-typedef struct
+typedef struct ClearState
 {
     vec4 colour;
     float depth;
     unsigned int stencil;
-} Clear;
+} ClearState;
 
-typedef struct
+#define DEPTH_NEAREST  0.0f
+#define DEPTH_FURTHEST 1.0f
+
+typedef struct GraphicsState
 {
     Rectangle viewport;
     DepthTest depthTest;
@@ -169,7 +169,7 @@ typedef struct
     ColourBlend colourBlend;
     FaceCull faceCull;
     PolygonMode polygonMode;
-    Clear clear;
+    ClearState clearState;
 } GraphicsState;
 
 void GraphicsInit(GLADloadproc loader);

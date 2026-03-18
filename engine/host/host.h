@@ -3,7 +3,7 @@
 
 #include "window.h"
 
-typedef enum
+typedef enum Platform
 {
     PlatformWin32   = GLFW_PLATFORM_WIN32, 
     PlatformCocoa   = GLFW_PLATFORM_COCOA, 
@@ -28,7 +28,6 @@ int HostIsPlatformSupported(Platform platform);
 void HostGetVersion(int* majorOut, int* minorOut, int* revisionOut);
 const char* HostGetVersionString();
 
-// TODO: abstract GLFW
 GLFWmonitor* HostGetPrimaryMonitor();
 GLFWmonitor** HostGetMonitors(int* count);
 

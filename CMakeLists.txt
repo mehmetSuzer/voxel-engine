@@ -40,8 +40,8 @@ target_link_libraries(${PROJECT_NAME}
 # --------------------------------------
 # Copy GLSL Shaders
 # --------------------------------------
-set(GLSL_INPUT_DIR  ${CMAKE_SOURCE_DIR}/shaders/glsl)
-set(GLSL_OUTPUT_DIR ${CMAKE_BINARY_DIR}/shaders/glsl)
+set(GLSL_INPUT_DIR  ${CMAKE_SOURCE_DIR}/shaders)
+set(GLSL_OUTPUT_DIR ${CMAKE_BINARY_DIR}/shaders)
 if(EXISTS ${GLSL_INPUT_DIR})
     file(GLOB_RECURSE GLSL_FILES RELATIVE "${GLSL_INPUT_DIR}" "${GLSL_INPUT_DIR}/*.glsl")
     set(GLSL_OUTPUTS)

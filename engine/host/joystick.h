@@ -3,7 +3,7 @@
 
 #include <GLFW/glfw3.h>
 
-typedef enum
+typedef enum JoystickButton
 {
     JoystickButton1  = GLFW_JOYSTICK_1,
     JoystickButton2  = GLFW_JOYSTICK_2,

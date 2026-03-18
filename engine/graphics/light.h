@@ -3,28 +3,28 @@
 
 #include <cglm/cglm.h>
 
-typedef struct
+typedef struct PointLight
 {
     vec3 colour;
     vec3 position;
-    float quadraticCoef;
-    float linearCoef;
+    float quadratic;
+    float linear;
 } PointLight;
 
-typedef struct
+typedef struct DirectionalLight
 {
     vec3 colour;
     vec3 direction;
-    float intensity;
+    float attenuation;
 } DirectionalLight;
 
-typedef struct
+typedef struct SpotLight
 {
     vec3 colour;
     vec3 position;
     vec3 direction;
-    float quadraticCoef;
-    float linearCoef;
+    float quadratic;
+    float linear;
     float cosInnerCutOff;
     float cosOuterCutOff;
 } SpotLight;

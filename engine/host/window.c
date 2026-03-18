@@ -150,13 +150,14 @@ Window* WindowCreate(int width, int height, const char* title)
 {
     Window* window = (Window*)calloc(1, sizeof(Window));
     window->handle = glfwCreateWindow(width, height, title, NULL, NULL);
-    window->isVSyncEnabled = 1;
 
     if (window->handle == NULL)
     {
         printf("Failed to create GLFW window.\n");
         exit(EXIT_FAILURE);
     }
+    
+    window->isVSyncEnabled = 1;
     SetCallbacks(window);
     return window;
 }

@@ -2,16 +2,6 @@
 #include "shader.h"
 #include "shader_program.h"
 
-static void Attach(ShaderProgram shaderProgram, Shader shader)
-{
-    glAttachShader(shaderProgram.ID, shader.ID);
-}
-
-static void Detach(ShaderProgram shaderProgram, Shader shader)
-{
-    glDetachShader(shaderProgram.ID, shader.ID);
-}
-
 static void Link(ShaderProgram shaderProgram)
 {
     glLinkProgram(shaderProgram.ID);
@@ -55,7 +45,11 @@ static void Validate(ShaderProgram shaderProgram)
 static GLint GetUniformLocation(ShaderProgram shaderProgram, const char* uniform)
 {
     const GLint location = glGetUniformLocation(shaderProgram.ID, uniform);
-    assert(location != -1);
+    if (location == -1)
+    {
+        printf("Failed to locate uniform %s.\n", uniform);
+        exit(EXIT_FAILURE);
+    }
     return location;
 }
 
@@ -64,10 +58,12 @@ ShaderProgram ShaderProgramCreateC(const char* computeShaderPath)
     ShaderProgram shaderProgram;
     shaderProgram.ID = glCreateProgram();
     Shader computeShader = ShaderCreate(computeShaderPath, ShaderTypeCompute);
-    Attach(shaderProgram, computeShader);
+    glAttachShader(shaderProgram.ID, computeShader.ID);
     Link(shaderProgram);
-    Detach(shaderProgram, computeShader);
+    Validate(shaderProgram);
+    glDetachShader(shaderProgram.ID, computeShader.ID);
     ShaderDelete(computeShader);
+    return shaderProgram;
 }
 
 ShaderProgram ShaderProgramCreateV(const char* vertexShaderPath)
@@ -75,10 +71,12 @@ ShaderProgram ShaderProgramCreateV(const char* vertexShaderPath)
     ShaderProgram shaderProgram;
     shaderProgram.ID = glCreateProgram();
     Shader vertexShader = ShaderCreate(vertexShaderPath, ShaderTypeVertex);
-    Attach(shaderProgram, vertexShader);
+    glAttachShader(shaderProgram.ID, vertexShader.ID);
     Link(shaderProgram);
-    Detach(shaderProgram, vertexShader);
+    Validate(shaderProgram);
+    glDetachShader(shaderProgram.ID, vertexShader.ID);
     ShaderDelete(vertexShader);
+    return shaderProgram;
 }
 
 ShaderProgram ShaderProgramCreateVF(
@@ -89,13 +87,15 @@ ShaderProgram ShaderProgramCreateVF(
     shaderProgram.ID = glCreateProgram();
     Shader vertexShader = ShaderCreate(vertexShaderPath, ShaderTypeVertex);
     Shader fragmentShader = ShaderCreate(fragmentShaderPath, ShaderTypeFragment);
-    Attach(shaderProgram, vertexShader);
-    Attach(shaderProgram, fragmentShader);
+    glAttachShader(shaderProgram.ID, vertexShader.ID);
+    glAttachShader(shaderProgram.ID, fragmentShader.ID);
     Link(shaderProgram);
-    Detach(shaderProgram, vertexShader);
-    Detach(shaderProgram, fragmentShader);
+    Validate(shaderProgram);
+    glDetachShader(shaderProgram.ID, vertexShader.ID);
+    glDetachShader(shaderProgram.ID, fragmentShader.ID);
     ShaderDelete(vertexShader);
     ShaderDelete(fragmentShader);
+    return shaderProgram;
 }
 
 ShaderProgram ShaderProgramCreateVGF(
@@ -108,16 +108,18 @@ ShaderProgram ShaderProgramCreateVGF(
     Shader vertexShader = ShaderCreate(vertexShaderPath, ShaderTypeVertex);
     Shader geometryShader = ShaderCreate(geometryShaderPath, ShaderTypeGeometry);
     Shader fragmentShader = ShaderCreate(fragmentShaderPath, ShaderTypeFragment);
-    Attach(shaderProgram, vertexShader);
-    Attach(shaderProgram, geometryShader);
-    Attach(shaderProgram, fragmentShader);
+    glAttachShader(shaderProgram.ID, vertexShader.ID);
+    glAttachShader(shaderProgram.ID, geometryShader.ID);
+    glAttachShader(shaderProgram.ID, fragmentShader.ID);
     Link(shaderProgram);
-    Detach(shaderProgram, vertexShader);
-    Detach(shaderProgram, geometryShader);
-    Detach(shaderProgram, fragmentShader);
+    Validate(shaderProgram);
+    glDetachShader(shaderProgram.ID, vertexShader.ID);
+    glDetachShader(shaderProgram.ID, geometryShader.ID);
+    glDetachShader(shaderProgram.ID, fragmentShader.ID);
     ShaderDelete(vertexShader);
     ShaderDelete(geometryShader);
     ShaderDelete(fragmentShader);
+    return shaderProgram;
 }
 
 ShaderProgram ShaderProgramCreateVTTF(
@@ -132,19 +134,21 @@ ShaderProgram ShaderProgramCreateVTTF(
     Shader tessControlShader = ShaderCreate(tessControlShaderPath, ShaderTypeTessControl);
     Shader tessEvaluationShader = ShaderCreate(tessEvaluationShaderPath, ShaderTypeTessEvaluation);
     Shader fragmentShader = ShaderCreate(fragmentShaderPath, ShaderTypeFragment);
-    Attach(shaderProgram, vertexShader);
-    Attach(shaderProgram, tessControlShader);
-    Attach(shaderProgram, tessEvaluationShader);
-    Attach(shaderProgram, fragmentShader);
+    glAttachShader(shaderProgram.ID, vertexShader.ID);
+    glAttachShader(shaderProgram.ID, tessControlShader.ID);
+    glAttachShader(shaderProgram.ID, tessEvaluationShader.ID);
+    glAttachShader(shaderProgram.ID, fragmentShader.ID);
     Link(shaderProgram);
-    Detach(shaderProgram, vertexShader);
-    Detach(shaderProgram, tessControlShader);
-    Detach(shaderProgram, tessEvaluationShader);
-    Detach(shaderProgram, fragmentShader);
+    Validate(shaderProgram);
+    glDetachShader(shaderProgram.ID, vertexShader.ID);
+    glDetachShader(shaderProgram.ID, tessControlShader.ID);
+    glDetachShader(shaderProgram.ID, tessEvaluationShader.ID);
+    glDetachShader(shaderProgram.ID, fragmentShader.ID);
     ShaderDelete(vertexShader);
     ShaderDelete(tessControlShader);
     ShaderDelete(tessEvaluationShader);
     ShaderDelete(fragmentShader);
+    return shaderProgram;
 }
 
 ShaderProgram ShaderProgramCreateVTTGF(
@@ -161,22 +165,24 @@ ShaderProgram ShaderProgramCreateVTTGF(
     Shader tessEvaluationShader = ShaderCreate(tessEvaluationShaderPath, ShaderTypeTessEvaluation);
     Shader geometryShader = ShaderCreate(geometryShaderPath, ShaderTypeGeometry);
     Shader fragmentShader = ShaderCreate(fragmentShaderPath, ShaderTypeFragment);
-    Attach(shaderProgram, vertexShader);
-    Attach(shaderProgram, tessControlShader);
-    Attach(shaderProgram, tessEvaluationShader);
-    Attach(shaderProgram, geometryShader);
-    Attach(shaderProgram, fragmentShader);
+    glAttachShader(shaderProgram.ID, vertexShader.ID);
+    glAttachShader(shaderProgram.ID, tessControlShader.ID);
+    glAttachShader(shaderProgram.ID, tessEvaluationShader.ID);
+    glAttachShader(shaderProgram.ID, geometryShader.ID);
+    glAttachShader(shaderProgram.ID, fragmentShader.ID);
     Link(shaderProgram);
-    Detach(shaderProgram, vertexShader);
-    Detach(shaderProgram, tessControlShader);
-    Detach(shaderProgram, tessEvaluationShader);
-    Detach(shaderProgram, geometryShader);
-    Detach(shaderProgram, fragmentShader);
+    Validate(shaderProgram);
+    glDetachShader(shaderProgram.ID, vertexShader.ID);
+    glDetachShader(shaderProgram.ID, tessControlShader.ID);
+    glDetachShader(shaderProgram.ID, tessEvaluationShader.ID);
+    glDetachShader(shaderProgram.ID, geometryShader.ID);
+    glDetachShader(shaderProgram.ID, fragmentShader.ID);
     ShaderDelete(vertexShader);
     ShaderDelete(tessControlShader);
     ShaderDelete(tessEvaluationShader);
     ShaderDelete(geometryShader);
     ShaderDelete(fragmentShader);
+    return shaderProgram;
 }
 
 void ShaderProgramDelete(ShaderProgram shaderProgram)
@@ -191,91 +197,91 @@ void ShaderProgramBind(ShaderProgram shaderProgram)
 
 void ShaderProgramSetUniformi(ShaderProgram shaderProgram, const char* uniform, int value)
 {
-    glProgramUniform1i(shaderProgram.ID, GetUniformLocation(shaderProgram, uniform), value);
+    glUniform1i(GetUniformLocation(shaderProgram, uniform), value);
 }
 
 void ShaderProgramSetUniformu(ShaderProgram shaderProgram, const char* uniform, unsigned int value)
 {
-    glProgramUniform1ui(shaderProgram.ID, GetUniformLocation(shaderProgram, uniform), value);
+    glUniform1ui(GetUniformLocation(shaderProgram, uniform), value);
 }
 
 void ShaderProgramSetUniformf(ShaderProgram shaderProgram, const char* uniform, float value)
 {
-    glProgramUniform1f(shaderProgram.ID, GetUniformLocation(shaderProgram, uniform), value);
+    glUniform1f(GetUniformLocation(shaderProgram, uniform), value);
 }
 
 void ShaderProgramSetUniform2i(ShaderProgram shaderProgram, const char* uniform, ivec2 vector)
 {
-    glProgramUniform2i(shaderProgram.ID, GetUniformLocation(shaderProgram, uniform), vector[0], vector[1]);
+    glUniform2i(GetUniformLocation(shaderProgram, uniform), vector[0], vector[1]);
 }
 
 void ShaderProgramSetUniform3i(ShaderProgram shaderProgram, const char* uniform, ivec3 vector)
 {
-    glProgramUniform3i(shaderProgram.ID, GetUniformLocation(shaderProgram, uniform), vector[0], vector[1], vector[2]);
+    glUniform3i(GetUniformLocation(shaderProgram, uniform), vector[0], vector[1], vector[2]);
 }
 
 void ShaderProgramSetUniform4i(ShaderProgram shaderProgram, const char* uniform, ivec4 vector)
 {
-    glProgramUniform4i(shaderProgram.ID, GetUniformLocation(shaderProgram, uniform), vector[0], vector[1], vector[2], vector[3]);
+    glUniform4i(GetUniformLocation(shaderProgram, uniform), vector[0], vector[1], vector[2], vector[3]);
 }
 
 void ShaderProgramSetUniform2f(ShaderProgram shaderProgram, const char* uniform, vec2 vector)
 {
-    glProgramUniform2f(shaderProgram.ID, GetUniformLocation(shaderProgram, uniform), vector[0], vector[1]);
+    glUniform2f(GetUniformLocation(shaderProgram, uniform), vector[0], vector[1]);
 }
 
 void ShaderProgramSetUniform3f(ShaderProgram shaderProgram, const char* uniform, vec3 vector)
 {
-    glProgramUniform3f(shaderProgram.ID, GetUniformLocation(shaderProgram, uniform), vector[0], vector[1], vector[2]);
+    glUniform3f(GetUniformLocation(shaderProgram, uniform), vector[0], vector[1], vector[2]);
 }
 
 void ShaderProgramSetUniform4f(ShaderProgram shaderProgram, const char* uniform, vec4 vector)
 {
-    glProgramUniform4f(shaderProgram.ID, GetUniformLocation(shaderProgram, uniform), vector[0], vector[1], vector[2], vector[3]);
+    glUniform4f(GetUniformLocation(shaderProgram, uniform), vector[0], vector[1], vector[2], vector[3]);
 }
 
 void ShaderProgramSetUniformMat2f(ShaderProgram shaderProgram, const char* uniform, mat2 matrix)
 {
-    glProgramUniformMatrix2fv(shaderProgram.ID, GetUniformLocation(shaderProgram, uniform), 1, GL_FALSE, (float*)matrix);
+    glUniformMatrix2fv(GetUniformLocation(shaderProgram, uniform), 1, GL_FALSE, (float*)matrix);
 }
 
 void ShaderProgramSetUniformMat2x3f(ShaderProgram shaderProgram, const char* uniform, mat2x3 matrix)
 {
-    glProgramUniformMatrix2x3fv(shaderProgram.ID, GetUniformLocation(shaderProgram, uniform), 1, GL_FALSE, (float*)matrix);
+    glUniformMatrix2x3fv(GetUniformLocation(shaderProgram, uniform), 1, GL_FALSE, (float*)matrix);
 }
 
 void ShaderProgramSetUniformMat2x4f(ShaderProgram shaderProgram, const char* uniform, mat2x4 matrix)
 {
-    glProgramUniformMatrix2x4fv(shaderProgram.ID, GetUniformLocation(shaderProgram, uniform), 1, GL_FALSE, (float*)matrix);
+    glUniformMatrix2x4fv(GetUniformLocation(shaderProgram, uniform), 1, GL_FALSE, (float*)matrix);
 }
 
 void ShaderProgramSetUniformMat3x2f(ShaderProgram shaderProgram, const char* uniform, mat3x2 matrix)
 {
-    glProgramUniformMatrix3x2fv(shaderProgram.ID, GetUniformLocation(shaderProgram, uniform), 1, GL_FALSE, (float*)matrix);
+    glUniformMatrix3x2fv(GetUniformLocation(shaderProgram, uniform), 1, GL_FALSE, (float*)matrix);
 }
 
 void ShaderProgramSetUniformMat3f(ShaderProgram shaderProgram, const char* uniform, mat3 matrix)
 {
-    glProgramUniformMatrix3fv(shaderProgram.ID, GetUniformLocation(shaderProgram, uniform), 1, GL_FALSE, (float*)matrix);
+    glUniformMatrix3fv(GetUniformLocation(shaderProgram, uniform), 1, GL_FALSE, (float*)matrix);
 }
 
 void ShaderProgramSetUniformMat3x4f(ShaderProgram shaderProgram, const char* uniform, mat3x4 matrix)
 {
-    glProgramUniformMatrix3x4fv(shaderProgram.ID, GetUniformLocation(shaderProgram, uniform), 1, GL_FALSE, (float*)matrix);
+    glUniformMatrix3x4fv(GetUniformLocation(shaderProgram, uniform), 1, GL_FALSE, (float*)matrix);
 }
 
 void ShaderProgramSetUniformMat4x2f(ShaderProgram shaderProgram, const char* uniform, mat4x2 matrix)
 {
-    glProgramUniformMatrix4x2fv(shaderProgram.ID, GetUniformLocation(shaderProgram, uniform), 1, GL_FALSE, (float*)matrix);
+    glUniformMatrix4x2fv(GetUniformLocation(shaderProgram, uniform), 1, GL_FALSE, (float*)matrix);
 }
 
 void ShaderProgramSetUniformMat4x3f(ShaderProgram shaderProgram, const char* uniform, mat4x3 matrix)
 {
-    glProgramUniformMatrix4x3fv(shaderProgram.ID, GetUniformLocation(shaderProgram, uniform), 1, GL_FALSE, (float*)matrix);
+    glUniformMatrix4x3fv(GetUniformLocation(shaderProgram, uniform), 1, GL_FALSE, (float*)matrix);
 }
 
 void ShaderProgramSetUniformMat4f(ShaderProgram shaderProgram, const char* uniform, mat4 matrix)
 {
-    glProgramUniformMatrix4fv(shaderProgram.ID, GetUniformLocation(shaderProgram, uniform), 1, GL_FALSE, (float*)matrix);
+    glUniformMatrix4fv(GetUniformLocation(shaderProgram, uniform), 1, GL_FALSE, (float*)matrix);
 }
 

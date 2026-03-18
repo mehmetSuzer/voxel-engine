@@ -3,7 +3,7 @@
 
 #include <GLFW/glfw3.h>
 
-typedef enum
+typedef enum MouseButton
 {
     MouseButtonLeft   = GLFW_MOUSE_BUTTON_LEFT,   // Same as MouseButton1
     MouseButtonRight  = GLFW_MOUSE_BUTTON_RIGHT,  // Same as MouseButton2

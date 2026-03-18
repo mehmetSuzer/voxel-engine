@@ -2,9 +2,7 @@
 #pragma once
 
 #include <cglm/cglm.h>
-#include "glad/glad.h"
-
-#define CHUNK_SIZE 32
+#include "shader_program.h"
 
 typedef unsigned char Voxel;
 
@@ -18,18 +16,7 @@ typedef unsigned char Voxel;
 #define VOXEL_CYAN    ((Voxel)7)
 #define VOXEL_WHITE   ((Voxel)8)
 
-typedef struct
-{
-    GLuint VAO;
-    GLuint VBO;
-    GLsizei numVertices;
-    vec3 worldPosition;
-    Voxel voxels[CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE];
-} Chunk;
-
-void ChunkCreate(Chunk* chunkOut);
-
-void ChunkDelete(const Chunk* chunk);
-
-void ChunkDraw(const Chunk* chunk);
+void WorldCreate();
+void WorldDelete();
+void WorldDraw(ShaderProgram shaderProgram);
 

@@ -58,6 +58,7 @@ Texture TextureCreate(
 
     glBindTexture(GL_TEXTURE_2D, 0);
     stbi_image_free(pixels);
+
     return texture;
 }
 
@@ -69,8 +70,8 @@ void TextureDelete(Texture texture)
 void TextureBind(Texture texture, unsigned int unit)
 {
     assert(unit < 32);
-    glBindTexture(GL_TEXTURE_2D, texture.ID);
     glActiveTexture(GL_TEXTURE0 + unit);
+    glBindTexture(GL_TEXTURE_2D, texture.ID);
 }
 
 CubeMap CubeMapCreate(

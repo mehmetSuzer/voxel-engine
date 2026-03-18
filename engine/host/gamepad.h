@@ -3,7 +3,7 @@
 
 #include <GLFW/glfw3.h>
 
-typedef enum
+typedef enum GamepadButton
 {
     GamepadButtonA           = GLFW_GAMEPAD_BUTTON_A,
     GamepadButtonB           = GLFW_GAMEPAD_BUTTON_B,
@@ -26,7 +26,7 @@ typedef enum
     GamepadButtonTriangle    = GLFW_GAMEPAD_BUTTON_TRIANGLE,
 } GamepadButton;
 
-typedef enum
+typedef enum GamepadAxis
 {
     GamepadAxisLeftX        = GLFW_GAMEPAD_AXIS_LEFT_X,
     GamepadAxisLeftY        = GLFW_GAMEPAD_AXIS_LEFT_Y,

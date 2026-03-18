@@ -46,9 +46,9 @@ static GraphicsState graphicsState = {
         .face = FaceBoth,
         .mode = PolygonDrawModeFill,
     },
-    .clear = {
+    .clearState = {
         .colour = {0.0f, 0.0f, 0.0f, 0.0f},
-        .depth = 1.0f,
+        .depth = DEPTH_FURTHEST,
         .stencil = 0u,
     }
 };
@@ -205,34 +205,34 @@ void GraphicsSetPolygonMode(PolygonMode polygonMode)
 
 void GraphicsSetClearColour(vec4 colour)
 {
-    if (graphicsState.clear.colour[0] != colour[0] ||
-        graphicsState.clear.colour[1] != colour[1] ||
-        graphicsState.clear.colour[2] != colour[2] ||
-        graphicsState.clear.colour[3] != colour[3])        
+    if (graphicsState.clearState.colour[0] != colour[0] ||
+        graphicsState.clearState.colour[1] != colour[1] ||
+        graphicsState.clearState.colour[2] != colour[2] ||
+        graphicsState.clearState.colour[3] != colour[3])        
     {
         glClearColor(colour[0], colour[1], colour[2], colour[3]);
-        graphicsState.clear.colour[0] = colour[0];
-        graphicsState.clear.colour[1] = colour[1];
-        graphicsState.clear.colour[2] = colour[2];
-        graphicsState.clear.colour[3] = colour[3];        
+        graphicsState.clearState.colour[0] = colour[0];
+        graphicsState.clearState.colour[1] = colour[1];
+        graphicsState.clearState.colour[2] = colour[2];
+        graphicsState.clearState.colour[3] = colour[3];        
     }
 }
 
 void GraphicsSetClearDepth(float depth)
 {
-    if (graphicsState.clear.depth != depth)
+    if (graphicsState.clearState.depth != depth)
     {
         glClearDepth(depth);
-        graphicsState.clear.depth = depth;
+        graphicsState.clearState.depth = depth;
     }
 }
 
 void GraphicsSetClearStencil(unsigned int stencil)
 {
-    if (graphicsState.clear.stencil != stencil)
+    if (graphicsState.clearState.stencil != stencil)
     {
         glClearStencil((GLint)stencil);
-        graphicsState.clear.stencil = stencil;
+        graphicsState.clearState.stencil = stencil;
     }
 }
 
