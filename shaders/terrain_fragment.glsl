@@ -49,7 +49,7 @@ vec3 GetPointLighting(PointLight light)
 
     float shininess = 32.0f;
 
-    float ambient = 0.2f;
+    float ambient = 0.7f;
     float diffuse = max(dot(lightDirection, normalOut), 0.0f);
     float specular = pow(max(dot(halfWayDirection, normalOut), 0.0f), shininess);
 
@@ -65,7 +65,7 @@ vec3 GetDirectionalLighting(DirectionalLight light)
 
     float shininess = 32.0f;
 
-    float ambient = 0.2f;
+    float ambient = 0.7f;
     float diffuse = max(-dot(light.direction, normalOut), 0.0f);
     float specular = pow(max(dot(halfWayDirection, normalOut), 0.0f), shininess);
 
@@ -83,7 +83,7 @@ vec3 GetSpotLighting(SpotLight light)
 
     float shininess = 32.0f;
 
-    float ambient = 0.2f;
+    float ambient = 0.7f;
     float diffuse = max(dot(lightDirection, normalOut), 0.0f);
     float specular = pow(max(dot(halfWayDirection, normalOut), 0.0f), shininess);
 

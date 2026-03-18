@@ -1,8 +1,12 @@
 
+#include <stb_image.h>
 #include "world.h"
 
 #define CHUNK_SIZE 32
-#define WORLD_SIZE  1
+
+#define WORLD_SIZE_X 16
+#define WORLD_SIZE_Y 1
+#define WORLD_SIZE_Z 16
 
 typedef struct Chunk
 {
@@ -11,11 +15,11 @@ typedef struct Chunk
 
 typedef struct World
 {
-    Chunk chunks[WORLD_SIZE][WORLD_SIZE][WORLD_SIZE];           // [Z][Y][X]
-    GLuint VAOs[WORLD_SIZE][WORLD_SIZE][WORLD_SIZE];            // [Z][Y][X]
-    GLuint VBOs[WORLD_SIZE][WORLD_SIZE][WORLD_SIZE];            // [Z][Y][X]
-    GLsizei numVertices[WORLD_SIZE][WORLD_SIZE][WORLD_SIZE];    // [Z][Y][X]
-    int isDirties[WORLD_SIZE][WORLD_SIZE][WORLD_SIZE];          // [Z][Y][X]
+    Chunk chunks[WORLD_SIZE_Z][WORLD_SIZE_Y][WORLD_SIZE_X];         // [Z][Y][X]
+    GLuint VAOs[WORLD_SIZE_Z][WORLD_SIZE_Y][WORLD_SIZE_X];          // [Z][Y][X]
+    GLuint VBOs[WORLD_SIZE_Z][WORLD_SIZE_Y][WORLD_SIZE_X];          // [Z][Y][X]
+    GLsizei numVertices[WORLD_SIZE_Z][WORLD_SIZE_Y][WORLD_SIZE_X];  // [Z][Y][X]
+    int isDirties[WORLD_SIZE_Z][WORLD_SIZE_Y][WORLD_SIZE_X];        // [Z][Y][X]
 } World;
 World world;
 
@@ -117,12 +121,6 @@ static void AddFrontFace(Vertex* vertices, GLsizei* numVertices, Voxel voxel, un
     *numVertices += 6;
 }
 
-static Voxel GenerateVoxel(int x, int y, int z)
-{
-    // TODO: implement terrain generation
-    return VOXEL_CYAN;
-}
-
 static int GetVoxelIndex(int x, int y, int z)
 {
     return CHUNK_SIZE * (CHUNK_SIZE * z + y) + x;
@@ -138,37 +136,70 @@ static int IsNeighbourAir(const Chunk* chunk, int x, int y, int z)
         return 1;
     }
     const int voxelIndex = GetVoxelIndex(x, y, z);
-    return chunk->voxels[voxelIndex] == VOXEL_AIR;
+    return chunk->voxels[voxelIndex] == VoxelAir;
 }
 
 static void GenerateChunks()
 {
-    for (int worldZ = 0; worldZ < WORLD_SIZE; ++worldZ)
-    for (int worldY = 0; worldY < WORLD_SIZE; ++worldY)
-    for (int worldX = 0; worldX < WORLD_SIZE; ++worldX)
-    {
-        Chunk* chunk = &world.chunks[worldZ][worldY][worldX];
+    int width, height, channels;
+    stbi_set_flip_vertically_on_load(1);
+    unsigned char* pixels = stbi_load("textures/perlin.png", &width, &height, &channels, 0);
 
+    if (pixels == NULL)
+    {
+        printf("Failed to load the perlin noise.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    if (channels < 1 || channels > 4)
+    {
+        stbi_image_free(pixels);
+        printf("Unsupported channel count %i for the perlin noise.\n", channels);
+        exit(EXIT_FAILURE);
+    } 
+
+    const float maxHeight = 30.0f;
+
+    for (int worldZ = 0; worldZ < WORLD_SIZE_Z; ++worldZ)
+    for (int worldX = 0; worldX < WORLD_SIZE_X; ++worldX)
+    {
         for (int chunkZ = 0; chunkZ < CHUNK_SIZE; ++chunkZ)
-        for (int chunkY = 0; chunkY < CHUNK_SIZE; ++chunkY)
         for (int chunkX = 0; chunkX < CHUNK_SIZE; ++chunkX)
         {
-            const Voxel voxel = GenerateVoxel(chunkX, chunkY, chunkZ);
-            const int voxelIndex = GetVoxelIndex(chunkX, chunkY, chunkZ);
-            chunk->voxels[voxelIndex] = voxel;
+            const int u = ((worldX * CHUNK_SIZE + chunkX) % width + width) % width;
+            const int v = ((worldZ * CHUNK_SIZE + chunkZ) % height + height) % height;
+            const float noise = pixels[(width * v + u) * channels] / 255.0f;
+            const int height = (int)(noise * maxHeight);
+
+            for (int worldY = 0; worldY < WORLD_SIZE_Y; ++worldY)
+            {
+                Chunk* chunk = &world.chunks[worldZ][worldY][worldX];
+                for (int chunkY = 0; chunkY < CHUNK_SIZE; ++chunkY)
+                {
+                    const int y = worldY * CHUNK_SIZE + chunkY;
+                    const Voxel voxel =
+                        (y > height)   ? VoxelAir   :
+                        (y == height)  ? VoxelGrass :
+                        (y > height-3) ? VoxelDirt  : VoxelStone;
+
+                    const int voxelIndex = GetVoxelIndex(chunkX, chunkY, chunkZ);
+                    chunk->voxels[voxelIndex] = voxel;
+                }
+            }
         }
     }
+    stbi_image_free(pixels);
 }
 
 static void GenerateMeshes()
 {
-    const GLsizei numChunks = WORLD_SIZE * WORLD_SIZE * WORLD_SIZE;
+    const GLsizei numChunks = WORLD_SIZE_Z * WORLD_SIZE_Y * WORLD_SIZE_X;
     glGenVertexArrays(numChunks, (GLuint*)world.VAOs);
     glGenBuffers(numChunks, (GLuint*)world.VBOs);
 
-    for (int worldZ = 0; worldZ < WORLD_SIZE; ++worldZ)
-    for (int worldY = 0; worldY < WORLD_SIZE; ++worldY)
-    for (int worldX = 0; worldX < WORLD_SIZE; ++worldX)
+    for (int worldZ = 0; worldZ < WORLD_SIZE_Z; ++worldZ)
+    for (int worldY = 0; worldY < WORLD_SIZE_Y; ++worldY)
+    for (int worldX = 0; worldX < WORLD_SIZE_X; ++worldX)
     {
         glBindVertexArray(world.VAOs[worldZ][worldY][worldX]);
         glBindBuffer(GL_ARRAY_BUFFER, world.VBOs[worldZ][worldY][worldX]);
@@ -189,9 +220,9 @@ static void GenerateVertices()
     const int maxNumVertex = vertexPerFace * facePerVoxel * voxelPerChunk;
     Vertex vertices[maxNumVertex];
 
-    for (int worldZ = 0; worldZ < WORLD_SIZE; ++worldZ)
-    for (int worldY = 0; worldY < WORLD_SIZE; ++worldY)
-    for (int worldX = 0; worldX < WORLD_SIZE; ++worldX)
+    for (int worldZ = 0; worldZ < WORLD_SIZE_Z; ++worldZ)
+    for (int worldY = 0; worldY < WORLD_SIZE_Y; ++worldY)
+    for (int worldX = 0; worldX < WORLD_SIZE_X; ++worldX)
     {
         if (world.isDirties[worldZ][worldY][worldX] == 0) { continue; }
 
@@ -205,7 +236,7 @@ static void GenerateVertices()
             const int voxelIndex = GetVoxelIndex(chunkX, chunkY, chunkZ);
             const Voxel voxel = chunk->voxels[voxelIndex];
 
-            if (voxel == VOXEL_AIR) { continue; }
+            if (voxel == VoxelAir) { continue; }
 
             if (IsNeighbourAir(chunk, chunkX+1, chunkY,   chunkZ  )) { AddRightFace(vertices, &numVertices, voxel, chunkX, chunkY, chunkZ); }
             if (IsNeighbourAir(chunk, chunkX-1, chunkY,   chunkZ  )) { AddLeftFace (vertices, &numVertices, voxel, chunkX, chunkY, chunkZ); }
@@ -234,16 +265,16 @@ void WorldCreate()
 
 void WorldDelete()
 {
-    const GLsizei numChunks = WORLD_SIZE * WORLD_SIZE * WORLD_SIZE;
+    const GLsizei numChunks = WORLD_SIZE_Z * WORLD_SIZE_Y * WORLD_SIZE_X;
     glDeleteVertexArrays(numChunks, (GLuint*)world.VAOs);
     glDeleteBuffers(numChunks, (GLuint*)world.VBOs);
 }
 
 void WorldDraw(ShaderProgram shaderProgram)
 {
-    for (int worldZ = 0; worldZ < WORLD_SIZE; ++worldZ)
-    for (int worldY = 0; worldY < WORLD_SIZE; ++worldY)
-    for (int worldX = 0; worldX < WORLD_SIZE; ++worldX)
+    for (int worldZ = 0; worldZ < WORLD_SIZE_Z; ++worldZ)
+    for (int worldY = 0; worldY < WORLD_SIZE_Y; ++worldY)
+    for (int worldX = 0; worldX < WORLD_SIZE_X; ++worldX)
     {
         vec3 chunkPosition = {worldX, worldY, worldZ};
         glm_vec3_scale(chunkPosition, CHUNK_SIZE, chunkPosition);

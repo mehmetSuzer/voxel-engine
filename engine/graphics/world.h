@@ -6,15 +6,80 @@
 
 typedef unsigned char Voxel;
 
-#define VOXEL_AIR     ((Voxel)0)
-#define VOXEL_BLACK   ((Voxel)1)
-#define VOXEL_RED     ((Voxel)2)
-#define VOXEL_GREEN   ((Voxel)3)
-#define VOXEL_BLUE    ((Voxel)4)
-#define VOXEL_YELLOW  ((Voxel)5)
-#define VOXEL_MAGENTA ((Voxel)6)
-#define VOXEL_CYAN    ((Voxel)7)
-#define VOXEL_WHITE   ((Voxel)8)
+enum
+{
+    // Air / Fluids
+
+    VoxelAir = 0,
+    VoxelWater,
+    VoxelLava,
+    VoxelIce,
+    VoxelSnow,
+
+    // Natural / Terrain
+
+    VoxelGrass,
+    VoxelDirt,
+    VoxelPodzol,
+    VoxelCoarseDirt,
+    VoxelStone,
+    VoxelCobblestone,
+    VoxelSand,
+    VoxelRedSand,
+    VoxelGravel,
+    VoxelClay,
+    VoxelSandstone,
+    VoxelRedSandstone,
+    VoxelMycelium,
+    VoxelMossStone,
+    VoxelEndStone,
+    VoxelNetherrack,
+    VoxelSoulSand,
+    VoxelBasalt,
+    VoxelBlackstone,
+    VoxelObsidian,
+
+    // Ores / Minerals
+
+    VoxelCoal,
+    VoxelIron,
+    VoxelCopper,
+    VoxelGold,
+    VoxelDiamond,
+    VoxelEmerald,
+    VoxelRedstone,
+    VoxelLapis,
+    VoxelNetherQuartz,
+    VoxelNetherGold,
+    VoxelAncientDebris,
+
+    // Wood / Plants
+
+    VoxelOakWood,
+    VoxelSpruceWood,
+    VoxelBirchWood,
+    VoxelJungleWood,
+    VoxelAcaciaWood,
+    VoxelDarkOakWood,
+    VoxelOakLeaves,
+    VoxelSpruceLeaves,
+    VoxelBirchLeaves,
+    VoxelJungleLeaves,
+    VoxelAcaciaLeaves,
+    VoxelDarkOakLeaves,
+    VoxelCactus,
+    VoxelSugarCane,
+    VoxelTallGrass,
+    VoxelFern,
+    VoxelFlowerRed,
+    VoxelFlowerYellow,
+    VoxelMushroomRed,
+    VoxelMushroomBrown,
+    VoxelVine,
+    VoxelLilyPad,
+
+    VoxelCount = 128,
+};
 
 void WorldCreate();
 void WorldDelete();

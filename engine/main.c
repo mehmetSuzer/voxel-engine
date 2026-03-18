@@ -1,7 +1,7 @@
 
 #include "graphics/camera.h"
-#include "graphics/world.h"
 #include "graphics/texture.h"
+#include "graphics/world.h"
 #include "graphics/graphics.h"
 #include "graphics/light.h"
 #include "host/host.h"
@@ -49,8 +49,7 @@ int main()
         TextureWrapRepeat,
         TextureMinFilterNearest,
         TextureMagFilterNearest,
-        (vec4){0.0f, 0.0f, 0.0f, 1.0f}
-    );
+        (vec4){0.0f, 0.0f, 0.0f, 1.0f});
 
     ShaderProgramBind(shaderProgram);
     TextureBind(textureAtlas, 0);
