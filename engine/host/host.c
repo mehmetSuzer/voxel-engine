@@ -9,36 +9,47 @@ static void ErrorCallback(int error, const char* description)
     {
         case GLFW_NOT_INITIALIZED:
             printf("GLFW not initialised: %s\n", description);
+            exit(EXIT_FAILURE);
             break;
         case GLFW_NO_CURRENT_CONTEXT:
             printf("GLFW no current context: %s\n", description);
+            exit(EXIT_FAILURE);
             break;
         case GLFW_NO_WINDOW_CONTEXT:
             printf("GLFW no window context: %s\n", description);
+            exit(EXIT_FAILURE);
             break;
         case GLFW_INVALID_ENUM:
             printf("GLFW invalid enum: %s\n", description);
+            exit(EXIT_FAILURE);
             break;
         case GLFW_INVALID_VALUE:
             printf("GLFW invalid value: %s\n", description);
+            exit(EXIT_FAILURE);
             break;
         case GLFW_OUT_OF_MEMORY:
             printf("GLFW out of memory: %s\n", description);
+            exit(EXIT_FAILURE);
             break;
         case GLFW_API_UNAVAILABLE:
             printf("GLFW API unavailable: %s\n", description);
+            exit(EXIT_FAILURE);
             break;
         case GLFW_VERSION_UNAVAILABLE:
             printf("GLFW version unavailable: %s\n", description);
+            exit(EXIT_FAILURE);
             break;
         case GLFW_FORMAT_UNAVAILABLE:
             printf("GLFW format unavailable: %s\n", description);
+            exit(EXIT_FAILURE);
             break;
         case GLFW_PLATFORM_ERROR:
             printf("GLFW platform error: %s\n", description);
+            exit(EXIT_FAILURE);
             break;
         default:
             printf("GLFW unknown error (%d): %s\n", error, description);
+            exit(EXIT_FAILURE);
     }
 }
 
@@ -53,7 +64,7 @@ void HostInit()
 {
     if (!glfwInit())
     {
-        printf("Failed to init GLFW.\n");
+        printf("Failed to initialise GLFW.\n");
         exit(EXIT_FAILURE);
     }
 

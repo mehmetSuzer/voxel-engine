@@ -1,12 +1,13 @@
 
 #include <stb_image.h>
+#include "error.h"
 #include "world.h"
 
 #define CHUNK_SIZE 32
 
-#define WORLD_SIZE_X 16
+#define WORLD_SIZE_X 32
 #define WORLD_SIZE_Y 1
-#define WORLD_SIZE_Z 16
+#define WORLD_SIZE_Z 32
 
 typedef struct Chunk
 {
@@ -49,75 +50,85 @@ typedef enum UV
 // uv     = [28:29]
 typedef unsigned int Vertex;
 
-static void AddRightFace(Vertex* vertices, GLsizei* numVertices, Voxel voxel, unsigned int x, unsigned int y, unsigned int z)
+static unsigned int PackVertexData(unsigned int x, unsigned int y, unsigned int z, Voxel voxel, Normal normal, UV uv)
+{
+    return (x      <<  0) |
+           (y      <<  6) |
+           (z      << 12) |
+           (voxel  << 18) |
+           (normal << 25) |
+           (uv     << 28);
+}
+
+static void AddRightFace(Vertex* vertices, GLsizei* numVertices, unsigned int x, unsigned int y, unsigned int z, Voxel voxel)
 {
     Vertex* v = vertices + *numVertices;
-    v[0] = (x+1) | ((y  ) << 6) | ((z+1) << 12) | (voxel << 18) | (NormalRight << 25) | (UVLowerLeft  << 28);
-    v[1] = (x+1) | ((y  ) << 6) | ((z  ) << 12) | (voxel << 18) | (NormalRight << 25) | (UVLowerRight << 28);
-    v[2] = (x+1) | ((y+1) << 6) | ((z  ) << 12) | (voxel << 18) | (NormalRight << 25) | (UVUpperRight << 28);
-    v[3] = (x+1) | ((y  ) << 6) | ((z+1) << 12) | (voxel << 18) | (NormalRight << 25) | (UVLowerLeft  << 28);
-    v[4] = (x+1) | ((y+1) << 6) | ((z  ) << 12) | (voxel << 18) | (NormalRight << 25) | (UVUpperRight << 28);
-    v[5] = (x+1) | ((y+1) << 6) | ((z+1) << 12) | (voxel << 18) | (NormalRight << 25) | (UVUpperLeft  << 28);
+    v[0] = PackVertexData(x+1, y  , z+1, voxel, NormalRight, UVLowerLeft );
+    v[1] = PackVertexData(x+1, y  , z  , voxel, NormalRight, UVLowerRight);
+    v[2] = PackVertexData(x+1, y+1, z  , voxel, NormalRight, UVUpperRight);
+    v[3] = PackVertexData(x+1, y  , z+1, voxel, NormalRight, UVLowerLeft );
+    v[4] = PackVertexData(x+1, y+1, z  , voxel, NormalRight, UVUpperRight);
+    v[5] = PackVertexData(x+1, y+1, z+1, voxel, NormalRight, UVUpperLeft );
     *numVertices += 6;
 }
 
-static void AddLeftFace(Vertex* vertices, GLsizei* numVertices, Voxel voxel, unsigned int x, unsigned int y, unsigned int z)
+static void AddLeftFace(Vertex* vertices, GLsizei* numVertices, unsigned int x, unsigned int y, unsigned int z, Voxel voxel)
 {
     Vertex* v = vertices + *numVertices;
-    v[0] = x | ((y  ) << 6) | ((z  ) << 12) | (voxel << 18) | (NormalLeft << 25) | (UVLowerLeft  << 28);
-    v[1] = x | ((y  ) << 6) | ((z+1) << 12) | (voxel << 18) | (NormalLeft << 25) | (UVLowerRight << 28);
-    v[2] = x | ((y+1) << 6) | ((z+1) << 12) | (voxel << 18) | (NormalLeft << 25) | (UVUpperRight << 28);
-    v[3] = x | ((y  ) << 6) | ((z  ) << 12) | (voxel << 18) | (NormalLeft << 25) | (UVLowerLeft  << 28);
-    v[4] = x | ((y+1) << 6) | ((z+1) << 12) | (voxel << 18) | (NormalLeft << 25) | (UVUpperRight << 28);
-    v[5] = x | ((y+1) << 6) | ((z  ) << 12) | (voxel << 18) | (NormalLeft << 25) | (UVUpperLeft  << 28);
+    v[0] = PackVertexData(x, y  , z  , voxel, NormalLeft, UVLowerLeft );
+    v[1] = PackVertexData(x, y  , z+1, voxel, NormalLeft, UVLowerRight);
+    v[2] = PackVertexData(x, y+1, z+1, voxel, NormalLeft, UVUpperRight);
+    v[3] = PackVertexData(x, y  , z  , voxel, NormalLeft, UVLowerLeft );
+    v[4] = PackVertexData(x, y+1, z+1, voxel, NormalLeft, UVUpperRight);
+    v[5] = PackVertexData(x, y+1, z  , voxel, NormalLeft, UVUpperLeft );
     *numVertices += 6;
 }
 
-static void AddUpFace(Vertex* vertices, GLsizei* numVertices, Voxel voxel, unsigned int x, unsigned int y, unsigned int z)
+static void AddUpFace(Vertex* vertices, GLsizei* numVertices, unsigned int x, unsigned int y, unsigned int z, Voxel voxel)
 {
     Vertex* v = vertices + *numVertices;
-    v[0] = (x  ) | ((y+1) << 6) | ((z+1) << 12) | (voxel << 18) | (NormalUp << 25) | (UVLowerLeft  << 28);
-    v[1] = (x+1) | ((y+1) << 6) | ((z+1) << 12) | (voxel << 18) | (NormalUp << 25) | (UVLowerRight << 28);
-    v[2] = (x+1) | ((y+1) << 6) | ((z  ) << 12) | (voxel << 18) | (NormalUp << 25) | (UVUpperRight << 28);
-    v[3] = (x  ) | ((y+1) << 6) | ((z+1) << 12) | (voxel << 18) | (NormalUp << 25) | (UVLowerLeft  << 28);
-    v[4] = (x+1) | ((y+1) << 6) | ((z  ) << 12) | (voxel << 18) | (NormalUp << 25) | (UVUpperRight << 28);
-    v[5] = (x  ) | ((y+1) << 6) | ((z  ) << 12) | (voxel << 18) | (NormalUp << 25) | (UVUpperLeft  << 28);
+    v[0] = PackVertexData(x  , y+1, z+1, voxel, NormalUp, UVLowerLeft );
+    v[1] = PackVertexData(x+1, y+1, z+1, voxel, NormalUp, UVLowerRight);
+    v[2] = PackVertexData(x+1, y+1, z  , voxel, NormalUp, UVUpperRight);
+    v[3] = PackVertexData(x  , y+1, z+1, voxel, NormalUp, UVLowerLeft );
+    v[4] = PackVertexData(x+1, y+1, z  , voxel, NormalUp, UVUpperRight);
+    v[5] = PackVertexData(x  , y+1, z  , voxel, NormalUp, UVUpperLeft );
     *numVertices += 6;
 }
 
-static void AddDownFace(Vertex* vertices, GLsizei* numVertices, Voxel voxel, unsigned int x, unsigned int y, unsigned int z)
+static void AddDownFace(Vertex* vertices, GLsizei* numVertices, unsigned int x, unsigned int y, unsigned int z, Voxel voxel)
 {
     Vertex* v = vertices + *numVertices;
-    v[0] = (x  ) | (y << 6) | ((z  ) << 12) | (voxel << 18) | (NormalDown << 25) | (UVLowerLeft  << 28);
-    v[1] = (x+1) | (y << 6) | ((z  ) << 12) | (voxel << 18) | (NormalDown << 25) | (UVLowerRight << 28);
-    v[2] = (x+1) | (y << 6) | ((z+1) << 12) | (voxel << 18) | (NormalDown << 25) | (UVUpperRight << 28);
-    v[3] = (x  ) | (y << 6) | ((z  ) << 12) | (voxel << 18) | (NormalDown << 25) | (UVLowerLeft  << 28);
-    v[4] = (x+1) | (y << 6) | ((z+1) << 12) | (voxel << 18) | (NormalDown << 25) | (UVUpperRight << 28);
-    v[5] = (x  ) | (y << 6) | ((z+1) << 12) | (voxel << 18) | (NormalDown << 25) | (UVUpperLeft  << 28);
+    v[0] = PackVertexData(x  , y, z  , voxel, NormalDown, UVLowerLeft );
+    v[1] = PackVertexData(x+1, y, z  , voxel, NormalDown, UVLowerRight);
+    v[2] = PackVertexData(x+1, y, z+1, voxel, NormalDown, UVUpperRight);
+    v[3] = PackVertexData(x  , y, z  , voxel, NormalDown, UVLowerLeft );
+    v[4] = PackVertexData(x+1, y, z+1, voxel, NormalDown, UVUpperRight);
+    v[5] = PackVertexData(x  , y, z+1, voxel, NormalDown, UVUpperLeft );
     *numVertices += 6;
 }
 
-static void AddBackFace(Vertex* vertices, GLsizei* numVertices, Voxel voxel, unsigned int x, unsigned int y, unsigned int z)
+static void AddBackFace(Vertex* vertices, GLsizei* numVertices, unsigned int x, unsigned int y, unsigned int z, Voxel voxel)
 {
     Vertex* v = vertices + *numVertices;
-    v[0] = (x  ) | ((y  ) << 6) | ((z+1) << 12) | (voxel << 18) | (NormalBack << 25) | (UVLowerLeft  << 28);
-    v[1] = (x+1) | ((y  ) << 6) | ((z+1) << 12) | (voxel << 18) | (NormalBack << 25) | (UVLowerRight << 28);
-    v[2] = (x+1) | ((y+1) << 6) | ((z+1) << 12) | (voxel << 18) | (NormalBack << 25) | (UVUpperRight << 28);
-    v[3] = (x  ) | ((y  ) << 6) | ((z+1) << 12) | (voxel << 18) | (NormalBack << 25) | (UVLowerLeft  << 28);
-    v[4] = (x+1) | ((y+1) << 6) | ((z+1) << 12) | (voxel << 18) | (NormalBack << 25) | (UVUpperRight << 28);
-    v[5] = (x  ) | ((y+1) << 6) | ((z+1) << 12) | (voxel << 18) | (NormalBack << 25) | (UVUpperLeft  << 28);
+    v[0] = PackVertexData(x  , y  , z+1, voxel, NormalBack, UVLowerLeft );
+    v[1] = PackVertexData(x+1, y  , z+1, voxel, NormalBack, UVLowerRight);
+    v[2] = PackVertexData(x+1, y+1, z+1, voxel, NormalBack, UVUpperRight);
+    v[3] = PackVertexData(x  , y  , z+1, voxel, NormalBack, UVLowerLeft );
+    v[4] = PackVertexData(x+1, y+1, z+1, voxel, NormalBack, UVUpperRight);
+    v[5] = PackVertexData(x  , y+1, z+1, voxel, NormalBack, UVUpperLeft );
     *numVertices += 6;
 }
 
-static void AddFrontFace(Vertex* vertices, GLsizei* numVertices, Voxel voxel, unsigned int x, unsigned int y, unsigned int z)
+static void AddFrontFace(Vertex* vertices, GLsizei* numVertices, unsigned int x, unsigned int y, unsigned int z, Voxel voxel)
 {
     Vertex* v = vertices + *numVertices;
-    v[0] = (x+1) | ((y  ) << 6) | (z << 12) | (voxel << 18) | (NormalFront << 25) | (UVLowerLeft  << 28);
-    v[1] = (x  ) | ((y  ) << 6) | (z << 12) | (voxel << 18) | (NormalFront << 25) | (UVLowerRight << 28);
-    v[2] = (x  ) | ((y+1) << 6) | (z << 12) | (voxel << 18) | (NormalFront << 25) | (UVUpperRight << 28);
-    v[3] = (x+1) | ((y  ) << 6) | (z << 12) | (voxel << 18) | (NormalFront << 25) | (UVLowerLeft  << 28);
-    v[4] = (x  ) | ((y+1) << 6) | (z << 12) | (voxel << 18) | (NormalFront << 25) | (UVUpperRight << 28);
-    v[5] = (x+1) | ((y+1) << 6) | (z << 12) | (voxel << 18) | (NormalFront << 25) | (UVUpperLeft  << 28);
+    v[0] = PackVertexData(x+1, y  , z, voxel, NormalFront, UVLowerLeft );
+    v[1] = PackVertexData(x  , y  , z, voxel, NormalFront, UVLowerRight);
+    v[2] = PackVertexData(x  , y+1, z, voxel, NormalFront, UVUpperRight);
+    v[3] = PackVertexData(x+1, y  , z, voxel, NormalFront, UVLowerLeft );
+    v[4] = PackVertexData(x  , y+1, z, voxel, NormalFront, UVUpperRight);
+    v[5] = PackVertexData(x+1, y+1, z, voxel, NormalFront, UVUpperLeft );
     *numVertices += 6;
 }
 
@@ -208,7 +219,8 @@ static void GenerateMeshes()
         glVertexAttribIPointer(0, 1, GL_UNSIGNED_INT, sizeof(Vertex), (void*)0);
 
         world.isDirties[worldZ][worldY][worldX] = 1;
-    }    
+    }
+    glCheckErrors();
 }
 
 static void GenerateVertices()
@@ -224,7 +236,10 @@ static void GenerateVertices()
     for (int worldY = 0; worldY < WORLD_SIZE_Y; ++worldY)
     for (int worldX = 0; worldX < WORLD_SIZE_X; ++worldX)
     {
-        if (world.isDirties[worldZ][worldY][worldX] == 0) { continue; }
+        if (world.isDirties[worldZ][worldY][worldX] == 0) 
+        {
+            continue;
+        }
 
         GLsizei numVertices = 0;
         const Chunk* chunk = &world.chunks[worldZ][worldY][worldX];
@@ -236,14 +251,17 @@ static void GenerateVertices()
             const int voxelIndex = GetVoxelIndex(chunkX, chunkY, chunkZ);
             const Voxel voxel = chunk->voxels[voxelIndex];
 
-            if (voxel == VoxelAir) { continue; }
+            if (voxel == VoxelAir)
+            {
+                continue;
+            }
 
-            if (IsNeighbourAir(chunk, chunkX+1, chunkY,   chunkZ  )) { AddRightFace(vertices, &numVertices, voxel, chunkX, chunkY, chunkZ); }
-            if (IsNeighbourAir(chunk, chunkX-1, chunkY,   chunkZ  )) { AddLeftFace (vertices, &numVertices, voxel, chunkX, chunkY, chunkZ); }
-            if (IsNeighbourAir(chunk, chunkX,   chunkY+1, chunkZ  )) { AddUpFace   (vertices, &numVertices, voxel, chunkX, chunkY, chunkZ); }
-            if (IsNeighbourAir(chunk, chunkX,   chunkY-1, chunkZ  )) { AddDownFace (vertices, &numVertices, voxel, chunkX, chunkY, chunkZ); }
-            if (IsNeighbourAir(chunk, chunkX,   chunkY,   chunkZ+1)) { AddBackFace (vertices, &numVertices, voxel, chunkX, chunkY, chunkZ); }
-            if (IsNeighbourAir(chunk, chunkX,   chunkY,   chunkZ-1)) { AddFrontFace(vertices, &numVertices, voxel, chunkX, chunkY, chunkZ); }
+            if (IsNeighbourAir(chunk, chunkX+1, chunkY,   chunkZ  )) { AddRightFace(vertices, &numVertices, chunkX, chunkY, chunkZ, voxel); }
+            if (IsNeighbourAir(chunk, chunkX-1, chunkY,   chunkZ  )) { AddLeftFace (vertices, &numVertices, chunkX, chunkY, chunkZ, voxel); }
+            if (IsNeighbourAir(chunk, chunkX,   chunkY+1, chunkZ  )) { AddUpFace   (vertices, &numVertices, chunkX, chunkY, chunkZ, voxel); }
+            if (IsNeighbourAir(chunk, chunkX,   chunkY-1, chunkZ  )) { AddDownFace (vertices, &numVertices, chunkX, chunkY, chunkZ, voxel); }
+            if (IsNeighbourAir(chunk, chunkX,   chunkY,   chunkZ+1)) { AddBackFace (vertices, &numVertices, chunkX, chunkY, chunkZ, voxel); }
+            if (IsNeighbourAir(chunk, chunkX,   chunkY,   chunkZ-1)) { AddFrontFace(vertices, &numVertices, chunkX, chunkY, chunkZ, voxel); }
         }
 
         glBindBuffer(GL_ARRAY_BUFFER, world.VBOs[worldZ][worldY][worldX]);
@@ -251,9 +269,8 @@ static void GenerateVertices()
 
         world.numVertices[worldZ][worldY][worldX] = numVertices;
         world.isDirties[worldZ][worldY][worldX] = 0;
-
-        printf("Number of Vertices: %i\n", numVertices);
     }
+    glCheckErrors();
 }
 
 void WorldCreate()
@@ -268,6 +285,7 @@ void WorldDelete()
     const GLsizei numChunks = WORLD_SIZE_Z * WORLD_SIZE_Y * WORLD_SIZE_X;
     glDeleteVertexArrays(numChunks, (GLuint*)world.VAOs);
     glDeleteBuffers(numChunks, (GLuint*)world.VBOs);
+    glCheckErrors();
 }
 
 void WorldDraw(ShaderProgram shaderProgram)
@@ -283,5 +301,6 @@ void WorldDraw(ShaderProgram shaderProgram)
         glBindVertexArray(world.VAOs[worldZ][worldY][worldX]);
         glDrawArrays(GL_TRIANGLES, 0, world.numVertices[worldZ][worldY][worldX]);
     }
+    glCheckErrors();
 }
 

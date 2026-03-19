@@ -1,4 +1,5 @@
 
+#include "error.h"
 #include "graphics.h"
 
 static GraphicsState graphicsState = {
@@ -72,6 +73,7 @@ void GraphicsSetViewport(Rectangle viewport)
         glViewport(viewport.x, viewport.y, viewport.width, viewport.height);
         graphicsState.viewport = viewport;
     }
+    glCheckErrors();
 }
 
 void GraphicsSetDepthTest(DepthTest depthTest)
@@ -93,8 +95,8 @@ void GraphicsSetDepthTest(DepthTest depthTest)
             glDepthMask((GLboolean)depthTest.writeEnabled);
         }
     }
-
     graphicsState.depthTest = depthTest;
+    glCheckErrors();
 }
 
 void GraphicsSetStencilTest(StencilTest stencilTest)
@@ -121,8 +123,8 @@ void GraphicsSetStencilTest(StencilTest stencilTest)
             glStencilOp((GLenum)stencilTest.stencilFail, (GLenum)stencilTest.depthFail, (GLenum)stencilTest.depthPass);
         }
     }
-
     graphicsState.stencilTest = stencilTest;
+    glCheckErrors();
 }
 
 void GraphicsSetScissorTest(ScissorTest scissorTest)
@@ -141,8 +143,8 @@ void GraphicsSetScissorTest(ScissorTest scissorTest)
     {
         glScissor(scissorTest.rect.x, scissorTest.rect.y, scissorTest.rect.width, scissorTest.rect.height);
     }
-
     graphicsState.scissorTest = scissorTest;
+    glCheckErrors();
 }
 
 void GraphicsSetColourBlend(ColourBlend colourBlend)
@@ -166,8 +168,8 @@ void GraphicsSetColourBlend(ColourBlend colourBlend)
             glBlendEquation((GLenum)colourBlend.equation);
         }
     }
-
     graphicsState.colourBlend = colourBlend;
+    glCheckErrors();
 }
 
 void GraphicsSetFaceCull(FaceCull faceCull)
@@ -189,8 +191,8 @@ void GraphicsSetFaceCull(FaceCull faceCull)
             glFrontFace((GLenum)faceCull.frontFace);
         }
     }
-
     graphicsState.faceCull = faceCull;
+    glCheckErrors();
 }
 
 void GraphicsSetPolygonMode(PolygonMode polygonMode)
@@ -201,6 +203,7 @@ void GraphicsSetPolygonMode(PolygonMode polygonMode)
         glPolygonMode((GLenum)polygonMode.face, (GLenum)polygonMode.mode);
         graphicsState.polygonMode = polygonMode;
     }
+    glCheckErrors();
 }
 
 void GraphicsSetClearColour(vec4 colour)
@@ -216,6 +219,7 @@ void GraphicsSetClearColour(vec4 colour)
         graphicsState.clearState.colour[2] = colour[2];
         graphicsState.clearState.colour[3] = colour[3];        
     }
+    glCheckErrors();
 }
 
 void GraphicsSetClearDepth(float depth)
@@ -225,6 +229,7 @@ void GraphicsSetClearDepth(float depth)
         glClearDepth(depth);
         graphicsState.clearState.depth = depth;
     }
+    glCheckErrors();
 }
 
 void GraphicsSetClearStencil(unsigned int stencil)
@@ -234,10 +239,12 @@ void GraphicsSetClearStencil(unsigned int stencil)
         glClearStencil((GLint)stencil);
         graphicsState.clearState.stencil = stencil;
     }
+    glCheckErrors();
 }
 
 void GraphicsClear(BufferBit bits)
 {
     glClear((GLbitfield)bits);
+    glCheckErrors();
 }
 

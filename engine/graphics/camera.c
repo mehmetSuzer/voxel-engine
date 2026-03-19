@@ -32,19 +32,25 @@ void CameraRotate(Camera* camera, float dx, float dy, float sensitivity)
     glm_quat_normalize(camera->rotation);
 }
 
-void CameraView(Camera* camera, mat4 view)
+void CameraZoom(Camera* camera, float scroll, float sensitivity)
+{
+    const float deltaFovWidth = scroll * sensitivity;
+    camera->fovWidth += deltaFovWidth;
+}
+
+void CameraView(Camera* camera, mat4 viewOut)
 {
     versor inverseRotation;
     glm_quat_inv(camera->rotation, inverseRotation);
-    glm_quat_mat4(inverseRotation, view);
+    glm_quat_mat4(inverseRotation, viewOut);
 
     vec3 negativePosition;
     glm_vec3_negate_to(camera->position, negativePosition);
-    glm_translate(view, negativePosition);
+    glm_translate(viewOut, negativePosition);
 }
 
-void CameraProjection(Camera* camera, float aspectRatio, mat4 projection)
+void CameraProjection(Camera* camera, float aspectRatio, mat4 projectionOut)
 {
-    glm_perspective(camera->fovWidth, aspectRatio, camera->near, camera->far, projection);
+    glm_perspective(camera->fovWidth, aspectRatio, camera->near, camera->far, projectionOut);
 }
 

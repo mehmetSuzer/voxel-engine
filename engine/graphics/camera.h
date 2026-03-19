@@ -4,7 +4,7 @@
 #include <cglm/cglm.h>
 #include <cglm/call.h>
 
-typedef struct
+typedef struct Camera
 {
     vec3 position;
     versor rotation;
@@ -15,6 +15,8 @@ typedef struct
 
 void CameraTranslate(Camera* camera, vec3 localDelta);
 void CameraRotate(Camera* camera, float dx, float dy, float sensitivity);
-void CameraView(Camera* camera, mat4 view);
-void CameraProjection(Camera* camera, float aspectRatio, mat4 projection);
+void CameraZoom(Camera* camera, float scroll, float sensitivity);
+
+void CameraView(Camera* camera, mat4 viewOut);
+void CameraProjection(Camera* camera, float aspectRatio, mat4 projectionOut);
 

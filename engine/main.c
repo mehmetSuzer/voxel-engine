@@ -6,8 +6,8 @@
 #include "graphics/light.h"
 #include "host/host.h"
 
-#define WINDOW_WIDTH  800
-#define WINDOW_HEIGHT 600
+#define WINDOW_WIDTH  1200
+#define WINDOW_HEIGHT 1000
 #define WINDOW_TITLE  "Voxel Engine"
 #define ASPECT_RATIO  ((float)WINDOW_WIDTH/(float)WINDOW_HEIGHT)
 
@@ -37,8 +37,6 @@ int main()
     GraphicsSetClearColour((vec4){0.2f, 0.3f, 0.3f, 1.0f});
     GraphicsSetClearDepth(DEPTH_FURTHEST);
 
-    WorldCreate();
-
     ShaderProgram shaderProgram = ShaderProgramCreateVF(
         "shaders/terrain_vertex.glsl",
         "shaders/terrain_fragment.glsl");
@@ -47,7 +45,7 @@ int main()
         "textures/dummy_atlas.png",
         TextureWrapRepeat,
         TextureWrapRepeat,
-        TextureMinFilterNearest,
+        TextureMinFilterNearestMipmapNearest,
         TextureMagFilterNearest,
         (vec4){0.0f, 0.0f, 0.0f, 1.0f});
 
@@ -55,6 +53,8 @@ int main()
     TextureBind(textureAtlas, 0);
     ShaderProgramSetUniformi(shaderProgram, "textureAtlas", 0);
 
+    WorldCreate();
+    
     Camera camera = {
         .position = {16.0f, 16.0f, 40.0f},
         .rotation = {0.0f, 0.0f, 0.0f, 1.0f},

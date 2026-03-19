@@ -1,6 +1,7 @@
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
+#include "error.h"
 #include "texture.h"
 
 Texture TextureCreate(
@@ -37,7 +38,13 @@ Texture TextureCreate(
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (GLint)minFilter);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (GLint)magFilter);
     glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, (float*)borderColour);
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+    const int bytesPerRow = width * channels;
+    const int alignment =
+        (bytesPerRow % 8 == 0) ? 8 :
+        (bytesPerRow % 4 == 0) ? 4 :
+        (bytesPerRow % 2 == 0) ? 2 : 1;
+    glPixelStorei(GL_UNPACK_ALIGNMENT, alignment);
 
     const GLenum externalFormat =
         (channels == 1) ? GL_RED :
@@ -58,6 +65,7 @@ Texture TextureCreate(
 
     glBindTexture(GL_TEXTURE_2D, 0);
     stbi_image_free(pixels);
+    glCheckErrors();
 
     return texture;
 }
@@ -65,6 +73,7 @@ Texture TextureCreate(
 void TextureDelete(Texture texture)
 {
     glDeleteTextures(1, &texture.ID);
+    glCheckErrors();
 }
 
 void TextureBind(Texture texture, unsigned int unit)
@@ -72,6 +81,7 @@ void TextureBind(Texture texture, unsigned int unit)
     assert(unit < 32);
     glActiveTexture(GL_TEXTURE0 + unit);
     glBindTexture(GL_TEXTURE_2D, texture.ID);
+    glCheckErrors();
 }
 
 CubeMap CubeMapCreate(
@@ -93,7 +103,6 @@ CubeMap CubeMapCreate(
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, (GLint)minFilter);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, (GLint)magFilter);
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
     const char* faces[6] = {
         rightFacePath, leftFacePath, 
@@ -119,6 +128,13 @@ CubeMap CubeMapCreate(
             exit(EXIT_FAILURE);
         }
 
+        const int bytesPerRow = width * channels;
+        const int alignment =
+            (bytesPerRow % 8 == 0) ? 8 :
+            (bytesPerRow % 4 == 0) ? 4 :
+            (bytesPerRow % 2 == 0) ? 2 : 1;
+        glPixelStorei(GL_UNPACK_ALIGNMENT, alignment);
+
         const GLenum externalFormat =
             (channels == 1) ? GL_RED :
             (channels == 2) ? GL_RG :
@@ -139,18 +155,22 @@ CubeMap CubeMapCreate(
     }
 
     glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+    glCheckErrors();
+
     return cubeMap;
 }
 
 void CubeMapDelete(CubeMap cubeMap)
 {
     glDeleteTextures(1, &cubeMap.ID);
+    glCheckErrors();
 }
 
 void CubeMapBind(CubeMap cubeMap, unsigned int unit)
 {
     assert(unit < 32);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, cubeMap.ID);
     glActiveTexture(GL_TEXTURE0 + unit);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, cubeMap.ID);
+    glCheckErrors();
 }
 
