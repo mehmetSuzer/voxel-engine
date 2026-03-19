@@ -1,6 +1,6 @@
 
-#include <stdio.h>
 #include <stdlib.h>
+#include "log/log.h"
 #include "window.h"
 
 #define UNUSED(x) (void)(x)
@@ -153,12 +153,14 @@ Window* WindowCreate(int width, int height, const char* title)
 
     if (window->handle == NULL)
     {
-        printf("Failed to create GLFW window.\n");
+        LogError("WINDOW", "failed to create");
         exit(EXIT_FAILURE);
     }
     
     window->isVSyncEnabled = 1;
     SetCallbacks(window);
+    LogVerbose("WINDOW", "created");
+
     return window;
 }
 
@@ -166,41 +168,49 @@ void WindowDelete(Window* window)
 {
     glfwDestroyWindow(window->handle);
     free(window);
+    LogVerbose("WINDOW", "deleted");
 }
 
 void WindowMakeContextCurrent(Window* window)
 {
     glfwMakeContextCurrent(window->handle);
+    LogVerbose("WINDOW", "made current context");
 }
 
 void WindowShow(Window* window)
 {
     glfwShowWindow(window->handle);
+    LogVerbose("WINDOW", "shown");
 }
 
 void WindowHide(Window* window)
 {
     glfwHideWindow(window->handle);
+    LogVerbose("WINDOW", "hidden");
 }
 
 void WindowMaximise(Window* window)
 {
     glfwMaximizeWindow(window->handle);
+    LogVerbose("WINDOW", "maximised");
 }
 
 void WindowIconify(Window* window)
 {
     glfwIconifyWindow(window->handle);
+    LogVerbose("WINDOW", "iconified");
 }
 
 void WindowRestore(Window* window)
 {
     glfwRestoreWindow(window->handle);
+    LogVerbose("WINDOW", "restored");
 }
 
 void WindowSetTitle(Window* window, const char* title)
 {
     glfwSetWindowTitle(window->handle, title);
+    LogVerbose("WINDOW", "new title: %s", title);
 }
 
 int WindowGetFlag(Window* window, WindowFlag flag)
@@ -226,6 +236,7 @@ void WindowGetWindowSize(Window* window, int* widthOut, int* heightOut)
 void WindowSetWindowSize(Window* window, int width, int height)
 {
     glfwSetWindowSize(window->handle, width, height);
+    LogVerbose("WINDOW", "size: (%i, %i)", width, height);
 }
 
 void WindowGetFramebufferSize(Window* window, int* widthOut, int* heightOut)
@@ -241,6 +252,7 @@ void WindowGetWindowPosition(Window* window, int* xOut, int* yOut)
 void WindowSetWindowPosition(Window* window, int x, int y)
 {
     glfwSetWindowPos(window->handle, x, y);
+    LogVerbose("WINDOW", "position: (%i, %i)", x, y);
 }
 
 void WindowGetContentScale(Window* window, float* xOut, float* yOut)
@@ -281,6 +293,7 @@ void WindowSetFullScreen(Window* window, int enabled)
         glfwSetWindowMonitor(window->handle, NULL, window->windowedPositionX, window->windowedPositionY, window->windowedWidth, window->windowedHeight, 0);
     }
     window->isFullScreen = enabled;
+    LogVerbose("WINDOW", "%s full screen", (enabled) ? "enabled" : "disabled");
 }
 
 int WindowIsVSyncEnabled(Window* window)
@@ -291,12 +304,11 @@ int WindowIsVSyncEnabled(Window* window)
 void WindowSetVSync(Window* window, int enabled)
 {
     GLFWwindow* currentWindow = glfwGetCurrentContext();
-
     glfwMakeContextCurrent(window->handle);
     glfwSwapInterval((enabled) ? 1 : 0);
     window->isVSyncEnabled = enabled;
-
     glfwMakeContextCurrent(currentWindow);
+    LogVerbose("WINDOW", "%s vsync", (enabled) ? "enabled" : "disabled");
 }
 
 int WindowShouldClose(Window* window)
@@ -307,6 +319,7 @@ int WindowShouldClose(Window* window)
 void WindowSetShouldClose(Window* window)
 {
     glfwSetWindowShouldClose(window->handle, GLFW_TRUE);
+    LogVerbose("WINDOW", "closed");
 }
 
 void WindowSwapBuffers(Window* window)
@@ -342,6 +355,7 @@ void WindowGetCursorPosition(Window* window, double* xOut, double* yOut)
 void WindowSetCursorPosition(Window* window, double x, double y)
 {
     glfwSetCursorPos(window->handle, x, y);
+    LogVerbose("CURSOR", "position: (% .6f, % .6f)", x, y);
 }
 
 CursorMode WindowGetCursorMode(Window* window)
@@ -366,24 +380,29 @@ int WindowIsStickyKeysEnabled(Window* window)
 void WindowEnableStickyKeys(Window* window, int enabled)
 {
     glfwSetInputMode(window->handle, GLFW_STICKY_KEYS, (enabled) ? GLFW_TRUE : GLFW_FALSE);
+    LogVerbose("WINDOW", "%s sticky keys", (enabled) ? "enabled" : "disabled");
 }
 
 int WindowIsStickyMouseButtonsEnabled(Window* window)
 {
     return (glfwGetInputMode(window->handle, GLFW_STICKY_MOUSE_BUTTONS) == GLFW_TRUE);
 }
+
 void WindowEnableStickyMouseButtons(Window* window, int enabled)
 {
     glfwSetInputMode(window->handle, GLFW_STICKY_MOUSE_BUTTONS, (enabled) ? GLFW_TRUE : GLFW_FALSE);
+    LogVerbose("WINDOW", "%s sticky mouse buttons", (enabled) ? "enabled" : "disabled");
 }
 
 int WindowIsLockKeyModsEnabled(Window* window)
 {
     return (glfwGetInputMode(window->handle, GLFW_LOCK_KEY_MODS) == GLFW_TRUE);
 }
+
 void WindowEnableLockKeyMods(Window* window, int enabled)
 {
     glfwSetInputMode(window->handle, GLFW_LOCK_KEY_MODS, (enabled) ? GLFW_TRUE : GLFW_FALSE);
+    LogVerbose("WINDOW", "%s lock key mods", (enabled) ? "enabled" : "disabled");
 }
     
 int WindowIsRawMouseMotionEnabled(Window* window)
@@ -394,5 +413,6 @@ int WindowIsRawMouseMotionEnabled(Window* window)
 void WindowEnableRawMouseMotion(Window* window, int enabled)
 {
     glfwSetInputMode(window->handle, GLFW_RAW_MOUSE_MOTION, (enabled) ? GLFW_TRUE : GLFW_FALSE);
+    LogVerbose("WINDOW", "%s raw mouse motion", (enabled) ? "enabled" : "disabled");
 }
 

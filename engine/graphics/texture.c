@@ -1,6 +1,7 @@
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
+#include "log/log.h"
 #include "error.h"
 #include "texture.h"
 
@@ -18,14 +19,14 @@ Texture TextureCreate(
 
     if (pixels == NULL)
     {
-        printf("Failed to read texture %s.\n", imagePath);
+        LogError("TEXTURE", "failed to read %s", imagePath);
         exit(EXIT_FAILURE);
     }
 
     if (channels < 1 || channels > 4)
     {
         stbi_image_free(pixels);
-        printf("Unsupported channel count %i for %s.\n", channels, imagePath);
+        LogError("TEXTURE", "unsupported channels (%i) for %s", channels, imagePath);
         exit(EXIT_FAILURE);
     }
 
@@ -66,6 +67,7 @@ Texture TextureCreate(
     glBindTexture(GL_TEXTURE_2D, 0);
     stbi_image_free(pixels);
     glCheckErrors();
+    LogVerbose("TEXTURE", "created %s", imagePath);
 
     return texture;
 }
@@ -74,6 +76,7 @@ void TextureDelete(Texture texture)
 {
     glDeleteTextures(1, &texture.ID);
     glCheckErrors();
+    LogVerbose("TEXTURE", "deleted");
 }
 
 void TextureBind(Texture texture, unsigned int unit)
@@ -82,6 +85,7 @@ void TextureBind(Texture texture, unsigned int unit)
     glActiveTexture(GL_TEXTURE0 + unit);
     glBindTexture(GL_TEXTURE_2D, texture.ID);
     glCheckErrors();
+    LogVerbose("TEXTURE", "binded");
 }
 
 CubeMap CubeMapCreate(
@@ -118,13 +122,13 @@ CubeMap CubeMapCreate(
         unsigned char* pixels = stbi_load(faces[i], &width, &height, &channels, 0);
         if (pixels == NULL)
         {
-            printf("Failed to load cube map face %s.\n", faces[i]);
+            LogError("CUBEMAP", "failed to read %s", faces[i]);
             exit(EXIT_FAILURE);
         }
         if (channels < 1 || channels > 4)
         {
             stbi_image_free(pixels);
-            printf("Unsupported channels count %i for %s.\n", channels, faces[i]);
+            LogError("CUBEMAP", "unsupported channels (%i) for %s", channels, faces[i]);
             exit(EXIT_FAILURE);
         }
 
@@ -147,6 +151,7 @@ CubeMap CubeMapCreate(
 
         glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, internalFormat, width, height, 0, externalFormat, GL_UNSIGNED_BYTE, pixels);
         stbi_image_free(pixels);
+        LogVerbose("CUBEMAP", "created face %s", faces[i]);
     }
 
     if (minFilter != TextureMinFilterNearest && minFilter != TextureMinFilterLinear)
@@ -164,6 +169,7 @@ void CubeMapDelete(CubeMap cubeMap)
 {
     glDeleteTextures(1, &cubeMap.ID);
     glCheckErrors();
+    LogVerbose("CUBEMAP", "deleted");
 }
 
 void CubeMapBind(CubeMap cubeMap, unsigned int unit)
@@ -172,5 +178,6 @@ void CubeMapBind(CubeMap cubeMap, unsigned int unit)
     glActiveTexture(GL_TEXTURE0 + unit);
     glBindTexture(GL_TEXTURE_CUBE_MAP, cubeMap.ID);
     glCheckErrors();
+    LogVerbose("CUBEMAP", "binded");
 }
 

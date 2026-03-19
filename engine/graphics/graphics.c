@@ -1,4 +1,5 @@
 
+#include "log/log.h"
 #include "error.h"
 #include "graphics.h"
 
@@ -58,7 +59,7 @@ void GraphicsInit(GLADloadproc loader)
 {
     if (!gladLoadGLLoader(loader))
     {
-        printf("Failed to initialise GLAD.\n");
+        LogError("GRAPHICS", "failed to initialise");
         exit(EXIT_FAILURE);
     }
 }
@@ -74,6 +75,7 @@ void GraphicsSetViewport(Rectangle viewport)
         graphicsState.viewport = viewport;
     }
     glCheckErrors();
+    LogVerbose("GRAPHICS", "viewport: (%i, %i, %i, %i)", viewport.x, viewport.y, viewport.width, viewport.height);
 }
 
 void GraphicsSetDepthTest(DepthTest depthTest)

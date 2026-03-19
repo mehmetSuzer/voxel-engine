@@ -31,5 +31,6 @@ target_link_libraries(graphics
     PUBLIC OpenGL
     PUBLIC cglm
     PUBLIC stb
+    PUBLIC log
 )
 

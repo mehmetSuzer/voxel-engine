@@ -1,15 +1,16 @@
 
 #include <stdio.h>
 #include <assert.h>
+#include "log/log.h"
 #include "error.h"
 #include "shader_program.h"
 
-static GLuint ReadShader(const char* sourcePath, GLenum type)
+static GLuint CreateShader(const char* sourcePath, GLenum type)
 {
     FILE* sourceFile = fopen(sourcePath, "rb");
     if (sourceFile == NULL)
     {
-        printf("Failed to open shader file %s.\n", sourcePath);
+        LogError("SHADER", "failed to read %s", sourcePath);
         exit(EXIT_FAILURE);
     }
 
@@ -39,10 +40,11 @@ static GLuint ReadShader(const char* sourcePath, GLenum type)
         char infoLog[infoLogLength+1];
         glGetShaderInfoLog(shader, infoLogLength, NULL, infoLog);
 
-        printf("Failed to compile %s.\n%s\n", sourcePath, infoLog);
+        LogError("SHADER", "failed to compile %s:\n%s", sourcePath, infoLog);
         exit(EXIT_FAILURE);
     }
     glCheckErrors();
+    LogVerbose("SHADER", "compiled %s", sourcePath);
     
     return shader;
 }
@@ -62,10 +64,11 @@ static void Link(ShaderProgram shaderProgram)
         char infoLog[infoLogLength+1];
         glGetProgramInfoLog(shaderProgram.ID, infoLogLength, NULL, infoLog);
 
-        printf("Failed to link the shader program.\n%s\n", infoLog);
+        LogError("PROGRAM", "failed to link\n%s", infoLog);
         exit(EXIT_FAILURE);
     }
     glCheckErrors();
+    LogVerbose("PROGRAM", "linked");
 }
 
 static void Validate(ShaderProgram shaderProgram)
@@ -83,10 +86,11 @@ static void Validate(ShaderProgram shaderProgram)
         char infoLog[infoLogLength+1];
         glGetProgramInfoLog(shaderProgram.ID, infoLogLength, NULL, infoLog);
 
-        printf("Failed to validate the shader program.\n%s\n", infoLog);
+        LogError("PROGRAM", "failed to validate\n%s", infoLog);
         exit(EXIT_FAILURE);
     }
     glCheckErrors();
+    LogVerbose("PROGRAM", "validated");
 }
 
 static GLint GetUniformLocation(ShaderProgram shaderProgram, const char* uniform)
@@ -100,7 +104,7 @@ ShaderProgram ShaderProgramCreateC(const char* computeShaderPath)
 {
     ShaderProgram shaderProgram;
     shaderProgram.ID = glCreateProgram();
-    GLuint computeShader = ReadShader(computeShaderPath, GL_COMPUTE_SHADER);
+    GLuint computeShader = CreateShader(computeShaderPath, GL_COMPUTE_SHADER);
     glAttachShader(shaderProgram.ID, computeShader);
     Link(shaderProgram);
     Validate(shaderProgram);
@@ -115,7 +119,7 @@ ShaderProgram ShaderProgramCreateV(const char* vertexShaderPath)
 {
     ShaderProgram shaderProgram;
     shaderProgram.ID = glCreateProgram();
-    GLuint vertexShader = ReadShader(vertexShaderPath, GL_VERTEX_SHADER);
+    GLuint vertexShader = CreateShader(vertexShaderPath, GL_VERTEX_SHADER);
     glAttachShader(shaderProgram.ID, vertexShader);
     Link(shaderProgram);
     Validate(shaderProgram);
@@ -132,8 +136,8 @@ ShaderProgram ShaderProgramCreateVF(
 {
     ShaderProgram shaderProgram;
     shaderProgram.ID = glCreateProgram();
-    GLuint vertexShader = ReadShader(vertexShaderPath, GL_VERTEX_SHADER);
-    GLuint fragmentShader = ReadShader(fragmentShaderPath, GL_FRAGMENT_SHADER);
+    GLuint vertexShader = CreateShader(vertexShaderPath, GL_VERTEX_SHADER);
+    GLuint fragmentShader = CreateShader(fragmentShaderPath, GL_FRAGMENT_SHADER);
     glAttachShader(shaderProgram.ID, vertexShader);
     glAttachShader(shaderProgram.ID, fragmentShader);
     Link(shaderProgram);
@@ -154,9 +158,9 @@ ShaderProgram ShaderProgramCreateVGF(
 {
     ShaderProgram shaderProgram;
     shaderProgram.ID = glCreateProgram();
-    GLuint vertexShader = ReadShader(vertexShaderPath, GL_VERTEX_SHADER);
-    GLuint geometryShader = ReadShader(geometryShaderPath, GL_GEOMETRY_SHADER);
-    GLuint fragmentShader = ReadShader(fragmentShaderPath, GL_FRAGMENT_SHADER);
+    GLuint vertexShader = CreateShader(vertexShaderPath, GL_VERTEX_SHADER);
+    GLuint geometryShader = CreateShader(geometryShaderPath, GL_GEOMETRY_SHADER);
+    GLuint fragmentShader = CreateShader(fragmentShaderPath, GL_FRAGMENT_SHADER);
     glAttachShader(shaderProgram.ID, vertexShader);
     glAttachShader(shaderProgram.ID, geometryShader);
     glAttachShader(shaderProgram.ID, fragmentShader);
@@ -181,10 +185,10 @@ ShaderProgram ShaderProgramCreateVTTF(
 {
     ShaderProgram shaderProgram;
     shaderProgram.ID = glCreateProgram();
-    GLuint vertexShader = ReadShader(vertexShaderPath, GL_VERTEX_SHADER);
-    GLuint tessControlShader = ReadShader(tessControlShaderPath, GL_TESS_CONTROL_SHADER);
-    GLuint tessEvaluationShader = ReadShader(tessEvaluationShaderPath, GL_TESS_EVALUATION_SHADER);
-    GLuint fragmentShader = ReadShader(fragmentShaderPath, GL_FRAGMENT_SHADER);
+    GLuint vertexShader = CreateShader(vertexShaderPath, GL_VERTEX_SHADER);
+    GLuint tessControlShader = CreateShader(tessControlShaderPath, GL_TESS_CONTROL_SHADER);
+    GLuint tessEvaluationShader = CreateShader(tessEvaluationShaderPath, GL_TESS_EVALUATION_SHADER);
+    GLuint fragmentShader = CreateShader(fragmentShaderPath, GL_FRAGMENT_SHADER);
     glAttachShader(shaderProgram.ID, vertexShader);
     glAttachShader(shaderProgram.ID, tessControlShader);
     glAttachShader(shaderProgram.ID, tessEvaluationShader);
@@ -213,11 +217,11 @@ ShaderProgram ShaderProgramCreateVTTGF(
 {
     ShaderProgram shaderProgram;
     shaderProgram.ID = glCreateProgram();
-    GLuint vertexShader = ReadShader(vertexShaderPath, GL_VERTEX_SHADER);
-    GLuint tessControlShader = ReadShader(tessControlShaderPath, GL_TESS_CONTROL_SHADER);
-    GLuint tessEvaluationShader = ReadShader(tessEvaluationShaderPath, GL_TESS_EVALUATION_SHADER);
-    GLuint geometryShader = ReadShader(geometryShaderPath, GL_GEOMETRY_SHADER);
-    GLuint fragmentShader = ReadShader(fragmentShaderPath, GL_FRAGMENT_SHADER);
+    GLuint vertexShader = CreateShader(vertexShaderPath, GL_VERTEX_SHADER);
+    GLuint tessControlShader = CreateShader(tessControlShaderPath, GL_TESS_CONTROL_SHADER);
+    GLuint tessEvaluationShader = CreateShader(tessEvaluationShaderPath, GL_TESS_EVALUATION_SHADER);
+    GLuint geometryShader = CreateShader(geometryShaderPath, GL_GEOMETRY_SHADER);
+    GLuint fragmentShader = CreateShader(fragmentShaderPath, GL_FRAGMENT_SHADER);
     glAttachShader(shaderProgram.ID, vertexShader);
     glAttachShader(shaderProgram.ID, tessControlShader);
     glAttachShader(shaderProgram.ID, tessEvaluationShader);
@@ -244,12 +248,14 @@ void ShaderProgramDelete(ShaderProgram shaderProgram)
 {
     glDeleteProgram(shaderProgram.ID);
     glCheckErrors();
+    LogVerbose("PROGRAM", "deleted");
 }
 
 void ShaderProgramBind(ShaderProgram shaderProgram)
 {
     glUseProgram(shaderProgram.ID);
     glCheckErrors();
+    LogVerbose("PROGRAM", "binded");
 }
 
 void ShaderProgramSetUniformi(ShaderProgram shaderProgram, const char* uniform, int value)

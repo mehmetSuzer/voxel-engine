@@ -1,7 +1,8 @@
 
 #include <stdio.h>
-#include "error.h"
 #include "glad/glad.h"
+#include "log/log.h"
+#include "error.h"
 
 void glCheckErrorsInternal(const char* file, int line)
 {
@@ -21,7 +22,7 @@ void glCheckErrorsInternal(const char* file, int line)
             case GL_CONTEXT_LOST:                  error = "Context Lost";                  break;
             default:                               error = "Unknown Error";                 break;
         }
-        printf("%s | %s (%i)\n", error, file, line);
+        LogError("GL", "%s | %s (%i)", error, file, line);
     }
 }
 

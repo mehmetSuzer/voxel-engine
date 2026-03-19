@@ -46,13 +46,13 @@ void ShaderProgramSetUniform2f(ShaderProgram shaderProgram, const char* uniform,
 void ShaderProgramSetUniform3f(ShaderProgram shaderProgram, const char* uniform, vec3 vector);
 void ShaderProgramSetUniform4f(ShaderProgram shaderProgram, const char* uniform, vec4 vector);
 
-void ShaderProgramSetUniformMat2f(  ShaderProgram shaderProgram, const char* uniform, mat2   matrix);
+void ShaderProgramSetUniformMat2f  (ShaderProgram shaderProgram, const char* uniform, mat2   matrix);
 void ShaderProgramSetUniformMat2x3f(ShaderProgram shaderProgram, const char* uniform, mat2x3 matrix);
 void ShaderProgramSetUniformMat2x4f(ShaderProgram shaderProgram, const char* uniform, mat2x4 matrix);
 void ShaderProgramSetUniformMat3x2f(ShaderProgram shaderProgram, const char* uniform, mat3x2 matrix);
-void ShaderProgramSetUniformMat3f(  ShaderProgram shaderProgram, const char* uniform, mat3   matrix);
+void ShaderProgramSetUniformMat3f  (ShaderProgram shaderProgram, const char* uniform, mat3   matrix);
 void ShaderProgramSetUniformMat3x4f(ShaderProgram shaderProgram, const char* uniform, mat3x4 matrix);
 void ShaderProgramSetUniformMat4x2f(ShaderProgram shaderProgram, const char* uniform, mat4x2 matrix);
 void ShaderProgramSetUniformMat4x3f(ShaderProgram shaderProgram, const char* uniform, mat4x3 matrix);
-void ShaderProgramSetUniformMat4f(  ShaderProgram shaderProgram, const char* uniform, mat4   matrix);
+void ShaderProgramSetUniformMat4f  (ShaderProgram shaderProgram, const char* uniform, mat4   matrix);
 

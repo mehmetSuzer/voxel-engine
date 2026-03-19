@@ -1,5 +1,6 @@
 
 #include <stb_image.h>
+#include "log/log.h"
 #include "error.h"
 #include "world.h"
 
@@ -158,14 +159,14 @@ static void GenerateChunks()
 
     if (pixels == NULL)
     {
-        printf("Failed to load the perlin noise.\n");
+        LogError("WORLD", "failed to load perlin noise");
         exit(EXIT_FAILURE);
     }
 
     if (channels < 1 || channels > 4)
     {
         stbi_image_free(pixels);
-        printf("Unsupported channel count %i for the perlin noise.\n", channels);
+        LogError("WORLD", "unsupported channels (%i) for perlin noise", channels);
         exit(EXIT_FAILURE);
     } 
 
@@ -200,6 +201,7 @@ static void GenerateChunks()
         }
     }
     stbi_image_free(pixels);
+    LogVerbose("WORLD", "generated chunks");
 }
 
 static void GenerateMeshes()
@@ -221,6 +223,7 @@ static void GenerateMeshes()
         world.isDirties[worldZ][worldY][worldX] = 1;
     }
     glCheckErrors();
+    LogVerbose("WORLD", "generated meshes");
 }
 
 static void GenerateVertices()
@@ -271,6 +274,7 @@ static void GenerateVertices()
         world.isDirties[worldZ][worldY][worldX] = 0;
     }
     glCheckErrors();
+    LogVerbose("WORLD", "generated vertices");
 }
 
 void WorldCreate()
@@ -278,6 +282,7 @@ void WorldCreate()
     GenerateChunks();
     GenerateMeshes();
     GenerateVertices();
+    LogVerbose("WORLD", "created");
 }
 
 void WorldDelete()
@@ -286,6 +291,7 @@ void WorldDelete()
     glDeleteVertexArrays(numChunks, (GLuint*)world.VAOs);
     glDeleteBuffers(numChunks, (GLuint*)world.VBOs);
     glCheckErrors();
+    LogVerbose("WORLD", "deleted");
 }
 
 void WorldDraw(ShaderProgram shaderProgram)

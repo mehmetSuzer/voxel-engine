@@ -1,4 +1,5 @@
 
+#include "log/log.h"
 #include "graphics/camera.h"
 #include "graphics/texture.h"
 #include "graphics/world.h"
@@ -13,6 +14,8 @@
 
 int main()
 {
+    LogSetMinSeverity(LogSeverityVerbose);
+
     HostInit();
     Window* window = WindowCreate(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE);
     WindowMakeContextCurrent(window);

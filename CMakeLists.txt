@@ -29,10 +29,12 @@ target_link_options(${PROJECT_NAME}
     PRIVATE $<$<CONFIG:Release>:-flto>
 )
 
+add_subdirectory(engine/log)
 add_subdirectory(engine/host)
 add_subdirectory(engine/graphics)
 
 target_link_libraries(${PROJECT_NAME}
+    PRIVATE log
     PRIVATE host
     PRIVATE graphics
 )

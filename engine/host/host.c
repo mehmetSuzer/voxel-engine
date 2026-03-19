@@ -1,6 +1,6 @@
 
-#include <stdio.h>
 #include <stdlib.h>
+#include "log/log.h"
 #include "host.h"
 
 static void ErrorCallback(int error, const char* description)
@@ -8,63 +8,62 @@ static void ErrorCallback(int error, const char* description)
     switch (error)
     {
         case GLFW_NOT_INITIALIZED:
-            printf("GLFW not initialised: %s\n", description);
+            LogError("GLFW", "not initialised: %s", description);
             exit(EXIT_FAILURE);
             break;
         case GLFW_NO_CURRENT_CONTEXT:
-            printf("GLFW no current context: %s\n", description);
+            LogError("GLFW", "no current context: %s", description);
             exit(EXIT_FAILURE);
             break;
         case GLFW_NO_WINDOW_CONTEXT:
-            printf("GLFW no window context: %s\n", description);
+            LogError("GLFW", "no window context: %s", description);
             exit(EXIT_FAILURE);
             break;
         case GLFW_INVALID_ENUM:
-            printf("GLFW invalid enum: %s\n", description);
+            LogError("GLFW", "invalid enum: %s", description);
             exit(EXIT_FAILURE);
             break;
         case GLFW_INVALID_VALUE:
-            printf("GLFW invalid value: %s\n", description);
+            LogError("GLFW", "invalid value: %s", description);
             exit(EXIT_FAILURE);
             break;
         case GLFW_OUT_OF_MEMORY:
-            printf("GLFW out of memory: %s\n", description);
+            LogError("GLFW", "out of memory: %s", description);
             exit(EXIT_FAILURE);
             break;
         case GLFW_API_UNAVAILABLE:
-            printf("GLFW API unavailable: %s\n", description);
+            LogError("GLFW", "API unavailable: %s", description);
             exit(EXIT_FAILURE);
             break;
         case GLFW_VERSION_UNAVAILABLE:
-            printf("GLFW version unavailable: %s\n", description);
+            LogError("GLFW", "version unavailable: %s", description);
             exit(EXIT_FAILURE);
             break;
         case GLFW_FORMAT_UNAVAILABLE:
-            printf("GLFW format unavailable: %s\n", description);
+            LogError("GLFW", "format unavailable: %s", description);
             exit(EXIT_FAILURE);
             break;
         case GLFW_PLATFORM_ERROR:
-            printf("GLFW platform error: %s\n", description);
+            LogError("GLFW", "platform error: %s", description);
             exit(EXIT_FAILURE);
             break;
         default:
-            printf("GLFW unknown error (%d): %s\n", error, description);
+            LogError("GLFW", "unknown error (%i): %s", error, description);
             exit(EXIT_FAILURE);
+            break;
     }
 }
 
 static void JoystickCallback(int jid, int event)
 {
-    const char* joystickName = glfwGetJoystickName(jid);
-    const char* state = (event == GLFW_CONNECTED) ? "connected" : "disconnected";
-    printf("Joystick %s is %s.\n", joystickName, state);
+    LogInfo("JOYSTICK", "%s %s", (event == GLFW_CONNECTED) ? "connected" : "disconnected", glfwGetJoystickName(jid));
 }
 
 void HostInit()
 {
     if (!glfwInit())
     {
-        printf("Failed to initialise GLFW.\n");
+        LogError("GLFW", "failed to initialise");
         exit(EXIT_FAILURE);
     }
 
@@ -72,6 +71,7 @@ void HostInit()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    LogInfo("GLFW", "OpenGL Core 3.3");
 
 #ifdef __APPLE__
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
@@ -79,6 +79,7 @@ void HostInit()
 
 #ifndef NDEBUG
     glfwWindowHint(GLFW_CONTEXT_DEBUG, GLFW_TRUE);
+    LogInfo("GLFW", "enabled context debug");
 #endif
 
     // TODO: If you want dynamically resizing viewports, enable GLFW_RESIZABLE
@@ -112,6 +113,7 @@ void HostInit()
 void HostTerminate()
 {
     glfwTerminate();
+    LogVerbose("GLFW", "terminated");
 }
 
 double HostGetTime()
@@ -122,6 +124,7 @@ double HostGetTime()
 void HostSetTime(double time)
 {
     glfwSetTime(time);
+    LogVerbose("GLFW", "time: % .6f", time);
 }
 
 void HostPollEvents()

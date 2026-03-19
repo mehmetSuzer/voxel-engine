@@ -14,5 +14,6 @@ target_include_directories(host
 
 target_link_libraries(host
     PUBLIC glfw
+    PUBLIC log
 )
 
