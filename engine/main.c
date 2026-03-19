@@ -40,9 +40,7 @@ int main()
     GraphicsSetClearColour((vec4){0.2f, 0.3f, 0.3f, 1.0f});
     GraphicsSetClearDepth(DEPTH_FURTHEST);
 
-    ShaderProgram shaderProgram = ShaderProgramCreateVF(
-        "shaders/terrain_vertex.glsl",
-        "shaders/terrain_fragment.glsl");
+    ShaderProgram shaderProgram = ShaderProgramCreateVF("shaders/terrain.vert", "shaders/terrain.frag");
 
     Texture textureAtlas = TextureCreate(
         "textures/dummy_atlas.png",

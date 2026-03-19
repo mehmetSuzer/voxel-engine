@@ -4,6 +4,13 @@
 #include <cglm/cglm.h>
 #include "glad/glad.h"
 
+// Compute Shader:         .comp
+// Vertex Shader:          .vert
+// Tess Control Shader:    .tesc
+// Tess Evaluation Shader: .tese
+// Geometry Shader:        .geom
+// Fragment Shader:        .frag
+
 typedef struct ShaderProgram
 {
     GLuint ID;
