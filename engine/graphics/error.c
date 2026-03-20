@@ -22,7 +22,7 @@ void glCheckErrorsInternal(const char* file, int line)
             case GL_CONTEXT_LOST:                  error = "Context Lost";                  break;
             default:                               error = "Unknown Error";                 break;
         }
-        LogError("GL", "%s | %s (%i)", error, file, line);
+        LogError("OPENGL", "%s | %s (%i)", error, file, line);
     }
 }
 

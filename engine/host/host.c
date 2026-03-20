@@ -56,7 +56,9 @@ static void ErrorCallback(int error, const char* description)
 
 static void JoystickCallback(int jid, int event)
 {
-    LogInfo("JOYSTICK", "%s %s", (event == GLFW_CONNECTED) ? "connected" : "disconnected", glfwGetJoystickName(jid));
+    const char* joystickName = glfwGetJoystickName(jid);
+    const char* state = (event == GLFW_CONNECTED) ? "connected" : "disconnected";
+    LogInfo("JOYSTICK", "%s (%i) %s", joystickName, jid, state);
 }
 
 void HostInit()
@@ -77,11 +79,6 @@ void HostInit()
 
 #ifdef __APPLE__
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
-#endif
-
-#ifndef NDEBUG
-    glfwWindowHint(GLFW_CONTEXT_DEBUG, GLFW_TRUE);
-    LogInfo("GLFW", "enabled context debug");
 #endif
 
     // TODO: If you want dynamically resizing viewports, enable GLFW_RESIZABLE

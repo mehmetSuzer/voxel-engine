@@ -157,7 +157,7 @@ Window* WindowCreate(int width, int height, const char* title)
         exit(EXIT_FAILURE);
     }
     
-    window->isVSyncEnabled = 1;
+    WindowSetVSync(window, 1);
     SetCallbacks(window);
     LogVerbose("WINDOW", "created");
 
@@ -174,7 +174,7 @@ void WindowDelete(Window* window)
 void WindowMakeContextCurrent(Window* window)
 {
     glfwMakeContextCurrent(window->handle);
-    LogVerbose("WINDOW", "made current context");
+    LogVerbose("WINDOW", "made context current");
 }
 
 void WindowShow(Window* window)
@@ -210,7 +210,7 @@ void WindowRestore(Window* window)
 void WindowSetTitle(Window* window, const char* title)
 {
     glfwSetWindowTitle(window->handle, title);
-    LogVerbose("WINDOW", "new title: %s", title);
+    LogVerbose("WINDOW", "title: %s", title);
 }
 
 int WindowGetFlag(Window* window, WindowFlag flag)
@@ -221,6 +221,15 @@ int WindowGetFlag(Window* window, WindowFlag flag)
 void WindowSetFlag(Window* window, WindowFlag flag, int enabled)
 {
     glfwSetWindowAttrib(window->handle, (int)flag, (enabled) ? GLFW_TRUE : GLFW_FALSE);
+    const char* message = 
+        (flag == WindowFlagResizable       ) ? "resizable"          :
+        (flag == WindowFlagDecorated       ) ? "decorated"          :
+        (flag == WindowFlagAlwaysOnTop     ) ? "always-on-top"      :
+        (flag == WindowFlagAutoIconified   ) ? "auto-iconified"     :
+        (flag == WindowFlagFocusedOnShow   ) ? "focus-on-top"       :
+        (flag == WindowFlagMousePassThrough) ? "mouse-pass-through" : "unknown flag";
+    const char* state = (enabled) ? "enabled" : "disabled";
+    LogVerbose("WINDOW", "%s %s", message, state);
 }
 
 int WindowGetState(Window* window, WindowState state)
@@ -293,7 +302,7 @@ void WindowSetFullScreen(Window* window, int enabled)
         glfwSetWindowMonitor(window->handle, NULL, window->windowedPositionX, window->windowedPositionY, window->windowedWidth, window->windowedHeight, 0);
     }
     window->isFullScreen = enabled;
-    LogVerbose("WINDOW", "%s full screen", (enabled) ? "enabled" : "disabled");
+    LogVerbose("WINDOW", "full screen %s", (enabled) ? "enabled" : "disabled");
 }
 
 int WindowIsVSyncEnabled(Window* window)
@@ -308,7 +317,7 @@ void WindowSetVSync(Window* window, int enabled)
     glfwSwapInterval((enabled) ? 1 : 0);
     window->isVSyncEnabled = enabled;
     glfwMakeContextCurrent(currentWindow);
-    LogVerbose("WINDOW", "%s vsync", (enabled) ? "enabled" : "disabled");
+    LogVerbose("WINDOW", "vsync %s", (enabled) ? "enabled" : "disabled");
 }
 
 int WindowShouldClose(Window* window)
@@ -370,6 +379,13 @@ void WindowSetCursorMode(Window* window, CursorMode mode)
         return;
     }
     glfwSetInputMode(window->handle, GLFW_CURSOR, (int)mode);
+
+    const char* message = 
+        (mode == CursorModeNormal  ) ? "normal"   :
+        (mode == CursorModeHidden  ) ? "hidden"   :
+        (mode == CursorModeLocked  ) ? "locked"   :
+        (mode == CursorModeCaptured) ? "captured" : "unknown mode";
+    LogVerbose("CURSOR", "%s mode", message);
 }
 
 int WindowIsStickyKeysEnabled(Window* window)
@@ -380,7 +396,7 @@ int WindowIsStickyKeysEnabled(Window* window)
 void WindowEnableStickyKeys(Window* window, int enabled)
 {
     glfwSetInputMode(window->handle, GLFW_STICKY_KEYS, (enabled) ? GLFW_TRUE : GLFW_FALSE);
-    LogVerbose("WINDOW", "%s sticky keys", (enabled) ? "enabled" : "disabled");
+    LogVerbose("WINDOW", "sticky keys %s", (enabled) ? "enabled" : "disabled");
 }
 
 int WindowIsStickyMouseButtonsEnabled(Window* window)
@@ -391,7 +407,7 @@ int WindowIsStickyMouseButtonsEnabled(Window* window)
 void WindowEnableStickyMouseButtons(Window* window, int enabled)
 {
     glfwSetInputMode(window->handle, GLFW_STICKY_MOUSE_BUTTONS, (enabled) ? GLFW_TRUE : GLFW_FALSE);
-    LogVerbose("WINDOW", "%s sticky mouse buttons", (enabled) ? "enabled" : "disabled");
+    LogVerbose("WINDOW", "sticky mouse buttons %s", (enabled) ? "enabled" : "disabled");
 }
 
 int WindowIsLockKeyModsEnabled(Window* window)
@@ -402,7 +418,7 @@ int WindowIsLockKeyModsEnabled(Window* window)
 void WindowEnableLockKeyMods(Window* window, int enabled)
 {
     glfwSetInputMode(window->handle, GLFW_LOCK_KEY_MODS, (enabled) ? GLFW_TRUE : GLFW_FALSE);
-    LogVerbose("WINDOW", "%s lock key mods", (enabled) ? "enabled" : "disabled");
+    LogVerbose("WINDOW", "lock key mods %s", (enabled) ? "enabled" : "disabled");
 }
     
 int WindowIsRawMouseMotionEnabled(Window* window)
@@ -413,6 +429,6 @@ int WindowIsRawMouseMotionEnabled(Window* window)
 void WindowEnableRawMouseMotion(Window* window, int enabled)
 {
     glfwSetInputMode(window->handle, GLFW_RAW_MOUSE_MOTION, (enabled) ? GLFW_TRUE : GLFW_FALSE);
-    LogVerbose("WINDOW", "%s raw mouse motion", (enabled) ? "enabled" : "disabled");
+    LogVerbose("WINDOW", "raw mouse motion %s", (enabled) ? "enabled" : "disabled");
 }
 

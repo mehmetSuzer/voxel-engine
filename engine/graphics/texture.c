@@ -62,6 +62,7 @@ Texture TextureCreate(
     if (minFilter != TextureMinFilterNearest && minFilter != TextureMinFilterLinear)
     {
         glGenerateMipmap(GL_TEXTURE_2D);
+        LogVerbose("TEXTURE", "generated mipmap for %s", imagePath);
     }
 
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -157,10 +158,12 @@ CubeMap CubeMapCreate(
     if (minFilter != TextureMinFilterNearest && minFilter != TextureMinFilterLinear)
     {
         glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+        LogVerbose("CUBEMAP", "generated mipmap");
     }
 
     glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
     glCheckErrors();
+    LogVerbose("CUBEMAP", "created");
 
     return cubeMap;
 }

@@ -4,18 +4,32 @@
 #include <cglm/cglm.h>
 #include "glad/glad.h"
 
-// TODO: Check out these capabilities
 typedef enum Capability
 {
-    CapabilityDepthClamp             = GL_DEPTH_CLAMP,              // Prevents geometry from being clipped by near/far planes
-    CapabilityMultisample            = GL_MULTISAMPLE,              // Enables MSAA anti-aliasing
-    CapabilitySampleAlphaToCoverage  = GL_SAMPLE_ALPHA_TO_COVERAGE, // Helps with transparent edges
-    CapabilityFramebufferSRGB        = GL_FRAMEBUFFER_SRGB,         // Enables sRGB correction
-    CapabilityProgramPointSize       = GL_PROGRAM_POINT_SIZE,       // Allows shaders to control point size
-    CapabilityLineSmooth             = GL_LINE_SMOOTH,              // Smooth lines (mostly deprecated)
-    CapabilityPolygonOffsetFill      = GL_POLYGON_OFFSET_FILL,      // Prevents z-fighting
-    CapabilityDebugOutput            = GL_DEBUG_OUTPUT,             // Enables OpenGL debug messages
-    CapabilityDebugOutputSynchronous = GL_DEBUG_OUTPUT_SYNCHRONOUS  // Makes debug output synchronous
+    CapabilityBlend                      = GL_BLEND,
+    CapabilityCullFace                   = GL_CULL_FACE,
+    CapabilityDepthTest                  = GL_DEPTH_TEST,
+    CapabilityDither                     = GL_DITHER,
+    CapabilityScissorTest                = GL_SCISSOR_TEST,
+    CapabilityStencilTest                = GL_STENCIL_TEST,
+
+    // Multisampling
+    CapabilityMultisample                = GL_MULTISAMPLE,
+    CapabilitySampleAlphaToCoverage      = GL_SAMPLE_ALPHA_TO_COVERAGE,
+    CapabilitySampleAlphaToOne           = GL_SAMPLE_ALPHA_TO_ONE,
+    CapabilitySampleCoverage             = GL_SAMPLE_COVERAGE,
+
+    // Rasterization / clipping
+    CapabilityDepthClamp                 = GL_DEPTH_CLAMP,
+    CapabilityPolygonOffsetFill          = GL_POLYGON_OFFSET_FILL,
+    CapabilityProgramPointSize           = GL_PROGRAM_POINT_SIZE,
+
+    // sRGB framebuffer
+    CapabilityFramebufferSRGB            = GL_FRAMEBUFFER_SRGB,
+
+    // Primitive restart
+    CapabilityPrimitiveRestart           = GL_PRIMITIVE_RESTART,
+    CapabilityPrimitiveRestartFixedIndex = GL_PRIMITIVE_RESTART_FIXED_INDEX
 } Capability;
 
 typedef enum TestFunc

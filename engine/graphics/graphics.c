@@ -222,6 +222,7 @@ void GraphicsSetClearColour(vec4 colour)
         graphicsState.clearState.colour[3] = colour[3];        
     }
     glCheckErrors();
+    LogVerbose("GRAPHICS", "clear colour: (% .2f, % .2f, % .2f, % .2f)", colour[0], colour[1], colour[2], colour[3]);
 }
 
 void GraphicsSetClearDepth(float depth)
@@ -232,6 +233,7 @@ void GraphicsSetClearDepth(float depth)
         graphicsState.clearState.depth = depth;
     }
     glCheckErrors();
+    LogVerbose("GRAPHICS", "clear depth: % .2f", depth);
 }
 
 void GraphicsSetClearStencil(unsigned int stencil)
@@ -242,6 +244,7 @@ void GraphicsSetClearStencil(unsigned int stencil)
         graphicsState.clearState.stencil = stencil;
     }
     glCheckErrors();
+    LogVerbose("GRAPHICS", "clear stencil: %u", stencil);
 }
 
 void GraphicsClear(BufferBit bits)
