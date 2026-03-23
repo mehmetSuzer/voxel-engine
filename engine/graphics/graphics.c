@@ -3,57 +3,311 @@
 #include "error.h"
 #include "graphics.h"
 
+typedef struct Rectangle
+{
+    int x;
+    int y;
+    int width;
+    int height;
+} Rectangle;
+
+typedef struct DepthTestState
+{
+    int enabled;
+    int writeEnabled;
+    float near;
+    float far;
+    TestFunc func;
+} DepthTestState;
+
+typedef struct StencilTestFaceState
+{
+    TestFunc func;
+    int reference;
+    unsigned int testMask;
+    unsigned int writeMask;
+    StencilOp stencilFail;
+    StencilOp depthFail;
+    StencilOp depthPass;
+} StencilTestFaceState;
+
+typedef struct StencilTestState
+{
+    int enabled;
+    StencilTestFaceState front;
+    StencilTestFaceState back;
+} StencilTestState;
+
+typedef struct ScissorTestState
+{
+    int enabled;
+    Rectangle rectangle;
+} ScissorTestState;
+
+typedef struct BlendState
+{
+    int enabled;
+    BlendFactor srcRGB;
+    BlendFactor dstRGB;
+    BlendFactor srcAlpha;
+    BlendFactor dstAlpha;
+    BlendEquation equationRGB;
+    BlendEquation equationAlpha;
+    vec4 colour;
+} BlendState;
+
+typedef struct CullFaceState
+{
+    int enabled;
+    Face face;
+    FrontFace front;
+} CullFaceState;
+
+typedef struct DitherState
+{
+    int enabled;
+} DitherState;
+
+typedef struct MultisampleState
+{
+    int enabled;
+    int samples;
+} MultisampleState;
+
+typedef struct SampleAlphaToCoverageState
+{
+    int enabled;
+} SampleAlphaToCoverageState;
+
+typedef struct SampleAlphaToOneState
+{
+    int enabled;
+} SampleAlphaToOneState;
+
+typedef struct SampleCoverageState
+{
+    int enabled;
+    float coverage;
+    int invert;
+} SampleCoverageState;
+
+typedef struct DepthClampState
+{
+    int enabled;
+} DepthClampState;
+
+typedef struct PolygonOffsetState
+{
+    int pointEnabled;
+    int lineEnabled;
+    int fillEnabled;
+    float factor;
+    float units;
+} PolygonOffsetState;
+
+typedef struct ProgramPointSizeState
+{
+    int enabled;
+    float size;
+} ProgramPointSizeState;
+
+typedef struct FramebufferSRGBState
+{
+    int enabled;
+} FramebufferSRGBState;
+
+typedef struct PrimitiveRestartState
+{
+    int enabled;
+    unsigned int index;
+} PrimitiveRestartState;
+
+typedef struct PolygonFaceState
+{
+    PolygonMode mode;
+} PolygonFaceState;
+
+typedef struct PolygonState
+{
+    PolygonFaceState front;
+    PolygonFaceState back;
+} PolygonState;
+
+typedef struct ClearState
+{
+    vec4 colour;
+    float depth;
+    unsigned int stencil;
+} ClearState;
+
+typedef struct GraphicsState
+{
+    Rectangle viewport;
+    DepthTestState depthTest;
+    StencilTestState stencilTest;
+    ScissorTestState scissorTest;
+    BlendState blend;
+    CullFaceState cullFace;
+    PolygonState polygon;
+    DitherState dither;
+    MultisampleState multisample;
+    SampleAlphaToCoverageState sampleAlphaToCoverage;
+    SampleAlphaToOneState sampleAlphaToOne;
+    SampleCoverageState sampleCoverage;
+    DepthClampState depthClamp;
+    PolygonOffsetState polygonOffset;
+    ProgramPointSizeState programPointSize;
+    FramebufferSRGBState framebufferSRGB;
+    PrimitiveRestartState primitiveRestart;
+    ClearState clear;
+} GraphicsState;
+
 static GraphicsState graphicsState = {
-    .viewport = {
-        .x      = 0, 
-        .y      = 0, 
-        .width  = 0, 
-        .height = 0,
-    },
+    .viewport = {0, 0, 0, 0},
     .depthTest = {
         .enabled = 0,
         .writeEnabled = 1,
+        .near = 0.0f,
+        .far  = 1.0f,
         .func = TestFuncLess,
     },
     .stencilTest = {
         .enabled = 0,
-        .func = TestFuncAlways,
-        .reference = 0,
-        .mask = 0xFFu,
-        .stencilFail = StencilOpKeep,
-        .depthFail   = StencilOpKeep,
-        .depthPass   = StencilOpKeep,
+        .front = {
+            .func = TestFuncAlways,
+            .reference = 0,
+            .testMask = 0xFFFFFFFFu,
+            .writeMask = 0xFFFFFFFFu,
+            .stencilFail = StencilOpKeep,
+            .depthFail   = StencilOpKeep,
+            .depthPass   = StencilOpKeep,
+        },
+        .back = {
+            .func = TestFuncAlways,
+            .reference = 0,
+            .testMask = 0xFFFFFFFFu,
+            .writeMask = 0xFFFFFFFFu,
+            .stencilFail = StencilOpKeep,
+            .depthFail   = StencilOpKeep,
+            .depthPass   = StencilOpKeep,
+        },
     },
     .scissorTest = {
         .enabled = 0,
-        .rect = {
-            .x      = 0,
-            .y      = 0,
-            .width  = 0,
-            .height = 0,
+        .rectangle = {0, 0, 0, 0},
+    },
+    .blend = {
+        .enabled = 0,
+        .srcRGB   = BlendFactorOne,
+        .dstRGB   = BlendFactorZero,
+        .srcAlpha = BlendFactorOne,
+        .dstAlpha = BlendFactorZero,
+        .equationRGB   = BlendEquationAdd,
+        .equationAlpha = BlendEquationAdd,
+        .colour = {0.0f, 0.0f, 0.0f, 1.0f},
+    },
+    .cullFace = {
+        .enabled = 0,
+        .face = FaceBack,
+        .front = FrontFaceCCW,
+    },
+    .dither = {
+        .enabled = 0,
+    },
+    .multisample = {
+        .enabled = 1,
+        .samples = 1,
+    },
+    .sampleAlphaToCoverage = {
+        .enabled = 0,
+    },
+    .sampleAlphaToOne = {
+        .enabled = 0,
+    },
+    .sampleCoverage = {
+        .enabled = 0,
+        .coverage = 1.0f,
+        .invert = 0,
+    },
+    .depthClamp = {
+        .enabled = 0,
+    },
+    .polygonOffset = {
+        .pointEnabled = 0,
+        .lineEnabled = 0,
+        .fillEnabled = 0,
+        .factor = 0.0f,
+        .units = 0.0f,
+    },
+    .programPointSize = {
+        .enabled = 0,
+        .size = 1.0f,
+    },
+    .framebufferSRGB = {
+        .enabled = 0,
+    },
+    .primitiveRestart = {
+        .enabled = 0,
+        .index = 0xFFFFFFFFu,
+    },
+    .polygon = {
+        .front = 
+        {
+            .mode = PolygonModeFill,
+        },
+        .back = {
+            .mode = PolygonModeFill,
         },
     },
-    .colourBlend = {
-        .enabled = 0,
-        .srcFactor = BlendFactorOne,
-        .dstFactor = BlendFactorZero,
-        .equation = BlendEquationAdd,
-    },
-    .faceCull = {
-        .enabled = 0,
-        .cullFace = FaceBack,
-        .frontFace = FrontFaceCCW,
-    },
-    .polygonMode = {
-        .face = FaceBoth,
-        .mode = PolygonDrawModeFill,
-    },
-    .clearState = {
-        .colour = {0.0f, 0.0f, 0.0f, 0.0f},
+    .clear = {
+        .colour = {0.0f, 0.0f, 0.0f, 1.0f},
         .depth = DEPTH_FURTHEST,
         .stencil = 0u,
     }
 };
+
+static int* GetCapabilityStatePointer(Capability capability)
+{
+    switch (capability)
+    {
+    case CapabilityDepthTest:
+        return &graphicsState.depthTest.enabled;
+    case CapabilityStencilTest:
+        return &graphicsState.stencilTest.enabled;
+    case CapabilityScissorTest:
+        return &graphicsState.scissorTest.enabled;
+    case CapabilityBlend:
+        return &graphicsState.blend.enabled;
+    case CapabilityCullFace:
+        return &graphicsState.cullFace.enabled;
+    case CapabilityDither:
+        return &graphicsState.dither.enabled;
+    case CapabilityMultisample:
+        return &graphicsState.multisample.enabled;
+    case CapabilitySampleAlphaToCoverage:
+        return &graphicsState.sampleAlphaToCoverage.enabled;
+    case CapabilitySampleAlphaToOne:
+        return &graphicsState.sampleAlphaToOne.enabled;
+    case CapabilitySampleCoverage:
+        return &graphicsState.sampleCoverage.enabled;
+    case CapabilityDepthClamp:
+        return &graphicsState.depthClamp.enabled;
+    case CapabilityPolygonOffsetPoint:
+        return &graphicsState.polygonOffset.pointEnabled;
+    case CapabilityPolygonOffsetLine:
+        return &graphicsState.polygonOffset.lineEnabled;
+    case CapabilityPolygonOffsetFill:
+        return &graphicsState.polygonOffset.fillEnabled;
+    case CapabilityProgramPointSize:
+        return &graphicsState.programPointSize.enabled;
+    case CapabilityFramebufferSRGB:
+        return &graphicsState.framebufferSRGB.enabled;
+    case CapabilityPrimitiveRestart:
+        return &graphicsState.primitiveRestart.enabled;
+    default:
+        return NULL;
+    }
+}
 
 void GraphicsInit(GLADloadproc loader)
 {
@@ -62,189 +316,341 @@ void GraphicsInit(GLADloadproc loader)
         LogError("GRAPHICS", "failed to initialise");
         exit(EXIT_FAILURE);
     }
+
+    glGetIntegerv(GL_SAMPLES, &graphicsState.multisample.samples);
+    LogVerbose("GRAPHICS", "MSAA %i sample(s)", graphicsState.multisample.samples);
 }
 
-void GraphicsSetViewport(Rectangle viewport)
+void GraphicsEnable(Capability capability)
 {
-    if (graphicsState.viewport.x      != viewport.x     ||
-        graphicsState.viewport.y      != viewport.y     ||
-        graphicsState.viewport.width  != viewport.width ||
-        graphicsState.viewport.height != viewport.height)
+    int* statePtr = GetCapabilityStatePointer(capability);
+    if (!(*statePtr))
     {
-        glViewport(viewport.x, viewport.y, viewport.width, viewport.height);
-        graphicsState.viewport = viewport;
+        *statePtr = 1;
+        glEnable((GLenum)capability);
+        glCheckErrors();
     }
-    glCheckErrors();
-    LogVerbose("GRAPHICS", "viewport: (%i, %i, %i, %i)", viewport.x, viewport.y, viewport.width, viewport.height);
 }
 
-void GraphicsSetDepthTest(DepthTest depthTest)
+void GraphicsDisable(Capability capability)
 {
-    if (graphicsState.depthTest.enabled != depthTest.enabled)
+    int* statePtr = GetCapabilityStatePointer(capability);
+    if (*statePtr)
     {
-        if (depthTest.enabled) { glEnable(GL_DEPTH_TEST);  }
-        else                   { glDisable(GL_DEPTH_TEST); }
+        *statePtr = 0;
+        glDisable((GLenum)capability);
+        glCheckErrors();
     }
-
-    if (depthTest.enabled)
-    {
-        if (graphicsState.depthTest.func != depthTest.func)
-        {
-            glDepthFunc((GLenum)depthTest.func);
-        }
-        if (graphicsState.depthTest.writeEnabled != depthTest.writeEnabled)
-        {
-            glDepthMask((GLboolean)depthTest.writeEnabled);
-        }
-    }
-    graphicsState.depthTest = depthTest;
-    glCheckErrors();
 }
 
-void GraphicsSetStencilTest(StencilTest stencilTest)
+void GraphicsViewport(int x, int y, int width, int height)
 {
-    if (graphicsState.stencilTest.enabled != stencilTest.enabled)
+    if (graphicsState.viewport.x      != x     ||
+        graphicsState.viewport.y      != y     ||
+        graphicsState.viewport.width  != width ||
+        graphicsState.viewport.height != height)
     {
-        if (stencilTest.enabled) { glEnable(GL_STENCIL_TEST);  }
-        else                     { glDisable(GL_STENCIL_TEST); };
+        graphicsState.viewport.x      = x;
+        graphicsState.viewport.y      = y;
+        graphicsState.viewport.width  = width;
+        graphicsState.viewport.height = height;
+        glViewport(x, y, width, height);
+        glCheckErrors();
     }
-
-    if (stencilTest.enabled)
-    {
-        if (graphicsState.stencilTest.func      != stencilTest.func      ||
-            graphicsState.stencilTest.reference != stencilTest.reference ||
-            graphicsState.stencilTest.mask      != stencilTest.mask)
-        {
-            glStencilFunc((GLenum)stencilTest.func, stencilTest.reference, stencilTest.mask);
-        }
-
-        if (graphicsState.stencilTest.stencilFail != stencilTest.stencilFail ||
-            graphicsState.stencilTest.depthFail   != stencilTest.depthFail   ||
-            graphicsState.stencilTest.depthPass   != stencilTest.depthPass)
-        {
-            glStencilOp((GLenum)stencilTest.stencilFail, (GLenum)stencilTest.depthFail, (GLenum)stencilTest.depthPass);
-        }
-    }
-    graphicsState.stencilTest = stencilTest;
-    glCheckErrors();
 }
 
-void GraphicsSetScissorTest(ScissorTest scissorTest)
+void GraphicsDepthFunc(TestFunc func)
 {
-    if (graphicsState.scissorTest.enabled != scissorTest.enabled)
+    if (graphicsState.depthTest.func != func)
     {
-        if (scissorTest.enabled) { glEnable(GL_SCISSOR_TEST);  }
-        else                     { glDisable(GL_SCISSOR_TEST); }
+        graphicsState.depthTest.func = func;
+        glDepthFunc((GLenum)func);
+        glCheckErrors();
     }
-
-    if (scissorTest.enabled && 
-        (graphicsState.scissorTest.rect.x      != scissorTest.rect.x     ||
-         graphicsState.scissorTest.rect.y      != scissorTest.rect.y     ||
-         graphicsState.scissorTest.rect.width  != scissorTest.rect.width ||
-         graphicsState.scissorTest.rect.height != scissorTest.rect.height))
-    {
-        glScissor(scissorTest.rect.x, scissorTest.rect.y, scissorTest.rect.width, scissorTest.rect.height);
-    }
-    graphicsState.scissorTest = scissorTest;
-    glCheckErrors();
 }
 
-void GraphicsSetColourBlend(ColourBlend colourBlend)
+void GraphicsDepthWriteEnable(int writeEnabled)
 {
-    if (graphicsState.colourBlend.enabled != colourBlend.enabled)
+    if (graphicsState.depthTest.writeEnabled != writeEnabled)
     {
-        if (colourBlend.enabled) { glEnable(GL_BLEND);  }
-        else                     { glDisable(GL_BLEND); }
+        graphicsState.depthTest.writeEnabled = writeEnabled;
+        glDepthMask((GLboolean)writeEnabled);
+        glCheckErrors();
     }
-
-    if (colourBlend.enabled)
-    {
-        if (graphicsState.colourBlend.srcFactor != colourBlend.srcFactor ||
-            graphicsState.colourBlend.dstFactor != colourBlend.dstFactor)
-        {
-            glBlendFunc((GLenum)colourBlend.srcFactor, (GLenum)colourBlend.dstFactor);
-        }
-
-        if (graphicsState.colourBlend.equation != colourBlend.equation)
-        {
-            glBlendEquation((GLenum)colourBlend.equation);
-        }
-    }
-    graphicsState.colourBlend = colourBlend;
-    glCheckErrors();
 }
 
-void GraphicsSetFaceCull(FaceCull faceCull)
+void GraphicsDepthRange(float near, float far)
 {
-    if (graphicsState.faceCull.enabled != faceCull.enabled)
+    if (graphicsState.depthTest.near != near ||
+        graphicsState.depthTest.far  != far)
     {
-        if (faceCull.enabled) { glEnable(GL_CULL_FACE);  }
-        else                  { glDisable(GL_CULL_FACE); }
+        graphicsState.depthTest.near = near;
+        graphicsState.depthTest.far  = far;
+        glDepthRangef(near, far);
+        glCheckErrors();
     }
-
-    if (faceCull.enabled)
-    {
-        if (graphicsState.faceCull.cullFace != faceCull.cullFace)
-        {
-            glCullFace((GLenum)faceCull.cullFace);
-        }
-        if (graphicsState.faceCull.frontFace != faceCull.frontFace)
-        {
-            glFrontFace((GLenum)faceCull.frontFace);
-        }
-    }
-    graphicsState.faceCull = faceCull;
-    glCheckErrors();
 }
 
-void GraphicsSetPolygonMode(PolygonMode polygonMode)
+void GraphicsStencilFunc(Face face, TestFunc func, int reference, unsigned int testMask)
 {
-    if (graphicsState.polygonMode.face != polygonMode.face ||
-        graphicsState.polygonMode.mode != polygonMode.mode)
+    int dirty = 0;
+    StencilTestFaceState* front = &graphicsState.stencilTest.front;
+    StencilTestFaceState* back  = &graphicsState.stencilTest.back;
+
+    if ((face == FaceFront || face == FaceBoth) && (front->func != func || front->reference != reference || front->testMask != testMask))
     {
-        glPolygonMode((GLenum)polygonMode.face, (GLenum)polygonMode.mode);
-        graphicsState.polygonMode = polygonMode;
+        front->func      = func;
+        front->reference = reference;
+        front->testMask  = testMask;
+        dirty = 1;
     }
-    glCheckErrors();
+    if ((face == FaceBack || face == FaceBoth) && (back->func != func || back->reference != reference || back->testMask != testMask))
+    {
+        back->func      = func;
+        back->reference = reference;
+        back->testMask  = testMask;
+        dirty = 1;
+    }
+
+    if (dirty)
+    {
+        glStencilFuncSeparate((GLenum)face, (GLenum)func, reference, testMask);
+        glCheckErrors();
+    }
 }
 
-void GraphicsSetClearColour(vec4 colour)
+void GraphicsStencilWriteMask(Face face, unsigned int writeMask)
 {
-    if (graphicsState.clearState.colour[0] != colour[0] ||
-        graphicsState.clearState.colour[1] != colour[1] ||
-        graphicsState.clearState.colour[2] != colour[2] ||
-        graphicsState.clearState.colour[3] != colour[3])        
+    int dirty = 0;
+    StencilTestFaceState* front = &graphicsState.stencilTest.front;
+    StencilTestFaceState* back  = &graphicsState.stencilTest.back;
+
+    if ((face == FaceFront || face == FaceBoth) && front->writeMask != writeMask)
     {
+        front->writeMask = writeMask;
+        dirty = 1;
+    }
+    if ((face == FaceBack || face == FaceBoth) && back->writeMask != writeMask)
+    {
+        back->writeMask = writeMask;
+        dirty = 1;
+    }
+
+    if (dirty)
+    {
+        glStencilMaskSeparate((GLenum)face, writeMask);
+        glCheckErrors();
+    }
+}
+
+void GraphicsStencilOp(Face face, StencilOp stencilFail, StencilOp depthFail, StencilOp depthPass)
+{
+    int dirty = 0;
+    StencilTestFaceState* front = &graphicsState.stencilTest.front;
+    StencilTestFaceState* back  = &graphicsState.stencilTest.back;
+
+    if ((face == FaceFront || face == FaceBoth) && (front->stencilFail != stencilFail || front->depthFail != depthFail || front->depthPass != depthPass))
+    {
+        front->stencilFail = stencilFail;
+        front->depthFail   = depthFail;
+        front->depthPass   = depthPass;
+        dirty = 1;
+    }
+
+    if ((face == FaceBack || face == FaceBoth) && (back->stencilFail != stencilFail || back->depthFail != depthFail || back->depthPass != depthPass))
+    {
+        back->stencilFail = stencilFail;
+        back->depthFail   = depthFail;
+        back->depthPass   = depthPass;
+        dirty = 1;
+    }
+
+    if (dirty)
+    {
+        glStencilOpSeparate((GLenum)face, (GLenum)stencilFail, (GLenum)depthFail, (GLenum)depthPass);
+        glCheckErrors();
+    }
+}
+
+void GraphicsScissor(int x, int y, int width, int height)
+{
+    if (graphicsState.scissorTest.rectangle.x      != x     ||
+        graphicsState.scissorTest.rectangle.y      != y     ||
+        graphicsState.scissorTest.rectangle.width  != width ||
+        graphicsState.scissorTest.rectangle.height != height)
+    {
+        graphicsState.scissorTest.rectangle.x      = x;
+        graphicsState.scissorTest.rectangle.y      = y;
+        graphicsState.scissorTest.rectangle.width  = width;
+        graphicsState.scissorTest.rectangle.height = height;
+        glScissor(x, y, width, height);
+        glCheckErrors();
+    }
+}
+
+void GraphicsBlendFactor(BlendFactor srcRGB, BlendFactor dstRGB, BlendFactor srcAlpha, BlendFactor dstAlpha)
+{
+    if (graphicsState.blend.srcRGB   != srcRGB   ||
+        graphicsState.blend.dstRGB   != dstRGB   ||
+        graphicsState.blend.srcAlpha != srcAlpha ||
+        graphicsState.blend.dstAlpha != dstAlpha)
+    {
+        graphicsState.blend.srcRGB   = srcRGB;
+        graphicsState.blend.dstRGB   = dstRGB;
+        graphicsState.blend.srcAlpha = srcAlpha;
+        graphicsState.blend.dstAlpha = dstAlpha;
+        glBlendFuncSeparate((GLenum)srcRGB, (GLenum)dstRGB, (GLenum)srcAlpha, (GLenum)dstAlpha);
+        glCheckErrors();
+    }
+}
+
+void GraphicsBlendEquation(BlendEquation equationRGB, BlendEquation equationAlpha)
+{
+    if (graphicsState.blend.equationRGB   != equationRGB ||
+        graphicsState.blend.equationAlpha != equationAlpha)
+    {
+        graphicsState.blend.equationRGB   = equationRGB;
+        graphicsState.blend.equationAlpha = equationAlpha;
+        glBlendEquationSeparate((GLenum)equationRGB, (GLenum)equationAlpha);
+        glCheckErrors();
+    }
+}
+
+void GraphicsBlendColour(vec4 colour)
+{
+    if (graphicsState.blend.colour[0] != colour[0] ||
+        graphicsState.blend.colour[1] != colour[1] ||
+        graphicsState.blend.colour[2] != colour[2] ||
+        graphicsState.blend.colour[3] != colour[3])
+    {
+        graphicsState.blend.colour[0] = colour[0];
+        graphicsState.blend.colour[1] = colour[1];
+        graphicsState.blend.colour[2] = colour[2];
+        graphicsState.blend.colour[3] = colour[3];
+        glBlendColor(colour[0], colour[1], colour[2], colour[3]);
+        glCheckErrors();
+    }
+}
+
+void GraphicsCullFace(Face face)
+{
+    if (graphicsState.cullFace.face != face)
+    {
+        graphicsState.cullFace.face = face;
+        glCullFace((GLenum)face);
+        glCheckErrors();
+    }
+}
+
+void GraphicsFrontFace(FrontFace front)
+{
+    if (graphicsState.cullFace.front != front)
+    {
+        graphicsState.cullFace.front = front;
+        glFrontFace((GLenum)front);
+        glCheckErrors();
+    }
+}
+
+void GraphicsSampleCoverage(float coverage, int invert)
+{
+    if (graphicsState.sampleCoverage.coverage != coverage ||
+        graphicsState.sampleCoverage.invert   != invert)
+    {
+        graphicsState.sampleCoverage.coverage = coverage;
+        graphicsState.sampleCoverage.invert   = invert;
+        glSampleCoverage(coverage, (GLboolean)invert);
+        glCheckErrors();
+    }
+}
+
+void GraphicsPolygonOffset(float factor, float units)
+{
+    if (graphicsState.polygonOffset.factor != factor ||
+        graphicsState.polygonOffset.units != units)
+    {
+        graphicsState.polygonOffset.factor = factor;
+        graphicsState.polygonOffset.units  = units;
+        glPolygonOffset(factor, units);
+        glCheckErrors();
+    }
+}
+
+void GraphicsPointSize(float size)
+{
+    if (graphicsState.programPointSize.size != size)
+    {
+        graphicsState.programPointSize.size = size;
+        glPointSize(size);
+        glCheckErrors();
+    }
+}
+
+void GraphicsPrimitiveRestartIndex(unsigned int index)
+{
+    if (graphicsState.primitiveRestart.index != index)
+    {
+        graphicsState.primitiveRestart.index = index;
+        glPrimitiveRestartIndex(index);
+        glCheckErrors();
+    }
+}
+
+void GraphicsPolygonMode(Face face, PolygonMode mode)
+{
+    int dirty = 0;
+    if ((face == FaceFront || face == FaceBoth) && graphicsState.polygon.front.mode != mode)
+    {
+        graphicsState.polygon.front.mode = mode;
+        dirty = 1;
+    }
+    if ((face == FaceBack || face == FaceBoth) && graphicsState.polygon.back.mode != mode)
+    {
+        graphicsState.polygon.back.mode = mode;
+        dirty = 1;
+    }
+    
+    if (dirty)
+    {
+        glPolygonMode((GLenum)face, (GLenum)mode);
+        glCheckErrors();
+    }
+}
+
+void GraphicsClearColour(vec4 colour)
+{
+    if (graphicsState.clear.colour[0] != colour[0] ||
+        graphicsState.clear.colour[1] != colour[1] ||
+        graphicsState.clear.colour[2] != colour[2] ||
+        graphicsState.clear.colour[3] != colour[3])        
+    {
+        graphicsState.clear.colour[0] = colour[0];
+        graphicsState.clear.colour[1] = colour[1];
+        graphicsState.clear.colour[2] = colour[2];
+        graphicsState.clear.colour[3] = colour[3];
         glClearColor(colour[0], colour[1], colour[2], colour[3]);
-        graphicsState.clearState.colour[0] = colour[0];
-        graphicsState.clearState.colour[1] = colour[1];
-        graphicsState.clearState.colour[2] = colour[2];
-        graphicsState.clearState.colour[3] = colour[3];        
+        glCheckErrors();        
     }
-    glCheckErrors();
-    LogVerbose("GRAPHICS", "clear colour: (% .2f, % .2f, % .2f, % .2f)", colour[0], colour[1], colour[2], colour[3]);
 }
 
-void GraphicsSetClearDepth(float depth)
+void GraphicsClearDepth(float depth)
 {
-    if (graphicsState.clearState.depth != depth)
+    if (graphicsState.clear.depth != depth)
     {
+        graphicsState.clear.depth = depth;
         glClearDepth(depth);
-        graphicsState.clearState.depth = depth;
+        glCheckErrors();
     }
-    glCheckErrors();
-    LogVerbose("GRAPHICS", "clear depth: % .2f", depth);
 }
 
-void GraphicsSetClearStencil(unsigned int stencil)
+void GraphicsClearStencil(unsigned int stencil)
 {
-    if (graphicsState.clearState.stencil != stencil)
+    if (graphicsState.clear.stencil != stencil)
     {
+        graphicsState.clear.stencil = stencil;
         glClearStencil((GLint)stencil);
-        graphicsState.clearState.stencil = stencil;
+        glCheckErrors();
     }
-    glCheckErrors();
-    LogVerbose("GRAPHICS", "clear stencil: %u", stencil);
 }
 
 void GraphicsClear(BufferBit bits)

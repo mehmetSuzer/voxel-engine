@@ -6,30 +6,23 @@
 
 typedef enum Capability
 {
-    CapabilityBlend                      = GL_BLEND,
-    CapabilityCullFace                   = GL_CULL_FACE,
-    CapabilityDepthTest                  = GL_DEPTH_TEST,
-    CapabilityDither                     = GL_DITHER,
-    CapabilityScissorTest                = GL_SCISSOR_TEST,
-    CapabilityStencilTest                = GL_STENCIL_TEST,
-
-    // Multisampling
-    CapabilityMultisample                = GL_MULTISAMPLE,
-    CapabilitySampleAlphaToCoverage      = GL_SAMPLE_ALPHA_TO_COVERAGE,
-    CapabilitySampleAlphaToOne           = GL_SAMPLE_ALPHA_TO_ONE,
-    CapabilitySampleCoverage             = GL_SAMPLE_COVERAGE,
-
-    // Rasterization / clipping
-    CapabilityDepthClamp                 = GL_DEPTH_CLAMP,
-    CapabilityPolygonOffsetFill          = GL_POLYGON_OFFSET_FILL,
-    CapabilityProgramPointSize           = GL_PROGRAM_POINT_SIZE,
-
-    // sRGB framebuffer
-    CapabilityFramebufferSRGB            = GL_FRAMEBUFFER_SRGB,
-
-    // Primitive restart
-    CapabilityPrimitiveRestart           = GL_PRIMITIVE_RESTART,
-    CapabilityPrimitiveRestartFixedIndex = GL_PRIMITIVE_RESTART_FIXED_INDEX
+    CapabilityDepthTest             = GL_DEPTH_TEST,
+    CapabilityStencilTest           = GL_STENCIL_TEST,
+    CapabilityScissorTest           = GL_SCISSOR_TEST,
+    CapabilityBlend                 = GL_BLEND,
+    CapabilityCullFace              = GL_CULL_FACE,
+    CapabilityDither                = GL_DITHER,
+    CapabilityMultisample           = GL_MULTISAMPLE,
+    CapabilitySampleAlphaToCoverage = GL_SAMPLE_ALPHA_TO_COVERAGE,
+    CapabilitySampleAlphaToOne      = GL_SAMPLE_ALPHA_TO_ONE,
+    CapabilitySampleCoverage        = GL_SAMPLE_COVERAGE,
+    CapabilityDepthClamp            = GL_DEPTH_CLAMP,
+    CapabilityPolygonOffsetPoint    = GL_POLYGON_OFFSET_POINT,
+    CapabilityPolygonOffsetLine     = GL_POLYGON_OFFSET_LINE,
+    CapabilityPolygonOffsetFill     = GL_POLYGON_OFFSET_FILL,
+    CapabilityProgramPointSize      = GL_PROGRAM_POINT_SIZE,
+    CapabilityFramebufferSRGB       = GL_FRAMEBUFFER_SRGB,
+    CapabilityPrimitiveRestart      = GL_PRIMITIVE_RESTART,
 } Capability;
 
 typedef enum TestFunc
@@ -75,7 +68,7 @@ typedef enum BlendFactor
     BlendFactorOne                    = GL_ONE,
     BlendFactorSrcColour              = GL_SRC_COLOR,
     BlendFactorOneMinusSrcColour      = GL_ONE_MINUS_SRC_COLOR,
-    BlendFactorDstColor               = GL_DST_COLOR,
+    BlendFactorDstColour              = GL_DST_COLOR,
     BlendFactorOneMinusDstColour      = GL_ONE_MINUS_DST_COLOR,
     BlendFactorSrcAlpha               = GL_SRC_ALPHA,
     BlendFactorOneMinusSrcAlpha       = GL_ONE_MINUS_SRC_ALPHA,
@@ -97,12 +90,12 @@ typedef enum BlendEquation
     BlendEquationMax             = GL_MAX,
 } BlendEquation;
 
-typedef enum PolygonDrawMode
+typedef enum PolygonMode
 {
-    PolygonDrawModePoint = GL_POINT,
-    PolygonDrawModeLine  = GL_LINE,
-    PolygonDrawModeFill  = GL_FILL,
-} PolygonDrawMode;
+    PolygonModePoint = GL_POINT,
+    PolygonModeLine  = GL_LINE,
+    PolygonModeFill  = GL_FILL,
+} PolygonMode;
 
 typedef enum BufferBit
 {
@@ -111,95 +104,47 @@ typedef enum BufferBit
     BufferBitStencil = GL_STENCIL_BUFFER_BIT,
 } BufferBit;
 
-typedef struct Rectangle
-{
-    int x;
-    int y;
-    int width;
-    int height;
-} Rectangle;
-
-typedef struct DepthTest
-{
-    int enabled;
-    int writeEnabled;
-    TestFunc func;
-} DepthTest; 
-
-typedef struct StencilTest
-{
-    int enabled;
-    TestFunc func;
-    int reference;
-    unsigned int mask;
-    StencilOp stencilFail;
-    StencilOp depthFail;
-    StencilOp depthPass;
-} StencilTest;
-
-typedef struct ScissorTest
-{
-    int enabled;
-    Rectangle rect;
-} ScissorTest;
-
-typedef struct ColourBlend
-{
-    int enabled;
-    BlendFactor srcFactor;
-    BlendFactor dstFactor;
-    BlendEquation equation;
-} ColourBlend;
-
-typedef struct FaceCull
-{
-    int enabled;
-    Face cullFace;
-    FrontFace frontFace;
-} FaceCull;
-
-typedef struct PolygonMode
-{
-    Face face;
-    PolygonDrawMode mode;
-} PolygonMode;
-
-typedef struct ClearState
-{
-    vec4 colour;
-    float depth;
-    unsigned int stencil;
-} ClearState;
-
 #define DEPTH_NEAREST  0.0f
 #define DEPTH_FURTHEST 1.0f
 
-typedef struct GraphicsState
-{
-    Rectangle viewport;
-    DepthTest depthTest;
-    StencilTest stencilTest;
-    ScissorTest scissorTest;
-    ColourBlend colourBlend;
-    FaceCull faceCull;
-    PolygonMode polygonMode;
-    ClearState clearState;
-} GraphicsState;
-
 void GraphicsInit(GLADloadproc loader);
 
-void GraphicsSetViewport(Rectangle viewport);
-void GraphicsSetDepthTest(DepthTest depthTest);
-void GraphicsSetStencilTest(StencilTest stencilTest);
-void GraphicsSetScissorTest(ScissorTest scissorTest);
-void GraphicsSetColourBlend(ColourBlend colourBlend);
-void GraphicsSetFaceCull(FaceCull faceCull);
-void GraphicsSetPolygonMode(PolygonMode polygonMode);
+void GraphicsEnable(Capability capability);
+void GraphicsDisable(Capability capability);
 
-void GraphicsSetClearColour(vec4 colour);
-void GraphicsSetClearDepth(float depth);
-void GraphicsSetClearStencil(unsigned int stencil);
+void GraphicsViewport(int x, int y, int width, int height);
 
+void GraphicsDepthFunc(TestFunc func);
+void GraphicsDepthWriteEnable(int writeEnabled);
+void GraphicsDepthRange(float near, float far);
+
+// (reference & testMask)  func  (stencil & testMask)
+void GraphicsStencilFunc(Face face, TestFunc func, int reference, unsigned int testMask);
+// newStencil = (writtenValue & writeMask) | (oldStencil & ~writeMask)
+void GraphicsStencilWriteMask(Face face, unsigned int writeMask);
+void GraphicsStencilOp(Face face, StencilOp stencilFail, StencilOp depthFail, StencilOp depthPass);
+
+void GraphicsScissor(int x, int y, int width, int height);
+
+void GraphicsBlendFactor(BlendFactor srcRGB, BlendFactor dstRGB, BlendFactor srcAlpha, BlendFactor dstAlpha);
+void GraphicsBlendEquation(BlendEquation equationRGB, BlendEquation equationAlpha);
+void GraphicsBlendColour(vec4 colour);
+
+void GraphicsCullFace(Face face);
+void GraphicsFrontFace(FrontFace front);
+
+void GraphicsSampleCoverage(float coverage, int invert);
+
+void GraphicsPolygonOffset(float factor, float units);
+
+void GraphicsPointSize(float size);
+
+void GraphicsPrimitiveRestartIndex(unsigned int index);
+
+void GraphicsPolygonMode(Face face, PolygonMode mode);
+
+void GraphicsClearColour(vec4 colour);
+void GraphicsClearDepth(float depth);
+void GraphicsClearStencil(unsigned int stencil);
 void GraphicsClear(BufferBit bits);
-
 

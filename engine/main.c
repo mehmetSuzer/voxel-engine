@@ -21,24 +21,21 @@ int main()
     WindowMakeContextCurrent(window);
 
     GraphicsInit((GLADloadproc)HostGetGLFunctionLoader());
-    GraphicsSetViewport((Rectangle){0, 0, WINDOW_WIDTH, WINDOW_HEIGHT});
-    GraphicsSetDepthTest((DepthTest){
-        .enabled = 1,
-        .writeEnabled = 1,
-        .func = TestFuncLess,
-    });
-    GraphicsSetPolygonMode((PolygonMode){
-        .face = FaceBoth,
-        .mode = PolygonDrawModeFill,
-    });
-    GraphicsSetFaceCull((FaceCull){
-        .enabled = 1,
-        .cullFace = FaceBack,
-        .frontFace = FrontFaceCCW,
-    });
+    GraphicsViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
     
-    GraphicsSetClearColour((vec4){0.2f, 0.3f, 0.3f, 1.0f});
-    GraphicsSetClearDepth(DEPTH_FURTHEST);
+    GraphicsEnable(CapabilityDepthTest);
+    GraphicsDepthWriteEnable(1);
+    GraphicsDepthFunc(TestFuncLess);
+    GraphicsDepthRange(0.0f, 1.0f);
+
+    GraphicsEnable(CapabilityCullFace);
+    GraphicsCullFace(FaceBack);
+    GraphicsFrontFace(FrontFaceCCW);
+
+    GraphicsPolygonMode(FaceBoth, PolygonModeFill);
+
+    GraphicsClearColour((vec4){0.2f, 0.3f, 0.3f, 1.0f});
+    GraphicsClearDepth(DEPTH_FURTHEST);
 
     ShaderProgram shaderProgram = ShaderProgramCreateVF("shaders/terrain.vert", "shaders/terrain.frag");
 
