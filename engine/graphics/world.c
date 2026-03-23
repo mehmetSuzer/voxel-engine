@@ -2,6 +2,7 @@
 #include <stb_image.h>
 #include "log/log.h"
 #include "error.h"
+#include "voxel.h"
 #include "world.h"
 
 #define CHUNK_SIZE 32
