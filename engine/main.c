@@ -6,6 +6,7 @@
 #include "graphics/graphics.h"
 #include "graphics/light.h"
 #include "host/host.h"
+#include "host/window.h"
 
 #define WINDOW_WIDTH  1200
 #define WINDOW_HEIGHT 1000

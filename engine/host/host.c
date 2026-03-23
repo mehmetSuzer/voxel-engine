@@ -61,6 +61,13 @@ static void JoystickCallback(int jid, int event)
     LogInfo("JOYSTICK", "%s (%i) %s", joystickName, jid, state);
 }
 
+static void MonitorCallback(GLFWmonitor* glfwMonitor, int event)
+{
+    const char* name = glfwGetMonitorName(glfwMonitor);
+    const char* state = (event == GLFW_CONNECTED) ? "connected" : "disconnected";
+    LogInfo("MONITOR", "%s %s", name, state);
+}
+
 void HostInit()
 {
     if (!glfwInit())
@@ -69,13 +76,12 @@ void HostInit()
         exit(EXIT_FAILURE);
     }
 
-    const int major = 3;
-    const int minor = 3;
+    const int openGLMajor = 3;
+    const int openGLMinor = 3;
     glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, major);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, minor);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, openGLMajor);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, openGLMinor);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    LogInfo("GLFW", "OpenGL Core %i.%i", major, minor);
 
 #ifdef __APPLE__
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
@@ -107,6 +113,31 @@ void HostInit()
 
     glfwSetErrorCallback(ErrorCallback);
     glfwSetJoystickCallback(JoystickCallback);
+    glfwSetMonitorCallback(MonitorCallback);
+
+    int glfwMajor = 0;
+    int glfwMinor = 0;
+    int glfwRevision = 0;
+    glfwGetVersion(&glfwMajor, &glfwMinor, &glfwRevision);
+    LogInfo("GLFW", "version %i.%i.%i", glfwMajor, glfwMinor, glfwRevision);
+
+    LogInfo("OPENGL", "core %i.%i", openGLMajor, openGLMinor);
+
+    int platform = glfwGetPlatform();
+    const char* platformName = 
+        (platform == GLFW_PLATFORM_WIN32)   ? "Win32"   : 
+        (platform == GLFW_PLATFORM_COCOA)   ? "Cocoa"   : 
+        (platform == GLFW_PLATFORM_WAYLAND) ? "Wayland" : 
+        (platform == GLFW_PLATFORM_X11)     ? "X11"     : 
+        (platform == GLFW_PLATFORM_NULL)    ? "Null"    : "unknown";
+    LogInfo("PLATFORM", "%s", platformName);
+
+    GLFWmonitor* primaryMonitor = glfwGetPrimaryMonitor();
+    const char* monitorName = glfwGetMonitorName(primaryMonitor);
+    LogInfo("MONITOR", "%s detected", monitorName);    
+
+    const GLFWvidmode* videoMode = glfwGetVideoMode(primaryMonitor);
+    LogInfo("VIDEO", "%ix%i %i Hz", videoMode->width, videoMode->height, videoMode->refreshRate);
 }
 
 void HostTerminate()
@@ -146,34 +177,65 @@ void HostPostEmptyEvent()
     glfwPostEmptyEvent();
 }
 
-Platform HostGetPlatform()
+Monitor MonitorGetPrimary()
 {
-    return (Platform)glfwGetPlatform();
+    GLFWmonitor* handle = glfwGetPrimaryMonitor();
+    return (Monitor){
+        .handle = handle,
+    };
 }
 
-int HostIsPlatformSupported(Platform platform)
+void MonitorGetAll(Monitor* monitorsOut, int* countOut, int maxCount)
 {
-    return (glfwPlatformSupported((int)platform) == GLFW_TRUE);
+    GLFWmonitor** handles = glfwGetMonitors(countOut);
+    if (*countOut > maxCount)
+    {
+        *countOut = maxCount;
+    }
+
+    for (int i = 0; i < *countOut; ++i)
+    {
+        monitorsOut[i] = (Monitor){ .handle = handles[i] };
+    }
 }
 
-void HostGetVersion(int* majorOut, int* minorOut, int* revisionOut)
+const char* MonitorGetName(Monitor* monitor)
 {
-    glfwGetVersion(majorOut, minorOut, revisionOut);
+    return glfwGetMonitorName(monitor->handle);
 }
 
-const char* HostGetVersionString()
+void MonitorGetPosition(Monitor* monitor, int* xOut, int* yOut)
 {
-    return glfwGetVersionString();
+    glfwGetMonitorPos(monitor->handle, xOut, yOut);
 }
 
-GLFWmonitor* HostGetPrimaryMonitor()
+void MonitorGetWorkArea(Monitor* monitor, int* xOut, int* yOut, int* widthOut, int* heightOut)
 {
-    return glfwGetPrimaryMonitor();
+    glfwGetMonitorWorkarea(monitor->handle, xOut, yOut, widthOut, heightOut);
 }
 
-GLFWmonitor** HostGetMonitors(int* count)
+void MonitorGetPhysicalSize(Monitor* monitor, int* widthMM, int* heightMM)
 {
-    return glfwGetMonitors(count);
+    glfwGetMonitorPhysicalSize(monitor->handle, widthMM, heightMM);
+}
+
+void MonitorGetContentScale(Monitor* monitor, float* scaleX, float* scaleY)
+{
+    glfwGetMonitorContentScale(monitor->handle, scaleX, scaleY);
+}
+
+void MonitorGetVideoModes(Monitor* monitor, VideoMode* videoModesOut, int* countOut, int maxCount)
+{
+    const GLFWvidmode* videoModes = glfwGetVideoModes(monitor->handle, countOut);
+    if (*countOut > maxCount)
+    {
+        *countOut = maxCount;
+    }
+
+    for (int i = 0; i < *countOut; ++i)
+    {
+        videoModesOut[i] = videoModes[i];
+    }
 }
 
 GLFunctionLoader HostGetGLFunctionLoader()

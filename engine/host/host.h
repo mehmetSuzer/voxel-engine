@@ -1,16 +1,14 @@
 
 #pragma once
 
-#include "window.h"
+#include <GLFW/glfw3.h>
 
-typedef enum Platform
+typedef GLFWvidmode VideoMode;
+
+typedef struct Monitor
 {
-    PlatformWin32   = GLFW_PLATFORM_WIN32, 
-    PlatformCocoa   = GLFW_PLATFORM_COCOA, 
-    PlatformWayland = GLFW_PLATFORM_WAYLAND, 
-    PlatformX11     = GLFW_PLATFORM_X11,
-    PlatformNull    = GLFW_PLATFORM_NULL,
-} Platform;
+    GLFWmonitor* handle;
+} Monitor;
 
 void HostInit();
 void HostTerminate();
@@ -23,13 +21,14 @@ void HostWaitEvents();
 void HostWaitEventsTimeout(double timeout);
 void HostPostEmptyEvent();
 
-Platform HostGetPlatform();
-int HostIsPlatformSupported(Platform platform);
-void HostGetVersion(int* majorOut, int* minorOut, int* revisionOut);
-const char* HostGetVersionString();
-
-GLFWmonitor* HostGetPrimaryMonitor();
-GLFWmonitor** HostGetMonitors(int* count);
+Monitor MonitorGetPrimary();
+void MonitorGetAll(Monitor* monitorsOut, int* countOut, int maxCount);
+const char* MonitorGetName(Monitor* monitor);
+void MonitorGetPosition(Monitor* monitor, int* xOut, int* yOut);
+void MonitorGetWorkArea(Monitor* monitor, int* xOut, int* yOut, int* widthOut, int* heightOut);
+void MonitorGetPhysicalSize(Monitor* monitor, int* widthMM, int* heightMM);
+void MonitorGetContentScale(Monitor* monitor, float* scaleX, float* scaleY);
+void MonitorGetVideoModes(Monitor* monitor, VideoMode* videoModesOut, int* countOut, int maxCount);
 
 // ----------------------- OpenGL related -----------------------
 typedef void*(*GLFunctionLoader)(const char*);

@@ -318,7 +318,7 @@ void GraphicsInit(GLADloadproc loader)
     }
 
     glGetIntegerv(GL_SAMPLES, &graphicsState.multisample.samples);
-    LogVerbose("GRAPHICS", "MSAA %i sample(s)", graphicsState.multisample.samples);
+    LogInfo("GRAPHICS", "MSAA %i sample(s)", graphicsState.multisample.samples);
 }
 
 void GraphicsEnable(Capability capability)
