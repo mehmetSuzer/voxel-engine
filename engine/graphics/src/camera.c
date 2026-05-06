@@ -1,0 +1,56 @@
+
+#include "graphics/camera.h"
+
+void cameraTranslate(Camera* camera, vec3 localDelta)
+{
+    vec3 worldDeltaAxis;
+
+    glm_quat_rotatev(camera->rotation, (vec3){1.0f, 0.0f, 0.0f}, worldDeltaAxis);
+    glm_vec3_scale(worldDeltaAxis, localDelta[0], worldDeltaAxis);
+    glm_vec3_add(camera->position, worldDeltaAxis, camera->position);
+
+    glm_quat_rotatev(camera->rotation, (vec3){0.0f, 1.0f, 0.0f}, worldDeltaAxis);
+    glm_vec3_scale(worldDeltaAxis, localDelta[1], worldDeltaAxis);
+    glm_vec3_add(camera->position, worldDeltaAxis, camera->position);
+
+    glm_quat_rotatev(camera->rotation, (vec3){0.0f, 0.0f, 1.0f}, worldDeltaAxis);
+    glm_vec3_scale(worldDeltaAxis, localDelta[2], worldDeltaAxis);
+    glm_vec3_add(camera->position, worldDeltaAxis, camera->position);
+}
+
+void cameraRotate(Camera* camera, float dx, float dy, float sensitivity)
+{
+    const float pitch = -dy * sensitivity;
+    const float yaw   = -dx * sensitivity;
+
+    versor qPitch, qYaw;
+    glm_quatv(qPitch, pitch, (vec3){1.0f, 0.0f, 0.0f});
+    glm_quatv(qYaw,   yaw,   (vec3){0.0f, 1.0f, 0.0f});
+
+    glm_quat_mul(camera->rotation, qYaw, camera->rotation);
+    glm_quat_mul(camera->rotation, camera->rotation, qPitch);
+    glm_quat_normalize(camera->rotation);
+}
+
+void cameraZoom(Camera* camera, float scroll, float sensitivity)
+{
+    const float deltaFovWidth = scroll * sensitivity;
+    camera->fovWidth += deltaFovWidth;
+}
+
+void cameraView(Camera* camera, mat4 viewOut)
+{
+    versor inverseRotation;
+    glm_quat_inv(camera->rotation, inverseRotation);
+    glm_quat_mat4(inverseRotation, viewOut);
+
+    vec3 negativePosition;
+    glm_vec3_negate_to(camera->position, negativePosition);
+    glm_translate(viewOut, negativePosition);
+}
+
+void cameraProjection(Camera* camera, float aspectRatio, mat4 projectionOut)
+{
+    glm_perspective(camera->fovWidth, aspectRatio, camera->near, camera->far, projectionOut);
+}
+

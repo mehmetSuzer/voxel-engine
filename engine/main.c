@@ -5,8 +5,8 @@
 #include "graphics/world.h"
 #include "graphics/graphics.h"
 #include "graphics/light.h"
-#include "host/host.h"
-#include "host/window.h"
+#include "platform/platform.h"
+#include "platform/window.h"
 
 #define WINDOW_WIDTH  1200
 #define WINDOW_HEIGHT 1000
@@ -15,32 +15,30 @@
 
 int main()
 {
-    LogSetMinSeverity(LogSeverityVerbose);
+    platformInit();
+    Window* window = windowCreate(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE);
+    windowMakeContextCurrent(window);
 
-    HostInit();
-    Window* window = WindowCreate(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE);
-    WindowMakeContextCurrent(window);
-
-    GraphicsInit((GLADloadproc)HostGetGLFunctionLoader());
-    GraphicsViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+    graphicsInit((GLADloadproc)platformGetGLFunctionLoader());
+    graphicsViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
     
-    GraphicsEnable(CapabilityDepthTest);
-    GraphicsDepthWriteEnable(1);
-    GraphicsDepthFunc(TestFuncLess);
-    GraphicsDepthRange(0.0f, 1.0f);
+    graphicsEnable(CapabilityDepthTest);
+    graphicsDepthWriteEnable(1);
+    graphicsDepthFunc(TestFuncLess);
+    graphicsDepthRange(0.0f, 1.0f);
 
-    GraphicsEnable(CapabilityCullFace);
-    GraphicsCullFace(FaceBack);
-    GraphicsFrontFace(FrontFaceCCW);
+    graphicsEnable(CapabilityCullFace);
+    graphicsCullFace(FaceBack);
+    graphicsFrontFace(FrontFaceCCW);
 
-    GraphicsPolygonMode(FaceBoth, PolygonModeFill);
+    graphicsPolygonMode(FaceBoth, PolygonModeFill);
 
-    GraphicsClearColour((vec4){0.2f, 0.3f, 0.3f, 1.0f});
-    GraphicsClearDepth(DEPTH_FURTHEST);
+    graphicsClearColour((vec4){0.2f, 0.3f, 0.3f, 1.0f});
+    graphicsClearDepth(DEPTH_FURTHEST);
 
-    ShaderProgram shaderProgram = ShaderProgramCreateVF("shaders/terrain.vert", "shaders/terrain.frag");
+    ShaderProgram shaderProgram = shaderProgramCreateVF("shaders/terrain.vert", "shaders/terrain.frag");
 
-    Texture textureAtlas = TextureCreate(
+    Texture textureAtlas = textureCreate(
         "textures/dummy_atlas.png",
         TextureWrapRepeat,
         TextureWrapRepeat,
@@ -48,11 +46,11 @@ int main()
         TextureMagFilterNearest,
         (vec4){0.0f, 0.0f, 0.0f, 1.0f});
 
-    ShaderProgramBind(shaderProgram);
-    TextureBind(textureAtlas, 0);
-    ShaderProgramSetUniformi(shaderProgram, "textureAtlas", 0);
+    shaderProgramBind(shaderProgram);
+    textureBind(textureAtlas, 0);
+    shaderProgramSetUniformi(shaderProgram, "textureAtlas", 0);
 
-    WorldCreate();
+    worldCreate();
     
     Camera camera = {
         .position = {16.0f, 16.0f, 40.0f},
@@ -69,45 +67,45 @@ int main()
         .linear = 0.001f,
     };
 
-    while (!WindowShouldClose(window))
+    while (!windowShouldClose(window))
     {
-        if (WindowIsKeyPressed(window, KeyEscape))
+        if (windowIsKeyPressed(window, KeyEscape))
         {
-            WindowSetShouldClose(window);
+            windowSetShouldClose(window);
         }
 
         const float cameraSpeed = 0.1f;
-        if (WindowIsKeyPressed(window, KeyA))           { CameraTranslate(&camera, (vec3){-cameraSpeed, 0.0f, 0.0f}); }
-        if (WindowIsKeyPressed(window, KeyD))           { CameraTranslate(&camera, (vec3){ cameraSpeed, 0.0f, 0.0f}); }
-        if (WindowIsKeyPressed(window, KeyS))           { CameraTranslate(&camera, (vec3){0.0f, 0.0f,  cameraSpeed}); }
-        if (WindowIsKeyPressed(window, KeyW))           { CameraTranslate(&camera, (vec3){0.0f, 0.0f, -cameraSpeed}); }
-        if (WindowIsKeyPressed(window, KeySpace))       { CameraTranslate(&camera, (vec3){0.0f,  cameraSpeed, 0.0f}); }
-        if (WindowIsKeyPressed(window, KeyControlLeft)) { CameraTranslate(&camera, (vec3){0.0f, -cameraSpeed, 0.0f}); }
+        if (windowIsKeyPressed(window, KeyA))           { cameraTranslate(&camera, (vec3){-cameraSpeed, 0.0f, 0.0f}); }
+        if (windowIsKeyPressed(window, KeyD))           { cameraTranslate(&camera, (vec3){ cameraSpeed, 0.0f, 0.0f}); }
+        if (windowIsKeyPressed(window, KeyS))           { cameraTranslate(&camera, (vec3){0.0f, 0.0f,  cameraSpeed}); }
+        if (windowIsKeyPressed(window, KeyW))           { cameraTranslate(&camera, (vec3){0.0f, 0.0f, -cameraSpeed}); }
+        if (windowIsKeyPressed(window, KeySpace))       { cameraTranslate(&camera, (vec3){0.0f,  cameraSpeed, 0.0f}); }
+        if (windowIsKeyPressed(window, KeyControlLeft)) { cameraTranslate(&camera, (vec3){0.0f, -cameraSpeed, 0.0f}); }
 
         mat4 view, projection;
-        CameraView(&camera, view);
-        CameraProjection(&camera, ASPECT_RATIO, projection);
-        ShaderProgramSetUniformMat4f(shaderProgram, "view", view);
-        ShaderProgramSetUniformMat4f(shaderProgram, "projection", projection);
+        cameraView(&camera, view);
+        cameraProjection(&camera, ASPECT_RATIO, projection);
+        shaderProgramSetUniformMat4f(shaderProgram, "view", view);
+        shaderProgramSetUniformMat4f(shaderProgram, "projection", projection);
 
-        ShaderProgramSetUniform3f(shaderProgram, "pointLight.colour", light.colour);
-        ShaderProgramSetUniform3f(shaderProgram, "pointLight.position", light.position);
-        ShaderProgramSetUniformf(shaderProgram, "pointLight.quadratic", light.quadratic);
-        ShaderProgramSetUniformf(shaderProgram, "pointLight.linear", light.linear);
-        ShaderProgramSetUniform3f(shaderProgram, "cameraPosition", camera.position);
+        shaderProgramSetUniform3f(shaderProgram, "pointLight.colour", light.colour);
+        shaderProgramSetUniform3f(shaderProgram, "pointLight.position", light.position);
+        shaderProgramSetUniformf(shaderProgram, "pointLight.quadratic", light.quadratic);
+        shaderProgramSetUniformf(shaderProgram, "pointLight.linear", light.linear);
+        shaderProgramSetUniform3f(shaderProgram, "cameraPosition", camera.position);
         
-        GraphicsClear(BufferBitColour | BufferBitDepth);
-        WorldDraw(shaderProgram);
+        graphicsClear(BufferBitColour | BufferBitDepth);
+        worldDraw(shaderProgram);
 
-        WindowSwapBuffers(window);
-        HostPollEvents();
+        windowSwapBuffers(window);
+        platformPollEvents();
     }
 
-    TextureDelete(textureAtlas);
-    ShaderProgramDelete(shaderProgram);
-    WorldDelete();
-    WindowDelete(window);
-    HostTerminate();
+    textureDelete(textureAtlas);
+    shaderProgramDelete(shaderProgram);
+    worldDelete();
+    windowDestroy(window);
+    platformTerminate();
 
     return 0;
 }
