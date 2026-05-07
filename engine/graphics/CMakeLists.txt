@@ -3,20 +3,6 @@ find_package(OpenGL REQUIRED)
 find_package(cglm REQUIRED)
 find_package(Ktx REQUIRED)
 
-include(FetchContent)
-
-FetchContent_Declare(
-    stb
-    GIT_REPOSITORY https://github.com/nothings/stb.git
-    GIT_TAG master
-)
-FetchContent_MakeAvailable(stb)
-
-add_library(stb INTERFACE IMPORTED)
-set_target_properties(stb PROPERTIES
-    INTERFACE_INCLUDE_DIRECTORIES "${stb_SOURCE_DIR}"
-)
-
 file(GLOB_RECURSE SOURCE_FILES 
     CONFIGURE_DEPENDS 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/*.c
@@ -33,7 +19,6 @@ target_link_libraries(graphics
     PRIVATE OpenGL::GL
     PRIVATE cglm::cglm
     PRIVATE KTX::ktx
-    PRIVATE stb
     PRIVATE log
     PRIVATE utils
 )

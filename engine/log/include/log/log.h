@@ -10,6 +10,7 @@ typedef enum LogSeverity
     LogSeverityInfo    = 1,
     LogSeverityWarning = 2,
     LogSeverityError   = 3,
+    LogSeverityCount,
 } LogSeverity;
 
 void logSetMinSeverity(LogSeverity severity);
