@@ -1,9 +1,10 @@
 
+#include <assert.h>
 #include <GLFW/glfw3.h>
 #include "log/log.h"
 #include "platform/mouse.h"
 
-int mouseButtonToPlatformCode(MouseButton mouseButton)
+int mouseButtonToCode(MouseButton mouseButton)
 {
     switch (mouseButton)
     {
@@ -18,6 +19,8 @@ int mouseButtonToPlatformCode(MouseButton mouseButton)
     }
 
     logError("MOUSE", "invalid button");
-    return -1;
+    assert(0);
+
+    return GLFW_MOUSE_BUTTON_1;
 }
 

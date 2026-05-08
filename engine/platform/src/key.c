@@ -1,9 +1,10 @@
 
+#include <assert.h>
 #include <GLFW/glfw3.h>
 #include "log/log.h"
 #include "platform/key.h"
 
-int keyToPlatformCode(Key key)
+int keyToCode(Key key)
 {
     switch (key)
     {
@@ -117,7 +118,9 @@ int keyToPlatformCode(Key key)
         case KeyPause:          return GLFW_KEY_PAUSE;
     }
     
-    logError("KEY", "unknown key");
-    return (int)KeyUnknown;
+    logError("KEY", "invalid key");
+    assert(0);
+
+    return GLFW_KEY_UNKNOWN;
 }
 

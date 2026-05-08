@@ -42,7 +42,7 @@ Window* windowCreate(int width, int height, const char* title);
 
 void windowDestroy(Window* window);
 
-void WindowMakeContextCurrent(Window* window);
+void windowMakeContextCurrent(Window* window);
 
 void windowShow(Window* window);
 void windowHide(Window* window);

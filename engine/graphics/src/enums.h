@@ -25,6 +25,16 @@ typedef enum Capability
 
 unsigned int capabilityToCode(Capability capability);
 
+typedef enum BufferBit
+{
+    BufferBitColour  = 0,
+    BufferBitDepth   = 1,
+    BufferBitStencil = 2,
+    BufferBitCount,
+} BufferBit;
+
+unsigned int bufferBitToCode(BufferBit bufferBit);
+
 typedef enum Wrap
 {
     WrapRepeat            = 0,
@@ -161,13 +171,16 @@ typedef enum PolygonMode
 
 unsigned int polygonModeToCode(PolygonMode polygonMode);
 
-typedef enum BufferBit
+typedef enum DrawMode
 {
-    BufferBitColour  = 0,
-    BufferBitDepth   = 1,
-    BufferBitStencil = 2,
-    BufferBitCount,
-} BufferBit;
+    Points        = 0,
+    Lines         = 1,
+    LineStrip     = 2,
+    LineLoop      = 3,
+    Triangles     = 4,
+    TriangleStrip = 5,
+    TriangleFan   = 6,
+} DrawMode;
 
-unsigned int bufferBitToCode(BufferBit bufferBit);
+unsigned int drawModeToCode(DrawMode drawMode);
 

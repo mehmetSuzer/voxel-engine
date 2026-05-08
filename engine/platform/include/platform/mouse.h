@@ -18,5 +18,5 @@ typedef enum MouseButton
     MouseButtonMiddle = MouseButton3, // Same as MouseButton3
 } MouseButton;
 
-int mouseButtonToPlatformCode(MouseButton mouseButton);
+int mouseButtonToCode(MouseButton mouseButton);
 

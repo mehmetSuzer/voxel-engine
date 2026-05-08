@@ -130,5 +130,5 @@ typedef enum Key
     KeyCount,
 } Key;
 
-int keyToPlatformCode(Key key);
+int keyToCode(Key key);
 

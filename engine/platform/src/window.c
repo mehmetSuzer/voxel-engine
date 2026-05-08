@@ -1,4 +1,5 @@
 
+#include <assert.h>
 #include <stdlib.h>
 #include <GLFW/glfw3.h>
 #include "log/log.h"
@@ -18,7 +19,7 @@ struct Window
     // ------------------------------- //
 };
 
-static int windowFlagToPlatformCode(WindowFlag windowFlag)
+static int windowFlagToCode(WindowFlag windowFlag)
 {
     switch (windowFlag)
     {
@@ -31,10 +32,12 @@ static int windowFlagToPlatformCode(WindowFlag windowFlag)
     }
 
     logError("WINDOW", "invalid flag");
-    return -1;
+    assert(0);
+
+    return GLFW_RESIZABLE;
 }
 
-static int windowStateToPlatformCode(WindowState windowState)
+static int windowStateToCode(WindowState windowState)
 {
     switch (windowState)
     {
@@ -47,10 +50,12 @@ static int windowStateToPlatformCode(WindowState windowState)
     }
 
     logError("WINDOW", "invalid state");
-    return -1;
+    assert(0);
+
+    return GLFW_FOCUSED;
 }
 
-static int cursorModeToPlatformCode(CursorMode cursorMode)
+static int cursorModeToCode(CursorMode cursorMode)
 {
     switch (cursorMode)
     {
@@ -62,12 +67,14 @@ static int cursorModeToPlatformCode(CursorMode cursorMode)
     }
 
     logError("WINDOW", "invalid cursor mode");
-    return -1;
+    assert(0);
+
+    return GLFW_CURSOR_NORMAL;
 }
 
-static CursorMode platformCodeToCursorMode(int platformCodeCursorMode)
+static CursorMode cursorModeFromCode(int platformCode)
 {
-    switch (platformCodeCursorMode)
+    switch (platformCode)
     {
         case GLFW_CURSOR_NORMAL:        return CursorModeNormal;
         case GLFW_CURSOR_HIDDEN:        return CursorModeHidden;
@@ -77,7 +84,9 @@ static CursorMode platformCodeToCursorMode(int platformCodeCursorMode)
     }
 
     logError("WINDOW", "invalid cursor mode");
-    return (CursorMode)-1;
+    assert(0);
+
+    return CursorModeNormal;
 }
 
 // ------------------------------------------- WINDOW CALLBACKS ------------------------------------------- //
@@ -270,12 +279,12 @@ void windowSetTitle(Window* window, const char* title)
 
 int windowGetFlag(Window* window, WindowFlag windowFlag)
 {
-    return (glfwGetWindowAttrib(window->handle, windowFlagToPlatformCode(windowFlag)) == GLFW_TRUE);
+    return (glfwGetWindowAttrib(window->handle, windowFlagToCode(windowFlag)) == GLFW_TRUE);
 }
 
 void windowSetFlag(Window* window, WindowFlag windowFlag, int enabled)
 {
-    glfwSetWindowAttrib(window->handle, windowFlagToPlatformCode(windowFlag), (enabled) ? GLFW_TRUE : GLFW_FALSE);
+    glfwSetWindowAttrib(window->handle, windowFlagToCode(windowFlag), (enabled) ? GLFW_TRUE : GLFW_FALSE);
     const char* message = 
         (windowFlag == WindowFlagResizable       ) ? "resizable"          :
         (windowFlag == WindowFlagDecorated       ) ? "decorated"          :
@@ -288,7 +297,7 @@ void windowSetFlag(Window* window, WindowFlag windowFlag, int enabled)
 
 int windowGetState(Window* window, WindowState windowState)
 {
-    return (glfwGetWindowAttrib(window->handle, windowStateToPlatformCode(windowState)) == GLFW_TRUE);
+    return (glfwGetWindowAttrib(window->handle, windowStateToCode(windowState)) == GLFW_TRUE);
 }
 
 void windowGetWindowSize(Window* window, int* widthOut, int* heightOut)
@@ -372,22 +381,22 @@ void windowSetShouldClose(Window* window)
 
 int windowIsKeyPressed(Window* window, Key key)
 {
-    return (glfwGetKey(window->handle, keyToPlatformCode(key)) == GLFW_PRESS);
+    return (glfwGetKey(window->handle, keyToCode(key)) == GLFW_PRESS);
 }
 
 int windowIsKeyReleased(Window* window, Key key)
 {
-    return (glfwGetKey(window->handle, keyToPlatformCode(key)) == GLFW_RELEASE);
+    return (glfwGetKey(window->handle, keyToCode(key)) == GLFW_RELEASE);
 }
 
 int windowIsMouseButtonPressed(Window* window, MouseButton mouseButton)
 {
-    return (glfwGetMouseButton(window->handle, mouseButtonToPlatformCode(mouseButton)) == GLFW_PRESS);
+    return (glfwGetMouseButton(window->handle, mouseButtonToCode(mouseButton)) == GLFW_PRESS);
 }
 
 int windowIsMouseButtonReleased(Window* window, MouseButton mouseButton)
 {
-    return (glfwGetMouseButton(window->handle, mouseButtonToPlatformCode(mouseButton)) == GLFW_RELEASE);
+    return (glfwGetMouseButton(window->handle, mouseButtonToCode(mouseButton)) == GLFW_RELEASE);
 }
 
 void windowGetCursorPosition(Window* window, double* xOut, double* yOut)
@@ -404,7 +413,7 @@ void windowSetCursorPosition(Window* window, double x, double y)
 CursorMode windowGetCursorMode(Window* window)
 {
     const int glfwCursorMode = glfwGetInputMode(window->handle, GLFW_CURSOR);
-    const CursorMode cursorMode = platformCodeToCursorMode(glfwCursorMode);
+    const CursorMode cursorMode = cursorModeFromCode(glfwCursorMode);
     return cursorMode;
 }
 
@@ -415,7 +424,7 @@ void windowSetCursorMode(Window* window, CursorMode cursorMode)
         return;
     }
 
-    glfwSetInputMode(window->handle, GLFW_CURSOR, cursorModeToPlatformCode(cursorMode));
+    glfwSetInputMode(window->handle, GLFW_CURSOR, cursorModeToCode(cursorMode));
 
     const char* message = 
         (cursorMode == CursorModeNormal  ) ? "normal"   :

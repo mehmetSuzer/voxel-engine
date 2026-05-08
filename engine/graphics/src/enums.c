@@ -1,4 +1,5 @@
 
+#include <assert.h>
 #include "enums.h"
 #include "log/log.h"
 #include "glad/glad.h"
@@ -26,8 +27,25 @@ unsigned int capabilityToCode(Capability capability)
         case CapabilityPrimitiveRestart:      return GL_PRIMITIVE_RESTART;
     }
 
-    logWarning("ENUMS", "Invalid capability, defaulting to Depth Test");
+    logError("ENUMS", "invalid capability");
+    assert(0);
+
     return GL_DEPTH_TEST;
+}
+
+unsigned int bufferBitToCode(BufferBit bufferBit)
+{
+    switch (bufferBit)
+    {
+        case BufferBitColour:  return GL_COLOR_BUFFER_BIT;
+        case BufferBitDepth:   return GL_DEPTH_BUFFER_BIT;
+        case BufferBitStencil: return GL_STENCIL_BUFFER_BIT;
+    }
+
+    logError("ENUMS", "invalid buffer bit");
+    assert(0);
+
+    return GL_COLOR_BUFFER_BIT;
 }
 
 unsigned int wrapToCode(Wrap wrap)
@@ -41,7 +59,9 @@ unsigned int wrapToCode(Wrap wrap)
         case WrapMirrorClampToEdge: return GL_MIRROR_CLAMP_TO_EDGE;
     }
 
-    logWarning("ENUMS", "Invalid wrap value, defaulting to Repeat");
+    logError("ENUMS", "invalid wrap");
+    assert(0);
+
     return GL_REPEAT;
 }
 
@@ -57,7 +77,9 @@ unsigned int minFilterToCode(MinFilter minFilter)
         case MinFilterLinearMipmapLinear:   return GL_LINEAR_MIPMAP_LINEAR;
     }
 
-    logWarning("ENUMS", "Invalid min filter, defaulting to Nearest");
+    logError("ENUMS", "invalid min filter");
+    assert(0);
+
     return GL_NEAREST;
 }
 
@@ -69,7 +91,9 @@ unsigned int magFilterToCode(MagFilter magFilter)
         case MagFilterLinear:   return GL_LINEAR;
     }
 
-    logWarning("ENUMS", "Invalid mag filter, defaulting to Nearest");
+    logWarning("ENUMS", "invalid mag filter");
+    assert(0);
+
     return GL_NEAREST;
 }
 
@@ -81,7 +105,9 @@ unsigned int compareModeToCode(CompareMode compareMode)
         case CompareModeReferenceToTexture: return GL_COMPARE_REF_TO_TEXTURE;
     }
 
-    logWarning("ENUMS", "Invalid compare mode, defaulting to None");
+    logError("ENUMS", "invalid compare mode");
+    assert(0);
+
     return GL_NONE;
 }
 
@@ -99,7 +125,9 @@ unsigned int compareFuncToCode(CompareFunc compareFunc)
         case CompareFuncAlways:       return GL_ALWAYS;
     }
 
-    logWarning("ENUMS", "Invalid compare func, defaulting to Never");
+    logError("ENUMS", "invalid compare func");
+    assert(0);
+
     return GL_NEVER;
 }
 
@@ -117,7 +145,9 @@ unsigned int stencilOperationToCode(StencilOperation stencilOperation)
         case StencilOperationInvert:        return GL_INVERT;
     }
 
-    logWarning("ENUMS", "Invalid stencil operation, defaulting to Keep");
+    logError("ENUMS", "invalid stencil operation");
+    assert(0);
+
     return GL_KEEP;
 }
 
@@ -130,7 +160,9 @@ unsigned int faceToCode(Face face)
         case FaceBoth:  return GL_FRONT_AND_BACK;
     }
 
-    logWarning("ENUMS", "Invalid face, defaulting to Front");
+    logError("ENUMS", "invalid face");
+    assert(0);
+
     return GL_FRONT;
 }
 
@@ -142,7 +174,9 @@ unsigned int frontFaceToCode(FrontFace frontFace)
         case FrontFaceCCW: return GL_CCW;
     }
 
-    logWarning("ENUMS", "Invalid front face, defaulting to CW");
+    logError("ENUMS", "invalid front face");
+    assert(0);
+
     return GL_CW;
 }
 
@@ -167,7 +201,9 @@ unsigned int blendFactorToCode(BlendFactor blendFactor)
         case BlendFactorSrcAlphaSaturate:       return GL_SRC_ALPHA_SATURATE;
     }
 
-    logWarning("ENUMS", "Invalid blend factor, defaulting to Zero");
+    logError("ENUMS", "invalid blend factor");
+    assert(0);
+
     return GL_ZERO;
 }
 
@@ -182,7 +218,9 @@ unsigned int blendEquationToCode(BlendEquation blendEquation)
         case BlendEquationMax:             return GL_MAX;        
     }
 
-    logWarning("ENUMS", "Invalid blend equation, defaulting to Add");
+    logError("ENUMS", "invalid blend equation");
+    assert(0);
+
     return GL_FUNC_ADD;
 }
 
@@ -195,20 +233,27 @@ unsigned int polygonModeToCode(PolygonMode polygonMode)
         case PolygonModeFill:  return GL_FILL;
     }
 
-    logWarning("ENUMS", "Invalid polygon mode, defaulting to Point");
+    logError("ENUMS", "invalid polygon mode");
+    assert(0);
+
     return GL_POINT;
 }
 
-unsigned int bufferBitToCode(BufferBit bufferBit)
+unsigned int drawModeToCode(DrawMode drawMode)
 {
-    switch (bufferBit)
+    switch (drawMode)
     {
-        case BufferBitColour:  return GL_COLOR_BUFFER_BIT;
-        case BufferBitDepth:   return GL_DEPTH_BUFFER_BIT;
-        case BufferBitStencil: return GL_STENCIL_BUFFER_BIT;
+        case Points:        return GL_POINTS;
+        case Lines:         return GL_LINES;
+        case LineStrip:     return GL_LINE_STRIP;
+        case LineLoop:      return GL_LINE_LOOP;
+        case Triangles:     return GL_TRIANGLES;
+        case TriangleStrip: return GL_TRIANGLE_STRIP;
+        case TriangleFan:   return GL_TRIANGLE_FAN;
     }
 
-    logWarning("ENUMS", "Invalid buffer bit, defaulting to Colour");
-    return GL_COLOR_BUFFER_BIT;
-}
+    logError("ENUMS", "invalid draw mode");
+    assert(0);
 
+    return GL_POINTS;
+}
