@@ -6,10 +6,10 @@
 
 typedef struct Material
 {
-    ShaderProgramID shaderProgram;
-    TextureID textures[MATERIAL_MAX_TEXTURE_COUNT];
+    ShaderProgramID shaderProgramID;
+    TextureID textureIDs[MATERIAL_MAX_TEXTURE_COUNT];
     unsigned int textureCount;
-    SamplerID samplers[MATERIAL_MAX_SAMPLER_COUNT];
+    SamplerID samplerIDs[MATERIAL_MAX_SAMPLER_COUNT];
     unsigned int samplerCount;
     int active;
 } Material;
@@ -57,11 +57,11 @@ MaterialID materialCreate(const MaterialCreateInfo* materialCreateInfo)
 {
     Material material;
     material.active = true;
-    material.shaderProgram = materialCreateInfo->shaderProgram;
+    material.shaderProgramID = materialCreateInfo->shaderProgramID;
     material.textureCount = materialCreateInfo->textureCount;
     material.samplerCount = materialCreateInfo->samplerCount;
-    memcpy(material.textures, materialCreateInfo->textures, materialCreateInfo->textureCount * sizeof(TextureID));
-    memcpy(material.samplers, materialCreateInfo->samplers, materialCreateInfo->samplerCount * sizeof(SamplerID));
+    memcpy(material.textureIDs, materialCreateInfo->textureIDs, materialCreateInfo->textureCount * sizeof(TextureID));
+    memcpy(material.samplerIDs, materialCreateInfo->samplerIDs, materialCreateInfo->samplerCount * sizeof(SamplerID));
 
     const MaterialID materialID = materialArrayPush(&material);
     return materialID;
@@ -76,14 +76,14 @@ void materialDestroy(MaterialID materialID)
 void materialDestroyWithDependencies(MaterialID materialID)
 {
     Material* material = &materialArray.data[materialID];
-    shaderProgramDestroy(material->shaderProgram);
+    shaderProgramDestroy(material->shaderProgramID);
     for (unsigned int i = 0u; i < material->textureCount; ++i)
     {
-        textureDestroy(material->textures[i]);
+        textureDestroy(material->textureIDs[i]);
     }
     for (unsigned int i = 0u; i < material->samplerCount; ++i)
     {
-        samplerDestroy(material->samplers[i]);
+        samplerDestroy(material->samplerIDs[i]);
     }
     *material = (Material){0};
 }
@@ -115,14 +115,14 @@ int materialIsActive(MaterialID materialID)
 void materialBind(MaterialID materialID)
 {
     const Material* material = &materialArray.data[materialID];
-    shaderProgramBind(material->shaderProgram);
+    shaderProgramBind(material->shaderProgramID);
     for (unsigned int unit = 0u; unit < material->textureCount; ++unit)
     {
-        textureBind(material->textures[unit], unit);
+        textureBind(material->textureIDs[unit], unit);
     }
     for (unsigned int unit = 0u; unit < material->samplerCount; ++unit)
     {
-        samplerBind(material->samplers[unit], unit);
+        samplerBind(material->samplerIDs[unit], unit);
     }
 }
 

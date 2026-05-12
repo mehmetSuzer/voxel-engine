@@ -24,9 +24,9 @@ TextureID textureCreate(const char* texturePath)
         return TEXTURE_NULL;
     }
 
-    GLuint texture;
-    glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture);
+    GLuint textureID;
+    glGenTextures(1, &textureID);
+    glBindTexture(GL_TEXTURE_2D, textureID);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -57,25 +57,25 @@ TextureID textureCreate(const char* texturePath)
     glCheckErrors();
 
     logVerbose("TEXTURE", "created from %s", texturePath);
-    return texture;
+    return textureID;
 }
 
-void textureDestroy(TextureID texture)
+void textureDestroy(TextureID textureID)
 {
-    glDeleteTextures(1, &texture);
+    glDeleteTextures(1, &textureID);
     glCheckErrors();
 }
 
-int textureIsActive(TextureID texture)
+int textureIsActive(TextureID textureID)
 {
-    return (glIsTexture(texture) == GL_TRUE);
+    return (glIsTexture(textureID) == GL_TRUE);
 }
 
-void textureBind(TextureID texture, unsigned int unit)
+void textureBind(TextureID textureID, unsigned int unit)
 {
     assert(unit < 32u);
     glActiveTexture(GL_TEXTURE0 + unit);
-    glBindTexture(GL_TEXTURE_2D, texture);
+    glBindTexture(GL_TEXTURE_2D, textureID);
     glCheckErrors();
 }
 

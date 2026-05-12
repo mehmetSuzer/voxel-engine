@@ -12,10 +12,10 @@ typedef unsigned int MaterialID;
 
 typedef struct MaterialCreateInfo
 {
-    ShaderProgramID shaderProgram;
-    TextureID textures[MATERIAL_MAX_TEXTURE_COUNT];
+    ShaderProgramID shaderProgramID;
+    TextureID textureIDs[MATERIAL_MAX_TEXTURE_COUNT];
     unsigned int textureCount;
-    SamplerID samplers[MATERIAL_MAX_SAMPLER_COUNT];
+    SamplerID samplerIDs[MATERIAL_MAX_SAMPLER_COUNT];
     unsigned int samplerCount;
 } MaterialCreateInfo;
 

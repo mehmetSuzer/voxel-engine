@@ -26,9 +26,9 @@ void samplerGetDefaultCreateInfo(SamplerCreateInfo* samplerCreateInfoOut);
 
 SamplerID samplerCreate(const SamplerCreateInfo* samplerCreateInfo);
 
-void samplerDestroy(SamplerID sampler);
+void samplerDestroy(SamplerID samplerID);
 
-int samplerIsActive(SamplerID sampler);
+int samplerIsActive(SamplerID samplerID);
 
-void samplerBind(SamplerID sampler, unsigned int unit);
+void samplerBind(SamplerID samplerID, unsigned int unit);
 

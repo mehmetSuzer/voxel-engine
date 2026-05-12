@@ -27,43 +27,43 @@ void samplerGetDefaultCreateInfo(SamplerCreateInfo* samplerCreateInfoOut)
 
 SamplerID samplerCreate(const SamplerCreateInfo* samplerCreateInfo)
 { 
-    GLuint sampler;
-    glGenSamplers(1, &sampler);
+    GLuint samplerID;
+    glGenSamplers(1, &samplerID);
 
-    glSamplerParameteri(sampler, GL_TEXTURE_MIN_FILTER, minFilterToCode(samplerCreateInfo->minFilter));
-    glSamplerParameteri(sampler, GL_TEXTURE_MAG_FILTER, magFilterToCode(samplerCreateInfo->magFilter));
+    glSamplerParameteri(samplerID, GL_TEXTURE_MIN_FILTER, minFilterToCode(samplerCreateInfo->minFilter));
+    glSamplerParameteri(samplerID, GL_TEXTURE_MAG_FILTER, magFilterToCode(samplerCreateInfo->magFilter));
 
-    glSamplerParameteri(sampler, GL_TEXTURE_WRAP_S, wrapToCode(samplerCreateInfo->wrapS));
-    glSamplerParameteri(sampler, GL_TEXTURE_WRAP_T, wrapToCode(samplerCreateInfo->wrapT));
-    glSamplerParameteri(sampler, GL_TEXTURE_WRAP_R, wrapToCode(samplerCreateInfo->wrapR));
+    glSamplerParameteri(samplerID, GL_TEXTURE_WRAP_S, wrapToCode(samplerCreateInfo->wrapS));
+    glSamplerParameteri(samplerID, GL_TEXTURE_WRAP_T, wrapToCode(samplerCreateInfo->wrapT));
+    glSamplerParameteri(samplerID, GL_TEXTURE_WRAP_R, wrapToCode(samplerCreateInfo->wrapR));
 
-    glSamplerParameterf(sampler, GL_TEXTURE_MIN_LOD, samplerCreateInfo->minLOD);
-    glSamplerParameterf(sampler, GL_TEXTURE_MAX_LOD, samplerCreateInfo->maxLOD);
-    glSamplerParameterf(sampler, GL_TEXTURE_LOD_BIAS, samplerCreateInfo->biasLOD);
+    glSamplerParameterf(samplerID, GL_TEXTURE_MIN_LOD, samplerCreateInfo->minLOD);
+    glSamplerParameterf(samplerID, GL_TEXTURE_MAX_LOD, samplerCreateInfo->maxLOD);
+    glSamplerParameterf(samplerID, GL_TEXTURE_LOD_BIAS, samplerCreateInfo->biasLOD);
 
-    glSamplerParameteri(sampler, GL_TEXTURE_COMPARE_MODE, compareModeToCode(samplerCreateInfo->compareMode));
-    glSamplerParameteri(sampler, GL_TEXTURE_COMPARE_FUNC, compareFuncToCode(samplerCreateInfo->compareFunc));
+    glSamplerParameteri(samplerID, GL_TEXTURE_COMPARE_MODE, compareModeToCode(samplerCreateInfo->compareMode));
+    glSamplerParameteri(samplerID, GL_TEXTURE_COMPARE_FUNC, compareFuncToCode(samplerCreateInfo->compareFunc));
 
-    glSamplerParameterfv(sampler, GL_TEXTURE_BORDER_COLOR, samplerCreateInfo->borderColour);
+    glSamplerParameterfv(samplerID, GL_TEXTURE_BORDER_COLOR, samplerCreateInfo->borderColour);
     glCheckErrors();
 
-    return sampler;
+    return samplerID;
 }
 
-void samplerDestroy(SamplerID sampler)
+void samplerDestroy(SamplerID samplerID)
 {
-    glDeleteSamplers(1, &sampler);
+    glDeleteSamplers(1, &samplerID);
     glCheckErrors();
 }
 
-int samplerIsActive(SamplerID sampler)
+int samplerIsActive(SamplerID samplerID)
 {
-    return (glIsSampler(sampler) == GL_TRUE);
+    return (glIsSampler(samplerID) == GL_TRUE);
 }
 
-void samplerBind(SamplerID sampler, unsigned int unit)
+void samplerBind(SamplerID samplerID, unsigned int unit)
 {
-    glBindSampler(unit, sampler);
+    glBindSampler(unit, samplerID);
     glCheckErrors();
 }
 

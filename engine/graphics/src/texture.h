@@ -7,9 +7,9 @@ typedef unsigned int TextureID;
 
 TextureID textureCreate(const char* texturePath);
 
-void textureDestroy(TextureID texture);
+void textureDestroy(TextureID textureID);
 
-int textureIsActive(TextureID texture);
+int textureIsActive(TextureID textureID);
 
-void textureBind(TextureID texture, unsigned int unit);
+void textureBind(TextureID textureID, unsigned int unit);
 
