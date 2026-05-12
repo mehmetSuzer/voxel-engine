@@ -2,20 +2,18 @@
 #pragma once
 
 #include <stdint.h>
-
-#define TRUE  1
-#define FALSE 0
+#include <stdbool.h>
 
 #define UNUSED(x) (void)(x)
 
 #define STATIC_ASSERT(condition, message) _Static_assert(condition, message)
 
 #define COUNT_OF(array)      (sizeof(array) / sizeof((array)[0]))
-#define LAST_ELEMENT(array) ((array)[UTIL_COUNTOF(array) - 1])
+#define LAST_ELEMENT(array) ((array)[COUNT_OF(array) - 1])
 
 #define OFFSET_OF(type, member) ((size_t)&(((type*)0)->member))
 
-#define CONTAINER_OF(ptr, type, member) ((type*)((char*)(ptr) - UTIL_OFFSETOF(type, member)))
+#define CONTAINER_OF(ptr, type, member) ((type*)((char*)(ptr) - OFFSET_OF(type, member)))
 
 #define ABS(x)  (((x) > (typeof(x))0) ? (x) : -(x))
 

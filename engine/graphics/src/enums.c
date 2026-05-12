@@ -243,13 +243,13 @@ unsigned int drawModeToCode(DrawMode drawMode)
 {
     switch (drawMode)
     {
-        case Points:        return GL_POINTS;
-        case Lines:         return GL_LINES;
-        case LineStrip:     return GL_LINE_STRIP;
-        case LineLoop:      return GL_LINE_LOOP;
-        case Triangles:     return GL_TRIANGLES;
-        case TriangleStrip: return GL_TRIANGLE_STRIP;
-        case TriangleFan:   return GL_TRIANGLE_FAN;
+        case DrawModePoints:        return GL_POINTS;
+        case DrawModeLines:         return GL_LINES;
+        case DrawModeLineStrip:     return GL_LINE_STRIP;
+        case DrawModeLineLoop:      return GL_LINE_LOOP;
+        case DrawModeTriangles:     return GL_TRIANGLES;
+        case DrawModeTriangleStrip: return GL_TRIANGLE_STRIP;
+        case DrawModeTriangleFan:   return GL_TRIANGLE_FAN;
     }
 
     logError("ENUMS", "invalid draw mode");
@@ -257,3 +257,25 @@ unsigned int drawModeToCode(DrawMode drawMode)
 
     return GL_POINTS;
 }
+
+unsigned int bufferUsageToCode(BufferUsage bufferUsage)
+{
+    switch (bufferUsage)
+    {
+        case BufferUsageStaticDraw:  return GL_STATIC_DRAW;
+        case BufferUsageDynamicDraw: return GL_DYNAMIC_DRAW;
+        case BufferUsageStreamDraw:  return GL_STREAM_DRAW;
+        case BufferUsageStaticRead:  return GL_STATIC_READ;
+        case BufferUsageDynamicRead: return GL_DYNAMIC_READ;
+        case BufferUsageStreamRead:  return GL_STREAM_READ;
+        case BufferUsageStaticCopy:  return GL_STATIC_COPY;
+        case BufferUsageDynamicCopy: return GL_DYNAMIC_COPY;
+        case BufferUsageStreamCopy:  return GL_STREAM_COPY;
+    }
+
+    logError("ENUMS", "invalid bufer usage");
+    assert(0);
+
+    return GL_STATIC_DRAW;
+}
+

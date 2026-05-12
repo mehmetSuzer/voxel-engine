@@ -25,9 +25,10 @@ typedef struct SamplerCreateInfo
 void samplerGetDefaultCreateInfo(SamplerCreateInfo* samplerCreateInfoOut);
 
 SamplerID samplerCreate(const SamplerCreateInfo* samplerCreateInfo);
+
 void samplerDestroy(SamplerID sampler);
 
-void samplerBind(SamplerID sampler, unsigned int unit);
-
 int samplerIsActive(SamplerID sampler);
+
+void samplerBind(SamplerID sampler, unsigned int unit);
 

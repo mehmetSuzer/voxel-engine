@@ -1,4 +1,5 @@
 
+#include <string.h>
 #include "mesh.h"
 #include "error.h"
 #include "log/log.h"
@@ -11,62 +12,129 @@ typedef struct Mesh
     GLuint EBO;
     GLsizei indexCount;
     DrawMode drawMode;
+    int active;
 } Mesh;
 
-static Mesh* meshes = NULL;
-static unsigned int meshCount = 0u;
+typedef struct MeshArray
+{
+    Mesh* data;
+    unsigned int size;
+    unsigned int capacity;
+} MeshArray;
 
-MeshID meshCreate(const Vertex* vertices, unsigned int vertexCount, const unsigned int* indices, unsigned int indexCount, DrawMode drawMode)
+static MeshArray meshArray = {0};
+
+static MeshID meshArrayPush(const Mesh* mesh)
+{
+    MeshID meshID = 0u;
+    while (meshID < meshArray.size && meshArray.data[meshID].active) 
+    { 
+        meshID++;
+    }
+
+    if (meshID < meshArray.size)
+    {
+        memcpy(&meshArray.data[meshID], mesh, sizeof(Mesh));
+        return meshID;
+    }
+
+    if (meshID < meshArray.capacity)
+    {
+        memcpy(&meshArray.data[meshID], mesh, sizeof(Mesh));
+        meshArray.size++;
+        return meshID;
+    }
+
+    const unsigned int newCapacity = (meshArray.capacity != 0u) ? 2u * meshArray.capacity : 8u;
+    meshArray.data = (Mesh*)realloc(meshArray.data, newCapacity * sizeof(Mesh));
+    meshArray.capacity = newCapacity;
+
+    memcpy(&meshArray.data[meshID], mesh, sizeof(Mesh));
+    meshArray.size++;
+    return meshID;
+}
+
+MeshID meshCreatePBR(const VertexPBR* vertices, unsigned int vertexCount, const unsigned int* indices, unsigned int indexCount, DrawMode drawMode)
 {
     Mesh mesh;
+    mesh.active = true;
+
     glGenVertexArrays(1, &mesh.VAO);
     glGenBuffers(1, &mesh.VBO);
     glGenBuffers(1, &mesh.EBO);
 
     glBindVertexArray(mesh.VAO);
     glBindBuffer(GL_ARRAY_BUFFER, mesh.VBO);
-    glBufferData(GL_ARRAY_BUFFER, vertexCount * sizeof(Vertex), vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, vertexCount * sizeof(VertexPBR), vertices, GL_STATIC_DRAW);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexCount * sizeof(unsigned int), indices, GL_STATIC_DRAW);
 
-    vertexLinkAttributes();
+    vertexPBRLinkAttributes();
     glBindVertexArray(0);
 
-    const MeshID meshID = meshCount;
-    const unsigned int newMeshCount = meshCount + 1u;
-    meshes = (Mesh*)realloc(meshes, newMeshCount * sizeof(Mesh));
-    meshes[meshCount] = mesh;
-    meshCount = newMeshCount;
+    const MeshID meshID = meshArrayPush(&mesh);
+    return meshID;
+}
 
+MeshID meshCreateVoxel(const VertexVoxel* vertices, unsigned int vertexCount, const unsigned int* indices, unsigned int indexCount, DrawMode drawMode)
+{
+    Mesh mesh;
+    mesh.active = true;
+
+    glGenVertexArrays(1, &mesh.VAO);
+    glGenBuffers(1, &mesh.VBO);
+    glGenBuffers(1, &mesh.EBO);
+
+    glBindVertexArray(mesh.VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, mesh.VBO);
+    glBufferData(GL_ARRAY_BUFFER, vertexCount * sizeof(VertexVoxel), vertices, GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexCount * sizeof(unsigned int), indices, GL_STATIC_DRAW);
+
+    vertexVoxelLinkAttributes();
+    glBindVertexArray(0);
+
+    const MeshID meshID = meshArrayPush(&mesh);
     return meshID;
 }
 
 void meshDestroy(MeshID meshID)
 {
-    const unsigned int newMeshCount = meshCount - 1u;
-    if (newMeshCount == 0u)
-    {
-        free(meshes);
-        meshes = NULL;
-        meshCount = 0u;
-    }
-    else
-    {
-        Mesh* mesh = &meshes[meshID];
-        glDeleteVertexArrays(1, &mesh->VAO);
-        glDeleteBuffers(1, &mesh->VBO);
-        glDeleteBuffers(1, &mesh->EBO);
-        *mesh = meshes[meshCount];
+    Mesh* mesh = &meshArray.data[meshID];
+    glDeleteVertexArrays(1, &mesh->VAO);
+    glDeleteBuffers(1, &mesh->VBO);
+    glDeleteBuffers(1, &mesh->EBO);
+    *mesh = (Mesh){0};
+}
 
-        meshes = (Mesh*)realloc(meshes, newMeshCount * sizeof(Mesh));
-        meshCount = newMeshCount;
+void meshDestroyAll()
+{
+    for (unsigned int i = 0u; i < meshArray.size; ++i)
+    {
+        const Mesh* mesh = &meshArray.data[i];
+        if (mesh->active)
+        {
+            glDeleteVertexArrays(1, &mesh->VAO);
+            glDeleteBuffers(1, &mesh->VBO);
+            glDeleteBuffers(1, &mesh->EBO);
+        }
     }
+
+    free(meshArray.data);
+    meshArray.size = 0u;
+    meshArray.capacity = 0u;
+}
+
+int meshIsActive(MeshID meshID)
+{
+    return (meshID < meshArray.size && meshArray.data[meshID].active);
 }
 
 void meshDraw(MeshID meshID)
 {
-    const Mesh* mesh = &meshes[meshID];
+    const Mesh* mesh = &meshArray.data[meshID];
     glBindVertexArray(mesh->VAO);
     glDrawElements(mesh->drawMode, mesh->indexCount, GL_UNSIGNED_INT, NULL);
     glBindVertexArray(0);

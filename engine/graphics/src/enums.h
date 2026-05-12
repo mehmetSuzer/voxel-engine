@@ -173,14 +173,28 @@ unsigned int polygonModeToCode(PolygonMode polygonMode);
 
 typedef enum DrawMode
 {
-    Points        = 0,
-    Lines         = 1,
-    LineStrip     = 2,
-    LineLoop      = 3,
-    Triangles     = 4,
-    TriangleStrip = 5,
-    TriangleFan   = 6,
+    DrawModePoints        = 0,
+    DrawModeLines         = 1,
+    DrawModeLineStrip     = 2,
+    DrawModeLineLoop      = 3,
+    DrawModeTriangles     = 4,
+    DrawModeTriangleStrip = 5,
+    DrawModeTriangleFan   = 6,
 } DrawMode;
 
 unsigned int drawModeToCode(DrawMode drawMode);
 
+typedef enum BufferUsage
+{
+    BufferUsageStaticDraw  = 0, // CPU uploads once, GPU uses many times
+    BufferUsageDynamicDraw = 1, // CPU updates occasionally
+    BufferUsageStreamDraw  = 2, // CPU updates constantly
+    BufferUsageStaticRead  = 3, // GPU writes once, CPU reads many times
+    BufferUsageDynamicRead = 4, // GPU writes occasionally, CPU reads
+    BufferUsageStreamRead  = 5, // GPU writes frequently, CPU reads
+    BufferUsageStaticCopy  = 6, // GPU-to-GPU copy, mostly static
+    BufferUsageDynamicCopy = 7, // GPU-to-GPU copy, occasionally updated
+    BufferUsageStreamCopy  = 8, // GPU-to-GPU copy, frequently updated
+} BufferUsage;
+
+unsigned int bufferUsageToCode(BufferUsage bufferUsage);

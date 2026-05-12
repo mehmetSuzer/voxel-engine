@@ -3,13 +3,17 @@
 
 #include <cglm/cglm.h>
 
-typedef struct Vertex
+typedef struct VertexPBR
 {
     vec3 position;
     vec3 normal;
     vec3 tangent;
     vec2 texCoord;
-} Vertex;
+} VertexPBR;
 
-void vertexLinkAttributes();
+void vertexPBRLinkAttributes();
+
+typedef unsigned int VertexVoxel;
+
+void vertexVoxelLinkAttributes();
 

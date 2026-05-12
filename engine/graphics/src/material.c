@@ -4,93 +4,125 @@
 #include "material.h"
 #include "log/log.h"
 
-#define MATERIAL_MAX_TEXTURE_COUNT 4u
-
 typedef struct Material
 {
     ShaderProgramID shaderProgram;
     TextureID textures[MATERIAL_MAX_TEXTURE_COUNT];
     unsigned int textureCount;
-    SamplerID samplers[MATERIAL_MAX_TEXTURE_COUNT];
+    SamplerID samplers[MATERIAL_MAX_SAMPLER_COUNT];
     unsigned int samplerCount;
+    int active;
 } Material;
 
-static Material* materials = NULL;
-static unsigned int materialCount = 0u;
+typedef struct MaterialArray
+{
+    Material* data;
+    unsigned int size;
+    unsigned int capacity;
+} MaterialArray;
+
+static MaterialArray materialArray = {0};
+
+static MaterialID materialArrayPush(const Material* material)
+{
+    MaterialID materialID = 0u;
+    while (materialID < materialArray.size && materialArray.data[materialID].active) 
+    { 
+        materialID++;
+    }
+
+    if (materialID < materialArray.size)
+    {
+        memcpy(&materialArray.data[materialID], material, sizeof(Material));
+        return materialID;
+    }
+
+    if (materialID < materialArray.capacity)
+    {
+        memcpy(&materialArray.data[materialID], material, sizeof(Material));
+        materialArray.size++;
+        return materialID;
+    }
+
+    const unsigned int newCapacity = (materialArray.capacity != 0u) ? 2u * materialArray.capacity : 8u;
+    materialArray.data = (Material*)realloc(materialArray.data, newCapacity * sizeof(Material));
+    materialArray.capacity = newCapacity;
+
+    memcpy(&materialArray.data[materialID], material, sizeof(Material));
+    materialArray.size++;
+    return materialID;
+}
 
 MaterialID materialCreate(const MaterialCreateInfo* materialCreateInfo)
 {
-    const unsigned int newMaterialCount = materialCount + 1u;
-    materials = (Material*)realloc(materials, newMaterialCount * sizeof(Material));
+    Material material;
+    material.active = true;
+    material.shaderProgram = materialCreateInfo->shaderProgram;
+    material.textureCount = materialCreateInfo->textureCount;
+    material.samplerCount = materialCreateInfo->samplerCount;
+    memcpy(material.textures, materialCreateInfo->textures, materialCreateInfo->textureCount * sizeof(TextureID));
+    memcpy(material.samplers, materialCreateInfo->samplers, materialCreateInfo->samplerCount * sizeof(SamplerID));
 
-    materials[materialCount].shaderProgram = materialCreateInfo->shaderProgram;
-    materials[materialCount].textureCount = materialCreateInfo->textureCount;
-    materials[materialCount].samplerCount = materialCreateInfo->samplerCount;
-    memcpy(materials[materialCount].textures, materialCreateInfo->textures, materialCreateInfo->textureCount * sizeof(TextureID));
-    memcpy(materials[materialCount].samplers, materialCreateInfo->samplers, materialCreateInfo->samplerCount * sizeof(SamplerID));
-
-    const MaterialID material = materialCount;
-    materialCount = newMaterialCount;
-    return material;
+    const MaterialID materialID = materialArrayPush(&material);
+    return materialID;
 }
 
-void materialDestroy(MaterialID material)
+void materialDestroy(MaterialID materialID)
 {
-    const unsigned int newMaterialCount = materialCount - 1u;
-    if (newMaterialCount == 0u)
-    {
-        free(materials);
-        materials = NULL;
-        materialCount = 0u;
-    }
-    else
-    {
-        materials[material] = materials[newMaterialCount];
-        materials = (Material*)realloc(materials, newMaterialCount * sizeof(Material));
-        materialCount = newMaterialCount;
-    }
+    Material* material = &materialArray.data[materialID];
+    *material = (Material){0};
 }
 
-void materialDestroyWithDependencies(MaterialID material)
+void materialDestroyWithDependencies(MaterialID materialID)
 {
-    shaderProgramDestroy(materials[material].shaderProgram);
-    for (unsigned int i = 0u; i < materials[material].textureCount; ++i)
+    Material* material = &materialArray.data[materialID];
+    shaderProgramDestroy(material->shaderProgram);
+    for (unsigned int i = 0u; i < material->textureCount; ++i)
     {
-        textureDestroy(materials[material].textures[i]);
+        textureDestroy(material->textures[i]);
     }
-    for (unsigned int i = 0u; i < materials[material].samplerCount; ++i)
+    for (unsigned int i = 0u; i < material->samplerCount; ++i)
     {
-        samplerDestroy(materials[material].samplers[i]);
+        samplerDestroy(material->samplers[i]);
     }
-    materialDestroy(material);
-}
-
-void materialBind(MaterialID material)
-{
-    const Material* mat = &materials[material];
-    shaderProgramBind(mat->shaderProgram);
-    for (unsigned int unit = 0u; unit < mat->textureCount; ++unit)
-    {
-        textureBind(mat->textures[unit], unit);
-    }
-    for (unsigned int unit = 0u; unit < mat->samplerCount; ++unit)
-    {
-        samplerBind(mat->samplers[unit], unit);
-    }
+    *material = (Material){0};
 }
 
 void materialDestroyAll()
 {
-    free(materials);
-    materials = NULL;
-    materialCount = 0u;
+    free(materialArray.data);
+    materialArray.size = 0u;
+    materialArray.capacity = 0u;
 }
 
 void materialDestroyAllWithDependencies()
 {
-    for (unsigned int material = 0u; material < materialCount; ++material)
+    for (MaterialID materialID = 0u; materialID < materialArray.size; ++materialID)
     {
-        materialDestroyWithDependencies(material);
+        Material* material = &materialArray.data[materialID];
+        if (material->active)
+        {
+            materialDestroyWithDependencies(materialID);
+        }
+    }
+}
+
+int materialIsActive(MaterialID materialID)
+{
+    return (materialID < materialArray.size && materialArray.data[materialID].active);
+}
+
+void materialBind(MaterialID materialID)
+{
+    const Material* material = &materialArray.data[materialID];
+    shaderProgramBind(material->shaderProgram);
+    for (unsigned int unit = 0u; unit < material->textureCount; ++unit)
+    {
+        textureBind(material->textures[unit], unit);
+    }
+    for (unsigned int unit = 0u; unit < material->samplerCount; ++unit)
+    {
+        samplerBind(material->samplers[unit], unit);
     }
 }
 

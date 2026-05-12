@@ -5,24 +5,28 @@
 #include "sampler.h"
 #include "shader_program.h"
 
+#define MATERIAL_MAX_TEXTURE_COUNT 4u
+#define MATERIAL_MAX_SAMPLER_COUNT 4u
+
 typedef unsigned int MaterialID;
 
 typedef struct MaterialCreateInfo
 {
     ShaderProgramID shaderProgram;
-    const TextureID* textures;
+    TextureID textures[MATERIAL_MAX_TEXTURE_COUNT];
     unsigned int textureCount;
-    const SamplerID* samplers;
+    SamplerID samplers[MATERIAL_MAX_SAMPLER_COUNT];
     unsigned int samplerCount;
 } MaterialCreateInfo;
 
 MaterialID materialCreate(const MaterialCreateInfo* materialCreateInfo);
-void materialDestroy(MaterialID material);
-void materialDestroyWithDependencies(MaterialID material);
 
-void materialBind(MaterialID material);
-
+void materialDestroy(MaterialID materialID);
+void materialDestroyWithDependencies(MaterialID materialID);
 void materialDestroyAll();
-
 void materialDestroyAllWithDependencies();
+
+int materialIsActive(MaterialID materialID);
+
+void materialBind(MaterialID materialID);
 

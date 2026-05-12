@@ -52,7 +52,7 @@ TextureID textureCreate(const char* texturePath)
 
     glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, externalFormat, GL_UNSIGNED_BYTE, pixels);
     glGenerateMipmap(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, TEXTURE_NULL);
+    glBindTexture(GL_TEXTURE_2D, 0);
     stbi_image_free(pixels);
     glCheckErrors();
 

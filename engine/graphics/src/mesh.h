@@ -6,7 +6,13 @@
 
 typedef unsigned int MeshID;
 
-MeshID meshCreate(const Vertex* vertices, unsigned int vertexCount, const unsigned int* indices, unsigned int indexCount, DrawMode drawMode);
+MeshID meshCreatePBR(const VertexPBR* vertices, unsigned int vertexCount, const unsigned int* indices, unsigned int indexCount, DrawMode drawMode);
+MeshID meshCreateVoxel(const VertexVoxel* vertices, unsigned int vertexCount, const unsigned int* indices, unsigned int indexCount, DrawMode drawMode);
+
 void meshDestroy(MeshID meshID);
+void meshDestroyAll();
+
+int meshIsActive(MeshID meshID);
+
 void meshDraw(MeshID meshID);
 

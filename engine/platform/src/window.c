@@ -228,7 +228,7 @@ Window* windowCreate(int width, int height, const char* title)
     glfwSetScrollCallback(window->handle, scrollCallback);
     glfwSetDropCallback(window->handle, dropCallback);
 
-    windowSetVSync(window, TRUE);
+    windowSetVSync(window, true);
     
     logInfo("WINDOW", "created");
     return window;

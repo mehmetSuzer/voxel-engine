@@ -56,14 +56,14 @@ void samplerDestroy(SamplerID sampler)
     glCheckErrors();
 }
 
+int samplerIsActive(SamplerID sampler)
+{
+    return (glIsSampler(sampler) == GL_TRUE);
+}
+
 void samplerBind(SamplerID sampler, unsigned int unit)
 {
     glBindSampler(unit, sampler);
     glCheckErrors();
-}
-
-int samplerIsActive(SamplerID sampler)
-{
-    return (glIsSampler(sampler) == GL_TRUE);
 }
 
