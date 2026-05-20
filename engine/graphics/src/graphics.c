@@ -1,5 +1,6 @@
 
 #include "error.h"
+#include "glad/glad.h"
 #include "log/log.h"
 #include "graphics/graphics.h"
 
@@ -17,18 +18,18 @@ typedef struct DepthTestState
     int writeEnabled;
     float near;
     float far;
-    TestFunc func;
+    CompareFunc compareFunc;
 } DepthTestState;
 
 typedef struct StencilTestFaceState
 {
-    TestFunc func;
+    CompareFunc compareFunc;
     int reference;
     unsigned int testMask;
     unsigned int writeMask;
-    StencilOp stencilFail;
-    StencilOp depthFail;
-    StencilOp depthPass;
+    StencilOperation stencilFail;
+    StencilOperation depthFail;
+    StencilOperation depthPass;
 } StencilTestFaceState;
 
 typedef struct StencilTestState
@@ -60,7 +61,7 @@ typedef struct CullFaceState
 {
     int enabled;
     Face face;
-    FrontFace front;
+    FrontFace frontFace;
 } CullFaceState;
 
 typedef struct DitherState
@@ -119,7 +120,7 @@ typedef struct FramebufferSRGBState
 typedef struct PrimitiveRestartState
 {
     int enabled;
-    unsigned int index;
+    unsigned int restartIndex;
 } PrimitiveRestartState;
 
 typedef struct PolygonFaceState
@@ -169,27 +170,27 @@ static GraphicsState graphicsState = {
         .writeEnabled = 1,
         .near = 0.0f,
         .far  = 1.0f,
-        .func = TestFuncLess,
+        .compareFunc = CompareFuncLess,
     },
     .stencilTest = {
         .enabled = 0,
         .front = {
-            .func = TestFuncAlways,
+            .compareFunc = CompareFuncAlways,
             .reference = 0,
             .testMask = 0xFFFFFFFFu,
             .writeMask = 0xFFFFFFFFu,
-            .stencilFail = StencilOpKeep,
-            .depthFail   = StencilOpKeep,
-            .depthPass   = StencilOpKeep,
+            .stencilFail = StencilOperationKeep,
+            .depthFail   = StencilOperationKeep,
+            .depthPass   = StencilOperationKeep,
         },
         .back = {
-            .func = TestFuncAlways,
+            .compareFunc = CompareFuncAlways,
             .reference = 0,
             .testMask = 0xFFFFFFFFu,
             .writeMask = 0xFFFFFFFFu,
-            .stencilFail = StencilOpKeep,
-            .depthFail   = StencilOpKeep,
-            .depthPass   = StencilOpKeep,
+            .stencilFail = StencilOperationKeep,
+            .depthFail   = StencilOperationKeep,
+            .depthPass   = StencilOperationKeep,
         },
     },
     .scissorTest = {
@@ -209,7 +210,7 @@ static GraphicsState graphicsState = {
     .cullFace = {
         .enabled = 0,
         .face = FaceBack,
-        .front = FrontFaceCCW,
+        .frontFace = FrontFaceCCW,
     },
     .dither = {
         .enabled = 0,
@@ -248,7 +249,7 @@ static GraphicsState graphicsState = {
     },
     .primitiveRestart = {
         .enabled = 0,
-        .index = 0xFFFFFFFFu,
+        .restartIndex = 0xFFFFFFFFu,
     },
     .polygon = {
         .front = 
@@ -263,7 +264,7 @@ static GraphicsState graphicsState = {
         .colour = {0.0f, 0.0f, 0.0f, 1.0f},
         .depth = DEPTH_FURTHEST,
         .stencil = 0u,
-    }
+    },
 };
 
 static int* getCapabilityStatePointer(Capability capability)
@@ -309,36 +310,37 @@ static int* getCapabilityStatePointer(Capability capability)
     }
 }
 
-void graphicsInit(GLADloadproc loader)
+void graphicsInit(GraphicsFunctionLoader graphicsFunctionLoader)
 {
-    if (!gladLoadGLLoader(loader))
+    if (!gladLoadGLLoader(graphicsFunctionLoader))
     {
         logError("GRAPHICS", "failed to initialise");
-        exit(EXIT_FAILURE);
+        return;
     }
 
+    logInfo("GRAPHICS", "initialised");
     glGetIntegerv(GL_SAMPLES, &graphicsState.multisample.samples);
     logInfo("GRAPHICS", "MSAA %i sample(s)", graphicsState.multisample.samples);
 }
 
 void graphicsEnable(Capability capability)
 {
-    int* statePtr = getCapabilityStatePointer(capability);
-    if (!(*statePtr))
+    int* capabilityStatePointer = getCapabilityStatePointer(capability);
+    if (!(*capabilityStatePointer))
     {
-        *statePtr = 1;
-        glEnable((GLenum)capability);
+        *capabilityStatePointer = 1;
+        glEnable(capabilityToCode(capability));
         glCheckErrors();
     }
 }
 
 void graphicsDisable(Capability capability)
 {
-    int* statePtr = getCapabilityStatePointer(capability);
-    if (*statePtr)
+    int* capabilityStatePointer = getCapabilityStatePointer(capability);
+    if (*capabilityStatePointer)
     {
-        *statePtr = 0;
-        glDisable((GLenum)capability);
+        *capabilityStatePointer = 0;
+        glDisable(capabilityToCode(capability));
         glCheckErrors();
     }
 }
@@ -359,12 +361,12 @@ void graphicsViewport(int x, int y, int width, int height)
     }
 }
 
-void graphicsDepthFunc(TestFunc func)
+void graphicsDepthFunc(CompareFunc compareFunc)
 {
-    if (graphicsState.depthTest.func != func)
+    if (graphicsState.depthTest.compareFunc != compareFunc)
     {
-        graphicsState.depthTest.func = func;
-        glDepthFunc((GLenum)func);
+        graphicsState.depthTest.compareFunc = compareFunc;
+        glDepthFunc(compareFuncToCode(compareFunc));
         glCheckErrors();
     }
 }
@@ -374,7 +376,7 @@ void graphicsDepthWriteEnable(int writeEnabled)
     if (graphicsState.depthTest.writeEnabled != writeEnabled)
     {
         graphicsState.depthTest.writeEnabled = writeEnabled;
-        glDepthMask((GLboolean)writeEnabled);
+        glDepthMask(writeEnabled);
         glCheckErrors();
     }
 }
@@ -391,30 +393,30 @@ void graphicsDepthRange(float near, float far)
     }
 }
 
-void graphicsStencilFunc(Face face, TestFunc func, int reference, unsigned int testMask)
+void graphicsStencilFunc(Face face, CompareFunc compareFunc, int reference, unsigned int testMask)
 {
     int dirty = 0;
     StencilTestFaceState* front = &graphicsState.stencilTest.front;
     StencilTestFaceState* back  = &graphicsState.stencilTest.back;
 
-    if ((face == FaceFront || face == FaceBoth) && (front->func != func || front->reference != reference || front->testMask != testMask))
+    if ((face == FaceFront || face == FaceBoth) && (front->compareFunc != compareFunc || front->reference != reference || front->testMask != testMask))
     {
-        front->func      = func;
-        front->reference = reference;
-        front->testMask  = testMask;
+        front->compareFunc = compareFunc;
+        front->reference   = reference;
+        front->testMask    = testMask;
         dirty = 1;
     }
-    if ((face == FaceBack || face == FaceBoth) && (back->func != func || back->reference != reference || back->testMask != testMask))
+    if ((face == FaceBack || face == FaceBoth) && (back->compareFunc != compareFunc || back->reference != reference || back->testMask != testMask))
     {
-        back->func      = func;
-        back->reference = reference;
-        back->testMask  = testMask;
+        back->compareFunc = compareFunc;
+        back->reference   = reference;
+        back->testMask    = testMask;
         dirty = 1;
     }
 
     if (dirty)
     {
-        glStencilFuncSeparate((GLenum)face, (GLenum)func, reference, testMask);
+        glStencilFuncSeparate(faceToCode(face), compareFuncToCode(compareFunc), reference, testMask);
         glCheckErrors();
     }
 }
@@ -438,12 +440,12 @@ void graphicsStencilWriteMask(Face face, unsigned int writeMask)
 
     if (dirty)
     {
-        glStencilMaskSeparate((GLenum)face, writeMask);
+        glStencilMaskSeparate(faceToCode(face), writeMask);
         glCheckErrors();
     }
 }
 
-void graphicsStencilOp(Face face, StencilOp stencilFail, StencilOp depthFail, StencilOp depthPass)
+void graphicsStencilOperation(Face face, StencilOperation stencilFail, StencilOperation depthFail, StencilOperation depthPass)
 {
     int dirty = 0;
     StencilTestFaceState* front = &graphicsState.stencilTest.front;
@@ -467,7 +469,7 @@ void graphicsStencilOp(Face face, StencilOp stencilFail, StencilOp depthFail, St
 
     if (dirty)
     {
-        glStencilOpSeparate((GLenum)face, (GLenum)stencilFail, (GLenum)depthFail, (GLenum)depthPass);
+        glStencilOpSeparate(faceToCode(face), stencilOperationToCode(stencilFail), stencilOperationToCode(depthFail), stencilOperationToCode(depthPass));
         glCheckErrors();
     }
 }
@@ -499,7 +501,7 @@ void graphicsBlendFactor(BlendFactor srcRGB, BlendFactor dstRGB, BlendFactor src
         graphicsState.blend.dstRGB   = dstRGB;
         graphicsState.blend.srcAlpha = srcAlpha;
         graphicsState.blend.dstAlpha = dstAlpha;
-        glBlendFuncSeparate((GLenum)srcRGB, (GLenum)dstRGB, (GLenum)srcAlpha, (GLenum)dstAlpha);
+        glBlendFuncSeparate(blendFactorToCode(srcRGB), blendFactorToCode(dstRGB), blendFactorToCode(srcAlpha), blendFactorToCode(dstAlpha));
         glCheckErrors();
     }
 }
@@ -511,7 +513,7 @@ void graphicsBlendEquation(BlendEquation equationRGB, BlendEquation equationAlph
     {
         graphicsState.blend.equationRGB   = equationRGB;
         graphicsState.blend.equationAlpha = equationAlpha;
-        glBlendEquationSeparate((GLenum)equationRGB, (GLenum)equationAlpha);
+        glBlendEquationSeparate(blendEquationToCode(equationRGB), blendEquationToCode(equationAlpha));
         glCheckErrors();
     }
 }
@@ -537,17 +539,17 @@ void graphicsCullFace(Face face)
     if (graphicsState.cullFace.face != face)
     {
         graphicsState.cullFace.face = face;
-        glCullFace((GLenum)face);
+        glCullFace(faceToCode(face));
         glCheckErrors();
     }
 }
 
-void graphicsFrontFace(FrontFace front)
+void graphicsFrontFace(FrontFace frontFace)
 {
-    if (graphicsState.cullFace.front != front)
+    if (graphicsState.cullFace.frontFace != frontFace)
     {
-        graphicsState.cullFace.front = front;
-        glFrontFace((GLenum)front);
+        graphicsState.cullFace.frontFace = frontFace;
+        glFrontFace(frontFaceToCode(frontFace));
         glCheckErrors();
     }
 }
@@ -559,7 +561,7 @@ void graphicsSampleCoverage(float coverage, int invert)
     {
         graphicsState.sampleCoverage.coverage = coverage;
         graphicsState.sampleCoverage.invert   = invert;
-        glSampleCoverage(coverage, (GLboolean)invert);
+        glSampleCoverage(coverage, invert);
         glCheckErrors();
     }
 }
@@ -586,33 +588,33 @@ void graphicsPointSize(float size)
     }
 }
 
-void graphicsPrimitiveRestartIndex(unsigned int index)
+void graphicsPrimitiveRestartIndex(unsigned int restartIndex)
 {
-    if (graphicsState.primitiveRestart.index != index)
+    if (graphicsState.primitiveRestart.restartIndex != restartIndex)
     {
-        graphicsState.primitiveRestart.index = index;
-        glPrimitiveRestartIndex(index);
+        graphicsState.primitiveRestart.restartIndex = restartIndex;
+        glPrimitiveRestartIndex(restartIndex);
         glCheckErrors();
     }
 }
 
-void graphicsPolygonMode(Face face, PolygonMode mode)
+void graphicsPolygonMode(Face face, PolygonMode polygonMode)
 {
     int dirty = 0;
-    if ((face == FaceFront || face == FaceBoth) && graphicsState.polygon.front.mode != mode)
+    if ((face == FaceFront || face == FaceBoth) && graphicsState.polygon.front.mode != polygonMode)
     {
-        graphicsState.polygon.front.mode = mode;
+        graphicsState.polygon.front.mode = polygonMode;
         dirty = 1;
     }
-    if ((face == FaceBack || face == FaceBoth) && graphicsState.polygon.back.mode != mode)
+    if ((face == FaceBack || face == FaceBoth) && graphicsState.polygon.back.mode != polygonMode)
     {
-        graphicsState.polygon.back.mode = mode;
+        graphicsState.polygon.back.mode = polygonMode;
         dirty = 1;
     }
     
     if (dirty)
     {
-        glPolygonMode((GLenum)face, (GLenum)mode);
+        glPolygonMode(faceToCode(face), polygonModeToCode(polygonMode));
         glCheckErrors();
     }
 }
@@ -648,14 +650,14 @@ void graphicsClearStencil(unsigned int stencil)
     if (graphicsState.clear.stencil != stencil)
     {
         graphicsState.clear.stencil = stencil;
-        glClearStencil((GLint)stencil);
+        glClearStencil(stencil);
         glCheckErrors();
     }
 }
 
-void graphicsClear(BufferBit bits)
+void graphicsClear(BufferBit bufferBits)
 {
-    glClear((GLbitfield)bits);
+    glClear(bufferBitsToCode(bufferBits));
     glCheckErrors();
 }
 

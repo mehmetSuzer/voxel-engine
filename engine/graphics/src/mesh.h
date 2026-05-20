@@ -1,8 +1,8 @@
 
 #pragma once
 
-#include "enums.h"
 #include "vertex.h"
+#include "graphics/enums.h"
 
 typedef unsigned int MeshID;
 

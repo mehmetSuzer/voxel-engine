@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include "enums.h"
+#include "graphics/enums.h"
 
 typedef unsigned int SamplerID;
 

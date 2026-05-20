@@ -1,8 +1,8 @@
 
 #include <assert.h>
-#include "enums.h"
 #include "log/log.h"
 #include "glad/glad.h"
+#include "graphics/enums.h"
 
 unsigned int capabilityToCode(Capability capability)
 {
@@ -33,19 +33,22 @@ unsigned int capabilityToCode(Capability capability)
     return GL_DEPTH_TEST;
 }
 
-unsigned int bufferBitToCode(BufferBit bufferBit)
+unsigned int bufferBitsToCode(BufferBit bufferBits)
 {
-    switch (bufferBit)
+    unsigned int code = 0u;
+    if (bufferBits | BufferBitColour  != 0) { code |= GL_COLOR_BUFFER_BIT;   }
+    if (bufferBits | BufferBitDepth   != 0) { code |= GL_DEPTH_BUFFER_BIT;   }
+    if (bufferBits | BufferBitStencil != 0) { code |= GL_STENCIL_BUFFER_BIT; }
+
+    if (code == 0u)
     {
-        case BufferBitColour:  return GL_COLOR_BUFFER_BIT;
-        case BufferBitDepth:   return GL_DEPTH_BUFFER_BIT;
-        case BufferBitStencil: return GL_STENCIL_BUFFER_BIT;
+        logError("ENUMS", "invalid buffer bits");
+        assert(0);
+
+        return GL_COLOR_BUFFER_BIT;
     }
-
-    logError("ENUMS", "invalid buffer bit");
-    assert(0);
-
-    return GL_COLOR_BUFFER_BIT;
+    
+    return code;
 }
 
 unsigned int wrapToCode(Wrap wrap)

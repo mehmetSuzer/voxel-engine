@@ -1,7 +1,6 @@
 
 find_package(OpenGL REQUIRED)
 find_package(cglm REQUIRED)
-find_package(Ktx REQUIRED)
 
 file(GLOB_RECURSE SOURCE_FILES 
     CONFIGURE_DEPENDS 
@@ -18,7 +17,6 @@ target_include_directories(graphics
 target_link_libraries(graphics
     PRIVATE OpenGL::GL
     PRIVATE cglm::cglm
-    PRIVATE KTX::ktx
     PRIVATE log
     PRIVATE utils
 )
