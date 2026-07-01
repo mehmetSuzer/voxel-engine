@@ -14,8 +14,10 @@ typedef unsigned int ShaderProgramID;
 
 #define SHADER_PROGRAM_NULL ((ShaderProgramID)0)
 
-ShaderProgramID shaderProgramCreateC(const char* computeShaderPath);
-ShaderProgramID shaderProgramCreateV(const char* vertexShaderPath);
+ShaderProgramID shaderProgramCreateC(
+    const char* computeShaderPath);
+ShaderProgramID shaderProgramCreateV(
+    const char* vertexShaderPath);
 ShaderProgramID shaderProgramCreateVF(
     const char* vertexShaderPath,
     const char* fragmentShaderPath);
@@ -41,6 +43,9 @@ int shaderProgramIsActive(ShaderProgramID shaderProgramID);
 
 void shaderProgramBind(ShaderProgramID shaderProgramID);
 
+void shaderProgramDispatchCompute(ShaderProgramID shaderProgramID, unsigned int xGroupCount, unsigned int yGroupCount, unsigned int zGroupCount);
+void shaderProgramDispatchComputeIndirect(ShaderProgramID shaderProgramID, long indirect);
+
 void shaderProgramSetUniformi(ShaderProgramID shaderProgramID, const char* uniform, int          value);
 void shaderProgramSetUniformu(ShaderProgramID shaderProgramID, const char* uniform, unsigned int value);
 void shaderProgramSetUniformf(ShaderProgramID shaderProgramID, const char* uniform, float        value);
@@ -63,3 +68,4 @@ void shaderProgramSetUniformMat4x2f(ShaderProgramID shaderProgramID, const char*
 void shaderProgramSetUniformMat4x3f(ShaderProgramID shaderProgramID, const char* uniform, mat4x3 matrix);
 void shaderProgramSetUniformMat4f  (ShaderProgramID shaderProgramID, const char* uniform, mat4   matrix);
 
+// TODO: Write SetUniformWithLocation functions

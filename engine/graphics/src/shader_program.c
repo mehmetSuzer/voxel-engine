@@ -492,8 +492,20 @@ int shaderProgramIsActive(ShaderProgramID shaderProgramID)
 void shaderProgramBind(ShaderProgramID shaderProgramID)
 {
     glUseProgram(shaderProgramID);
+    logVerbose("PROGRAM", "binded: %u", shaderProgramID);
     glCheckErrors();
-    logVerbose("PROGRAM", "binded");
+}
+
+// TODO: You don't use shaderProgramID at all
+void shaderProgramDispatchCompute(ShaderProgramID shaderProgramID, unsigned int xGroupCount, unsigned int yGroupCount, unsigned int zGroupCount)
+{
+    glDispatchCompute(xGroupCount, yGroupCount, zGroupCount);
+}
+
+// TODO: You don't use shaderProgramID at all
+void shaderProgramDispatchComputeIndirect(ShaderProgramID shaderProgramID, long indirect)
+{
+    glDispatchComputeIndirect(indirect);
 }
 
 void shaderProgramSetUniformi(ShaderProgramID shaderProgramID, const char* uniform, int value)

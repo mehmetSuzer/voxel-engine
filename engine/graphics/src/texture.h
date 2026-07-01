@@ -1,6 +1,8 @@
 
 #pragma once
 
+#include "graphics/enums.h"
+
 typedef unsigned int TextureID;
 
 #define TEXTURE_NULL ((TextureID)0)

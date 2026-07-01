@@ -1,6 +1,7 @@
 
 #include <string.h>
 #include "model.h"
+#include "log/log.h"
 
 typedef struct Model
 {
@@ -79,5 +80,6 @@ void modelDraw(ModelID modelID)
         materialBind(model->meshMaterialPairs[i].materialID);
         meshDraw(model->meshMaterialPairs[i].meshID);
     }
+    logVerbose("MODEL", "drawn: %u", modelID);
 }
 

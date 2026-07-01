@@ -72,7 +72,10 @@ MeshID meshCreatePBR(const VertexPBR* vertices, unsigned int vertexCount, const 
 
     vertexPBRLinkAttributes();
     glBindVertexArray(0);
+    glCheckErrors();
 
+    mesh.drawMode = drawMode;
+    mesh.indexCount = indexCount;
     const MeshID meshID = meshArrayPush(&mesh);
     return meshID;
 }
@@ -95,7 +98,10 @@ MeshID meshCreateVoxel(const VertexVoxel* vertices, unsigned int vertexCount, co
 
     vertexVoxelLinkAttributes();
     glBindVertexArray(0);
+    glCheckErrors();
 
+    mesh.drawMode = drawMode;
+    mesh.indexCount = indexCount;
     const MeshID meshID = meshArrayPush(&mesh);
     return meshID;
 }
@@ -106,6 +112,7 @@ void meshDestroy(MeshID meshID)
     glDeleteVertexArrays(1, &mesh->VAO);
     glDeleteBuffers(1, &mesh->VBO);
     glDeleteBuffers(1, &mesh->EBO);
+    glCheckErrors();
     *mesh = (Mesh){0};
 }
 
@@ -119,6 +126,7 @@ void meshDestroyAll()
             glDeleteVertexArrays(1, &mesh->VAO);
             glDeleteBuffers(1, &mesh->VBO);
             glDeleteBuffers(1, &mesh->EBO);
+            glCheckErrors();
         }
     }
 
@@ -136,7 +144,8 @@ void meshDraw(MeshID meshID)
 {
     const Mesh* mesh = &meshArray.data[meshID];
     glBindVertexArray(mesh->VAO);
-    glDrawElements(mesh->drawMode, mesh->indexCount, GL_UNSIGNED_INT, NULL);
-    glBindVertexArray(0);
+    glDrawElements(drawModeToNative(mesh->drawMode), mesh->indexCount, GL_UNSIGNED_INT, NULL);
+    logVerbose("MESH", "drawn: %u", meshID);
+    glCheckErrors();
 }
 

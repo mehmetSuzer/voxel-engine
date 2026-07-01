@@ -4,7 +4,7 @@
 #include "glad/glad.h"
 #include "graphics/enums.h"
 
-unsigned int capabilityToCode(Capability capability)
+unsigned int capabilityToNative(Capability capability)
 {
     switch (capability)
     {
@@ -33,14 +33,14 @@ unsigned int capabilityToCode(Capability capability)
     return GL_DEPTH_TEST;
 }
 
-unsigned int bufferBitsToCode(BufferBit bufferBits)
+unsigned int bufferBitsToNative(BufferBit bufferBits)
 {
-    unsigned int code = 0u;
-    if (bufferBits | BufferBitColour  != 0) { code |= GL_COLOR_BUFFER_BIT;   }
-    if (bufferBits | BufferBitDepth   != 0) { code |= GL_DEPTH_BUFFER_BIT;   }
-    if (bufferBits | BufferBitStencil != 0) { code |= GL_STENCIL_BUFFER_BIT; }
+    unsigned int native = 0u;
+    if (bufferBits & BufferBitColour  != 0) { native |= GL_COLOR_BUFFER_BIT;   }
+    if (bufferBits & BufferBitDepth   != 0) { native |= GL_DEPTH_BUFFER_BIT;   }
+    if (bufferBits & BufferBitStencil != 0) { native |= GL_STENCIL_BUFFER_BIT; }
 
-    if (code == 0u)
+    if (native == 0u)
     {
         logError("ENUMS", "invalid buffer bits");
         assert(0);
@@ -48,59 +48,74 @@ unsigned int bufferBitsToCode(BufferBit bufferBits)
         return GL_COLOR_BUFFER_BIT;
     }
     
-    return code;
+    return native;
 }
 
-unsigned int wrapToCode(Wrap wrap)
+unsigned int textureWrapToNative(TextureWrap textureWrap)
 {
-    switch (wrap)
+    switch (textureWrap)
     {
-        case WrapRepeat:            return GL_REPEAT;
-        case WrapMirroredRepeat:    return GL_MIRRORED_REPEAT;
-        case WrapClampToEdge:       return GL_CLAMP_TO_EDGE;
-        case WrapClampToBorder:     return GL_CLAMP_TO_BORDER;
-        case WrapMirrorClampToEdge: return GL_MIRROR_CLAMP_TO_EDGE;
+        case TextureWrapRepeat:            return GL_REPEAT;
+        case TextureWrapMirroredRepeat:    return GL_MIRRORED_REPEAT;
+        case TextureWrapClampToEdge:       return GL_CLAMP_TO_EDGE;
+        case TextureWrapClampToBorder:     return GL_CLAMP_TO_BORDER;
+        case TextureWrapMirrorClampToEdge: return GL_MIRROR_CLAMP_TO_EDGE;
     }
 
-    logError("ENUMS", "invalid wrap");
+    logError("ENUMS", "invalid texture wrap");
     assert(0);
 
     return GL_REPEAT;
 }
 
-unsigned int minFilterToCode(MinFilter minFilter)
+unsigned int textureMinFilterToNative(TextureMinFilter textureMinFilter)
 {
-    switch (minFilter)
+    switch (textureMinFilter)
     {
-        case MinFilterNearest:              return GL_NEAREST;
-        case MinFilterLinear:               return GL_LINEAR;
-        case MinFilterNearestMipmapNearest: return GL_NEAREST_MIPMAP_NEAREST;
-        case MinFilterLinearMipmapNearest:  return GL_LINEAR_MIPMAP_NEAREST;
-        case MinFilterNearestMipmapLinear:  return GL_NEAREST_MIPMAP_LINEAR;
-        case MinFilterLinearMipmapLinear:   return GL_LINEAR_MIPMAP_LINEAR;
+        case TextureMinFilterNearest:              return GL_NEAREST;
+        case TextureMinFilterLinear:               return GL_LINEAR;
+        case TextureMinFilterNearestMipmapNearest: return GL_NEAREST_MIPMAP_NEAREST;
+        case TextureMinFilterLinearMipmapNearest:  return GL_LINEAR_MIPMAP_NEAREST;
+        case TextureMinFilterNearestMipmapLinear:  return GL_NEAREST_MIPMAP_LINEAR;
+        case TextureMinFilterLinearMipmapLinear:   return GL_LINEAR_MIPMAP_LINEAR;
     }
 
-    logError("ENUMS", "invalid min filter");
+    logError("ENUMS", "invalid texture min filter");
     assert(0);
 
     return GL_NEAREST;
 }
 
-unsigned int magFilterToCode(MagFilter magFilter)
+unsigned int textureMagFilterToNative(TextureMagFilter textureMagFilter)
 {
-    switch (magFilter)
+    switch (textureMagFilter)
     {
-        case MagFilterNearest:  return GL_NEAREST;
-        case MagFilterLinear:   return GL_LINEAR;
+        case TextureMagFilterNearest:  return GL_NEAREST;
+        case TextureMagFilterLinear:   return GL_LINEAR;
     }
 
-    logWarning("ENUMS", "invalid mag filter");
+    logWarning("ENUMS", "invalid texture mag filter");
     assert(0);
 
     return GL_NEAREST;
 }
 
-unsigned int compareModeToCode(CompareMode compareMode)
+unsigned int textureAccessToNative(TextureAccess textureAccess)
+{
+    switch (textureAccess)
+    {
+        case TextureAccessReadOnly:  return GL_READ_ONLY; 
+        case TextureAccessWriteOnly: return GL_WRITE_ONLY; 
+        case TextureAccessReadWrite: return GL_READ_WRITE; 
+    }
+
+    logError("ENUMS", "invalid texture access");
+    assert(0);
+
+    return GL_READ_ONLY;
+}
+
+unsigned int compareModeToNative(CompareMode compareMode)
 {
     switch (compareMode)
     {
@@ -114,7 +129,7 @@ unsigned int compareModeToCode(CompareMode compareMode)
     return GL_NONE;
 }
 
-unsigned int compareFuncToCode(CompareFunc compareFunc)
+unsigned int compareFuncToNative(CompareFunc compareFunc)
 {
     switch (compareFunc)
     {
@@ -134,7 +149,7 @@ unsigned int compareFuncToCode(CompareFunc compareFunc)
     return GL_NEVER;
 }
 
-unsigned int stencilOperationToCode(StencilOperation stencilOperation)
+unsigned int stencilOperationToNative(StencilOperation stencilOperation)
 {
     switch (stencilOperation)
     {
@@ -154,7 +169,7 @@ unsigned int stencilOperationToCode(StencilOperation stencilOperation)
     return GL_KEEP;
 }
 
-unsigned int faceToCode(Face face)
+unsigned int faceToNative(Face face)
 {
     switch (face)
     {
@@ -169,7 +184,7 @@ unsigned int faceToCode(Face face)
     return GL_FRONT;
 }
 
-unsigned int frontFaceToCode(FrontFace frontFace)
+unsigned int frontFaceToNative(FrontFace frontFace)
 {
     switch (frontFace)
     {
@@ -183,7 +198,7 @@ unsigned int frontFaceToCode(FrontFace frontFace)
     return GL_CW;
 }
 
-unsigned int blendFactorToCode(BlendFactor blendFactor)
+unsigned int blendFactorToNative(BlendFactor blendFactor)
 {
     switch (blendFactor)
     {
@@ -210,7 +225,7 @@ unsigned int blendFactorToCode(BlendFactor blendFactor)
     return GL_ZERO;
 }
 
-unsigned int blendEquationToCode(BlendEquation blendEquation)
+unsigned int blendEquationToNative(BlendEquation blendEquation)
 {
     switch (blendEquation)
     {
@@ -227,7 +242,7 @@ unsigned int blendEquationToCode(BlendEquation blendEquation)
     return GL_FUNC_ADD;
 }
 
-unsigned int polygonModeToCode(PolygonMode polygonMode)
+unsigned int polygonModeToNative(PolygonMode polygonMode)
 {
     switch (polygonMode)
     {
@@ -242,7 +257,7 @@ unsigned int polygonModeToCode(PolygonMode polygonMode)
     return GL_POINT;
 }
 
-unsigned int drawModeToCode(DrawMode drawMode)
+unsigned int drawModeToNative(DrawMode drawMode)
 {
     switch (drawMode)
     {
@@ -261,7 +276,37 @@ unsigned int drawModeToCode(DrawMode drawMode)
     return GL_POINTS;
 }
 
-unsigned int bufferUsageToCode(BufferUsage bufferUsage)
+unsigned int memoryBarrierBitsToNative(MemoryBarrierBit memoryBarrierBits)
+{
+    unsigned int native = 0u;
+    if (memoryBarrierBits & MemoryBarrierBitVertexAttributeArray != 0) { native |= GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT;  } 
+    if (memoryBarrierBits & MemoryBarrierBitElementArray         != 0) { native |= GL_ELEMENT_ARRAY_BARRIER_BIT;        }       
+    if (memoryBarrierBits & MemoryBarrierBitUniform              != 0) { native |= GL_UNIFORM_BARRIER_BIT;              }
+    if (memoryBarrierBits & MemoryBarrierBitTextureFetch         != 0) { native |= GL_TEXTURE_FETCH_BARRIER_BIT;        }
+    if (memoryBarrierBits & MemoryBarrierBitShaderImageAccess    != 0) { native |= GL_SHADER_IMAGE_ACCESS_BARRIER_BIT;  }
+    if (memoryBarrierBits & MemoryBarrierBitCommand              != 0) { native |= GL_COMMAND_BARRIER_BIT;              }
+    if (memoryBarrierBits & MemoryBarrierBitPixelBuffer          != 0) { native |= GL_PIXEL_BUFFER_BARRIER_BIT;         }
+    if (memoryBarrierBits & MemoryBarrierBitTextureUpdate        != 0) { native |= GL_TEXTURE_UPDATE_BARRIER_BIT;       }
+    if (memoryBarrierBits & MemoryBarrierBitBufferUpdate         != 0) { native |= GL_BUFFER_UPDATE_BARRIER_BIT;        }
+    if (memoryBarrierBits & MemoryBarrierBitFramebuffer          != 0) { native |= GL_FRAMEBUFFER_BARRIER_BIT;          }
+    if (memoryBarrierBits & MemoryBarrierBitTransformFeedback    != 0) { native |= GL_TRANSFORM_FEEDBACK_BARRIER_BIT;   }
+    if (memoryBarrierBits & MemoryBarrierBitAtomicCounter        != 0) { native |= GL_ATOMIC_COUNTER_BARRIER_BIT;       }
+    if (memoryBarrierBits & MemoryBarrierBitShaderStorage        != 0) { native |= GL_SHADER_STORAGE_BARRIER_BIT;       }
+    if (memoryBarrierBits & MemoryBarrierBitClientMappedBuffer   != 0) { native |= GL_CLIENT_MAPPED_BUFFER_BARRIER_BIT; }
+    if (memoryBarrierBits & MemoryBarrierBitQueryBuffer          != 0) { native |= GL_QUERY_BUFFER_BARRIER_BIT;         }
+
+    if (native == 0u)
+    {
+        logError("ENUMS", "invalid memory barrier bits");
+        assert(0);
+
+        return GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT;
+    }
+    
+    return native;
+}
+
+unsigned int bufferUsageToNative(BufferUsage bufferUsage)
 {
     switch (bufferUsage)
     {
@@ -280,5 +325,75 @@ unsigned int bufferUsageToCode(BufferUsage bufferUsage)
     assert(0);
 
     return GL_STATIC_DRAW;
+}
+
+unsigned int bufferStorageBitsToNative(BufferStorageBit bufferStorageBits)
+{
+    unsigned int native = 0u;
+    if (bufferStorageBits & BufferStorageBitMapRead        != 0) { native |= GL_MAP_READ_BIT;        }
+    if (bufferStorageBits & BufferStorageBitMapWrite       != 0) { native |= GL_MAP_WRITE_BIT;       }
+    if (bufferStorageBits & BufferStorageBitMapPersistent  != 0) { native |= GL_MAP_PERSISTENT_BIT;  }
+    if (bufferStorageBits & BufferStorageBitMapCoherent    != 0) { native |= GL_MAP_COHERENT_BIT;    }
+    if (bufferStorageBits & BufferStorageBitDynamicStorage != 0) { native |= GL_DYNAMIC_STORAGE_BIT; }
+    if (bufferStorageBits & BufferStorageBitClientStorage  != 0) { native |= GL_CLIENT_STORAGE_BIT;  }
+
+    if (native == 0u)
+    {
+        logError("ENUMS", "invalid buffer storage bits");
+        assert(0);
+
+        return GL_MAP_READ_BIT;
+    }
+
+    return native;
+}
+
+unsigned int bufferMapBitsToNative(BufferMapBit bufferMapBits)
+{
+    unsigned int native = 0u;
+    if (bufferMapBits & BufferMapBitRead             != 0) { native |= GL_MAP_READ_BIT;              }
+    if (bufferMapBits & BufferMapBitWrite            != 0) { native |= GL_MAP_WRITE_BIT;             }
+    if (bufferMapBits & BufferMapBitInvalidateRange  != 0) { native |= GL_MAP_INVALIDATE_RANGE_BIT;  }
+    if (bufferMapBits & BufferMapBitInvalidateBuffer != 0) { native |= GL_MAP_INVALIDATE_BUFFER_BIT; }
+    if (bufferMapBits & BufferMapBitFlushExplicit    != 0) { native |= GL_MAP_FLUSH_EXPLICIT_BIT;    }
+    if (bufferMapBits & BufferMapBitUnsynchronised   != 0) { native |= GL_MAP_UNSYNCHRONIZED_BIT;    }
+    if (bufferMapBits & BufferMapBitPersistent       != 0) { native |= GL_MAP_PERSISTENT_BIT;        }
+    if (bufferMapBits & BufferMapBitCoherent         != 0) { native |= GL_MAP_COHERENT_BIT;          }
+
+    if (native == 0u)
+    {
+        logError("ENUMS", "invalid buffer map bits");
+        assert(0);
+
+        return GL_MAP_READ_BIT;
+    }
+
+    return native;
+}
+
+unsigned int bufferTargetToNative(BufferTarget bufferTarget)
+{
+    switch (bufferTarget)
+    {
+        case BufferTargetVertexArray:           return GL_ARRAY_BUFFER;
+        case BufferTargetElementArray:          return GL_ELEMENT_ARRAY_BUFFER;
+        case BufferTargetShaderStorage:         return GL_SHADER_STORAGE_BUFFER;
+        case BufferTargetUniform:               return GL_UNIFORM_BUFFER;
+        case BufferTargetAtomicCounter:         return GL_ATOMIC_COUNTER_BUFFER;
+        case BufferTargetDispatchIndirect:      return GL_DISPATCH_INDIRECT_BUFFER;
+        case BufferTargetDrawIndirect:          return GL_DRAW_INDIRECT_BUFFER;
+        case BufferTargetPixelPack:             return GL_PIXEL_PACK_BUFFER;
+        case BufferTargetPixelUnpack:           return GL_PIXEL_UNPACK_BUFFER;
+        case BufferTargetTexture:               return GL_TEXTURE_BUFFER;
+        case BufferTargetTransformFeedback:     return GL_TRANSFORM_FEEDBACK_BUFFER;
+        case BufferTargetQuery:                 return GL_QUERY_BUFFER;
+        case BufferTargetCopyRead:              return GL_COPY_READ_BUFFER;
+        case BufferTargetCopyWrite:             return GL_COPY_WRITE_BUFFER;
+    }
+
+    logError("ENUMS", "invalid buffer target");
+    assert(0);
+
+    return GL_ARRAY_BUFFER;
 }
 

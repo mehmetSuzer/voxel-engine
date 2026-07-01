@@ -19,7 +19,7 @@ struct Window
     // ------------------------------- //
 };
 
-static int windowFlagToCode(WindowFlag windowFlag)
+static int windowFlagToNative(WindowFlag windowFlag)
 {
     switch (windowFlag)
     {
@@ -37,7 +37,7 @@ static int windowFlagToCode(WindowFlag windowFlag)
     return GLFW_RESIZABLE;
 }
 
-static int windowStateToCode(WindowState windowState)
+static int windowStateToNative(WindowState windowState)
 {
     switch (windowState)
     {
@@ -55,7 +55,7 @@ static int windowStateToCode(WindowState windowState)
     return GLFW_FOCUSED;
 }
 
-static int cursorModeToCode(CursorMode cursorMode)
+static int cursorModeToNative(CursorMode cursorMode)
 {
     switch (cursorMode)
     {
@@ -72,9 +72,9 @@ static int cursorModeToCode(CursorMode cursorMode)
     return GLFW_CURSOR_NORMAL;
 }
 
-static CursorMode cursorModeFromCode(int platformCode)
+static CursorMode cursorModeFromNative(int nativeCursorMode)
 {
-    switch (platformCode)
+    switch (nativeCursorMode)
     {
         case GLFW_CURSOR_NORMAL:        return CursorModeNormal;
         case GLFW_CURSOR_HIDDEN:        return CursorModeHidden;
@@ -83,7 +83,7 @@ static CursorMode cursorModeFromCode(int platformCode)
         case GLFW_CURSOR_UNAVAILABLE:   return CursorModeUnavailable;
     }
 
-    logError("WINDOW", "invalid cursor mode");
+    logError("WINDOW", "invalid native cursor mode");
     assert(0);
 
     return CursorModeNormal;
@@ -279,12 +279,12 @@ void windowSetTitle(Window* window, const char* title)
 
 int windowGetFlag(Window* window, WindowFlag windowFlag)
 {
-    return (glfwGetWindowAttrib(window->handle, windowFlagToCode(windowFlag)) == GLFW_TRUE);
+    return (glfwGetWindowAttrib(window->handle, windowFlagToNative(windowFlag)) == GLFW_TRUE);
 }
 
 void windowSetFlag(Window* window, WindowFlag windowFlag, int enabled)
 {
-    glfwSetWindowAttrib(window->handle, windowFlagToCode(windowFlag), (enabled) ? GLFW_TRUE : GLFW_FALSE);
+    glfwSetWindowAttrib(window->handle, windowFlagToNative(windowFlag), (enabled) ? GLFW_TRUE : GLFW_FALSE);
     const char* message = 
         (windowFlag == WindowFlagResizable       ) ? "resizable"          :
         (windowFlag == WindowFlagDecorated       ) ? "decorated"          :
@@ -297,7 +297,7 @@ void windowSetFlag(Window* window, WindowFlag windowFlag, int enabled)
 
 int windowGetState(Window* window, WindowState windowState)
 {
-    return (glfwGetWindowAttrib(window->handle, windowStateToCode(windowState)) == GLFW_TRUE);
+    return (glfwGetWindowAttrib(window->handle, windowStateToNative(windowState)) == GLFW_TRUE);
 }
 
 void windowGetWindowSize(Window* window, int* widthOut, int* heightOut)
@@ -381,22 +381,22 @@ void windowSetShouldClose(Window* window)
 
 int windowIsKeyPressed(Window* window, Key key)
 {
-    return (glfwGetKey(window->handle, keyToCode(key)) == GLFW_PRESS);
+    return (glfwGetKey(window->handle, keyToNative(key)) == GLFW_PRESS);
 }
 
 int windowIsKeyReleased(Window* window, Key key)
 {
-    return (glfwGetKey(window->handle, keyToCode(key)) == GLFW_RELEASE);
+    return (glfwGetKey(window->handle, keyToNative(key)) == GLFW_RELEASE);
 }
 
 int windowIsMouseButtonPressed(Window* window, MouseButton mouseButton)
 {
-    return (glfwGetMouseButton(window->handle, mouseButtonToCode(mouseButton)) == GLFW_PRESS);
+    return (glfwGetMouseButton(window->handle, mouseButtonToNative(mouseButton)) == GLFW_PRESS);
 }
 
 int windowIsMouseButtonReleased(Window* window, MouseButton mouseButton)
 {
-    return (glfwGetMouseButton(window->handle, mouseButtonToCode(mouseButton)) == GLFW_RELEASE);
+    return (glfwGetMouseButton(window->handle, mouseButtonToNative(mouseButton)) == GLFW_RELEASE);
 }
 
 void windowGetCursorPosition(Window* window, double* xOut, double* yOut)
@@ -413,7 +413,7 @@ void windowSetCursorPosition(Window* window, double x, double y)
 CursorMode windowGetCursorMode(Window* window)
 {
     const int glfwCursorMode = glfwGetInputMode(window->handle, GLFW_CURSOR);
-    const CursorMode cursorMode = cursorModeFromCode(glfwCursorMode);
+    const CursorMode cursorMode = cursorModeFromNative(glfwCursorMode);
     return cursorMode;
 }
 
@@ -424,7 +424,7 @@ void windowSetCursorMode(Window* window, CursorMode cursorMode)
         return;
     }
 
-    glfwSetInputMode(window->handle, GLFW_CURSOR, cursorModeToCode(cursorMode));
+    glfwSetInputMode(window->handle, GLFW_CURSOR, cursorModeToNative(cursorMode));
 
     const char* message = 
         (cursorMode == CursorModeNormal  ) ? "normal"   :

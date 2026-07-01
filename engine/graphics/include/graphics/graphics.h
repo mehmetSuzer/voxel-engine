@@ -49,3 +49,5 @@ void graphicsClearDepth(float depth);
 void graphicsClearStencil(unsigned int stencil);
 void graphicsClear(BufferBit bufferBits);
 
+void graphicsMemoryBarrier(MemoryBarrierBit memoryBarrierBits);
+

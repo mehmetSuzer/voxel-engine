@@ -23,50 +23,59 @@ typedef enum Capability
     CapabilityCount,
 } Capability;
 
-unsigned int capabilityToCode(Capability capability);
+unsigned int capabilityToNative(Capability capability);
 
 typedef enum BufferBit
 {
-    BufferBitColour  = 1, // Represents the colour buffer, which stores the final RGBA pixel colours intended for display on the screen.
-    BufferBitDepth   = 2, // Represents the depth buffer (Z-buffer), which stores distance values for each pixel to handle 3D occlusion and hidden-surface removal.
-    BufferBitStencil = 4, // Represents the stencil buffer, which stores integer masks used to restrict or allow rendering on a per-pixel basis.
+    BufferBitColour  = 0x00000001, // Represents the colour buffer, which stores the final RGBA pixel colours intended for display on the screen.
+    BufferBitDepth   = 0x00000002, // Represents the depth buffer (Z-buffer), which stores distance values for each pixel to handle 3D occlusion and hidden-surface removal.
+    BufferBitStencil = 0x00000004, // Represents the stencil buffer, which stores integer masks used to restrict or allow rendering on a per-pixel basis.
 } BufferBit;
 
-unsigned int bufferBitsToCode(BufferBit bufferBits);
+unsigned int bufferBitsToNative(BufferBit bufferBits);
 
-typedef enum Wrap
+typedef enum TextureWrap
 {
-    WrapRepeat            = 0, // Repeats the texture image like a grid pattern when coordinates go beyond the boundary.
-    WrapMirroredRepeat    = 1, // Repeats the texture image but mirrors it with every iteration to create a seamless tiling effect.
-    WrapClampToEdge       = 2, // Clamps out-of-bounds coordinates to the edge pixels, stretching the final border pixels infinitely.
-    WrapClampToBorder     = 3, // Fills any coordinates outside the [0, 1] range with a user-specified, solid background border colour.
-    WrapMirrorClampToEdge = 4, // Mirrors the texture once across zero, then clamps any coordinates beyond that directly to the outermost edge pixels.
-    WrapCount,
-} Wrap;
+    TextureWrapRepeat            = 0, // Repeats the texture image like a grid pattern when coordinates go beyond the boundary.
+    TextureWrapMirroredRepeat    = 1, // Repeats the texture image but mirrors it with every iteration to create a seamless tiling effect.
+    TextureWrapClampToEdge       = 2, // Clamps out-of-bounds coordinates to the edge pixels, stretching the final border pixels infinitely.
+    TextureWrapClampToBorder     = 3, // Fills any coordinates outside the [0, 1] range with a user-specified, solid background border colour.
+    TextureWrapMirrorClampToEdge = 4, // Mirrors the texture once across zero, then clamps any coordinates beyond that directly to the outermost edge pixels.
+    TextureWrapCount,
+} TextureWrap;
 
-unsigned int wrapToCode(Wrap wrap);
+unsigned int textureWrapToNative(TextureWrap textureWrap);
 
-typedef enum MinFilter
+typedef enum TextureMinFilter
 {
-    MinFilterNearest              = 0, // Selects the single closest pixel (texel) to the coordinates, resulting in a sharp but highly pixelated look.
-    MinFilterLinear               = 1, // Blends the four closest pixels together (bilinear filtering), producing a smoother but slightly blurry result.
-    MinFilterNearestMipmapNearest = 2, // Chooses the closest matching mipmap level and samples its single nearest pixel without any blending.
-    MinFilterLinearMipmapNearest  = 3, // Chooses the closest matching mipmap level and performs a smooth bilinear blend of its neighboring pixels.
-    MinFilterNearestMipmapLinear  = 4, // Linearly blends between the two closest mipmap levels, sampling the single nearest pixel from each.
-    MinFilterLinearMipmapLinear   = 5, // Linearly blends between the two closest mipmap levels using bilinearly filtered samples from both (trilinear filtering).
-    MinFilterCount,
-} MinFilter;
+    TextureMinFilterNearest              = 0, // Selects the single closest pixel (texel) to the coordinates, resulting in a sharp but highly pixelated look.
+    TextureMinFilterLinear               = 1, // Blends the four closest pixels together (bilinear filtering), producing a smoother but slightly blurry result.
+    TextureMinFilterNearestMipmapNearest = 2, // Chooses the closest matching mipmap level and samples its single nearest pixel without any blending.
+    TextureMinFilterLinearMipmapNearest  = 3, // Chooses the closest matching mipmap level and performs a smooth bilinear blend of its neighboring pixels.
+    TextureMinFilterNearestMipmapLinear  = 4, // Linearly blends between the two closest mipmap levels, sampling the single nearest pixel from each.
+    TextureMinFilterLinearMipmapLinear   = 5, // Linearly blends between the two closest mipmap levels using bilinearly filtered samples from both (trilinear filtering).
+    TextureMinFilterCount,
+} TextureMinFilter;
 
-unsigned int minFilterToCode(MinFilter minFilter);
+unsigned int textureMinFilterToNative(TextureMinFilter textureMinFilter);
 
-typedef enum MagFilter
+typedef enum TextureMagFilter
 {
-    MagFilterNearest = 0, // Selects the single closest pixel (texel) to the coordinates, preserving exact pixel boundaries for a crisp, retro blocky look.
-    MagFilterLinear  = 1, // Blends the four closest pixels together (bilinear filtering), smoothing out sharp edges to prevent visible pixelation.
-    MagFilterCount,
-} MagFilter;
+    TextureMagFilterNearest = 0, // Selects the single closest pixel (texel) to the coordinates, preserving exact pixel boundaries for a crisp, retro blocky look.
+    TextureMagFilterLinear  = 1, // Blends the four closest pixels together (bilinear filtering), smoothing out sharp edges to prevent visible pixelation.
+    TextureMagFilterCount,
+} TextureMagFilter;
 
-unsigned int magFilterToCode(MagFilter magFilter);
+unsigned int textureMagFilterToNative(TextureMagFilter textureMagFilter);
+
+typedef enum TextureAccess
+{
+    TextureAccessReadOnly  = 0, // The shader can read pixel data from the texture, but it is strictly forbidden from modifying it.
+    TextureAccessWriteOnly = 1, // The shader can write new data to the texture, but it cannot read what was previously there.
+    TextureAccessReadWrite = 2, // The shader can both read from and write to the exact same texture during the same pass.
+} TextureAccess;
+
+unsigned int textureAccessToNative(TextureAccess textureAccess);
 
 typedef enum CompareMode
 {
@@ -75,7 +84,7 @@ typedef enum CompareMode
     CompareModeCount,
 } CompareMode;
 
-unsigned int compareModeToCode(CompareMode compareMode);
+unsigned int compareModeToNative(CompareMode compareMode);
 
 typedef enum CompareFunc
 {
@@ -90,7 +99,7 @@ typedef enum CompareFunc
     CompareFuncCount,
 } CompareFunc;
 
-unsigned int compareFuncToCode(CompareFunc compareFunc);
+unsigned int compareFuncToNative(CompareFunc compareFunc);
 
 typedef enum StencilOperation
 {
@@ -105,7 +114,7 @@ typedef enum StencilOperation
     StencilOperationCount,
 } StencilOperation;
 
-unsigned int stencilOperationToCode(StencilOperation stencilOperation);
+unsigned int stencilOperationToNative(StencilOperation stencilOperation);
 
 typedef enum Face
 {
@@ -115,7 +124,7 @@ typedef enum Face
     FaceCount,
 } Face;
 
-unsigned int faceToCode(Face face);
+unsigned int faceToNative(Face face);
 
 typedef enum FrontFace
 {
@@ -124,7 +133,7 @@ typedef enum FrontFace
     FrontFaceCount,
 } FrontFace;
 
-unsigned int frontFaceToCode(FrontFace frontFace);
+unsigned int frontFaceToNative(FrontFace frontFace);
 
 typedef enum BlendFactor
 {
@@ -146,7 +155,7 @@ typedef enum BlendFactor
     BlendFactorCount,
 } BlendFactor;
 
-unsigned int blendFactorToCode(BlendFactor blendFactor);
+unsigned int blendFactorToNative(BlendFactor blendFactor);
 
 typedef enum BlendEquation
 {
@@ -158,7 +167,7 @@ typedef enum BlendEquation
     BlendEquationCount,
 } BlendEquation;
 
-unsigned int blendEquationToCode(BlendEquation blendEquation);
+unsigned int blendEquationToNative(BlendEquation blendEquation);
 
 typedef enum PolygonMode
 {
@@ -168,7 +177,7 @@ typedef enum PolygonMode
     PolygonModeCount,
 } PolygonMode;
 
-unsigned int polygonModeToCode(PolygonMode polygonMode);
+unsigned int polygonModeToNative(PolygonMode polygonMode);
 
 typedef enum DrawMode
 {
@@ -181,7 +190,28 @@ typedef enum DrawMode
     DrawModeTriangleFan   = 6, // Creates a fan-like structure of connected triangles where all triangles share a single, central starting vertex.
 } DrawMode;
 
-unsigned int drawModeToCode(DrawMode drawMode);
+unsigned int drawModeToNative(DrawMode drawMode);
+
+typedef enum MemoryBarrierBit
+{
+    MemoryBarrierBitVertexAttributeArray = 0x00000001, // Ensures updates to vertex buffer objects (VBOs) are visible when the data is consumed by vertex attributes.
+    MemoryBarrierBitElementArray         = 0x00000002, // Ensures updates to element buffer objects (EBOs) are visible before the next indexed drawing command.
+    MemoryBarrierBitUniform              = 0x00000004, // Ensures updates to uniform buffer objects (UBOs) or standard uniforms are visible to subsequent shader reads.
+    MemoryBarrierBitTextureFetch         = 0x00000008, // Ensures that texture fetches via samplers (texture(), etc.) will see updates made to the underlying texture data.
+    MemoryBarrierBitShaderImageAccess    = 0x00000010, // Ensures image loads/stores (image2D(), etc.) via shaders will see previous writes.
+    MemoryBarrierBitCommand              = 0x00000020, // Ensures writes to buffers used for indirect drawing commands (GL_DRAW_INDIRECT_BUFFER, GL_DISPATCH_INDIRECT_BUFFER, etc.) are complete before the draw/dispatch happens.
+    MemoryBarrierBitPixelBuffer          = 0x00000040, // Ensures data written to pixel pack/unpack buffers is visible before a pixel transfer operation (glTexSubImage2D, glReadPixels, etc.).
+    MemoryBarrierBitTextureUpdate        = 0x00000080, // Ensures that direct updates to texture data (glTexSubImage2D, glCopyTexSubImage2D, glClearTexImage, etc.) are complete before subsequent commands read or write that texture.
+    MemoryBarrierBitBufferUpdate         = 0x00000100, // Ensures that direct writes to buffer object data stores (glBufferSubData, glCopyBufferSubData, glClearBufferSubData, etc.) are complete before subsequent commands read or write that buffer data.
+    MemoryBarrierBitFramebuffer          = 0x00000200, // Ensures reads and writes via framebuffer attachments (colour, depth, stencil) are synchronised. This is crucial if you are reading from a texture that you just finished rendering to.
+    MemoryBarrierBitTransformFeedback    = 0x00000400, // Ensures writes into transform feedback buffers are visible to subsequent reads (or vice versa).
+    MemoryBarrierBitAtomicCounter        = 0x00000800, // Ensures operations on atomic counters in shaders are synchronised.
+    MemoryBarrierBitShaderStorage        = 0x00001000, // Ensures accesses to shader storage buffer objects (SSBOs) will reflect previous writes.
+    MemoryBarrierBitClientMappedBuffer   = 0x00002000, // Ensures that writes made by the host CPU into a persistently mapped buffer (created without GL_MAP_COHERENT_BIT) are flushed and made visible to the GPU server.
+    MemoryBarrierBitQueryBuffer          = 0x00004000, // Ensures writes to query result buffers are visible before the results are read back.
+} MemoryBarrierBit;
+
+unsigned int memoryBarrierBitsToNative(MemoryBarrierBit memoryBarrierBits);
 
 typedef enum BufferUsage
 {
@@ -196,4 +226,51 @@ typedef enum BufferUsage
     BufferUsageStreamCopy  = 8, // Tuned for high-frequency, internal GPU-to-GPU memory copies executed on almost every frame (e.g., physics computations fed right into render passes).
 } BufferUsage;
 
-unsigned int bufferUsageToCode(BufferUsage bufferUsage);
+unsigned int bufferUsageToNative(BufferUsage bufferUsage);
+
+typedef enum BufferStorageBit
+{
+    BufferStorageBitMapRead        = 0x00000001, // Allows the CPU to map this buffer using glMapBufferRange.
+    BufferStorageBitMapWrite       = 0x00000002, // Allows the CPU to write to this buffer using glMapBufferRange.
+    BufferStorageBitMapPersistent  = 0x00000004, // Allows the buffer pointer to remain mapped permanently, even during GPU execution.
+    BufferStorageBitMapCoherent    = 0x00000008, // Automatically synchronises CPU/GPU memory caches for persistent mapping.
+    BufferStorageBitDynamicStorage = 0x00000010, // Allows updating the buffer contents via glBufferSubData / glCopyBufferSubData.
+    BufferStorageBitClientStorage  = 0x00000020, // Hints that the driver should store this buffer in client (system) memory.
+} BufferStorageBit;
+
+unsigned int bufferStorageBitsToNative(BufferStorageBit bufferStorageBits);
+
+typedef enum BufferMapBit
+{
+    BufferMapBitRead             = 0x00000001, // Allows the CPU to read from the returned pointer. Mutually exclusive with InvalidateBuffer/InvalidateRange unless Write is also set.
+    BufferMapBitWrite            = 0x00000002, // Allows the CPU to write to the returned pointer to update buffer contents.
+    BufferMapBitInvalidateRange  = 0x00000004, // Similar to InvalidateBuffer, but only discards the specific byte range being mapped. Leaves the rest of the buffer's data intact.
+    BufferMapBitInvalidateBuffer = 0x00000008, // Tells the driver to discard the entire contents of the buffer. This allows the driver to return a brand-new memory pointer immediately, avoiding a pipeline stall if the GPU is still reading from the old data.
+    BufferMapBitFlushExplicit    = 0x00000010, // Optimisation for writes: specifies that the CPU will only modify parts of the mapped range. You must manually call glFlushMappedBufferRange for any modified sub-ranges to make them visible to the GPU.
+    BufferMapBitUnsynchronised   = 0x00000020, // Tells the driver not to check if the GPU is currently using the buffer. Prevents driver-side stalling, but forces you to handle CPU-GPU synchronisation manually using OpenGL sync fences (GLsync).
+    BufferMapBitPersistent       = 0x00000040, // Keeps the returned pointer valid indefinitely, even while the GPU is executing commands that access the buffer. Requires Persistent to be set at buffer creation.
+    BufferMapBitCoherent         = 0x00000080, // Guarantees that CPU writes are automatically visible to the GPU (and vice versa) without requiring manual flushing commands. Must be used with Persistent.
+} BufferMapBit;
+
+unsigned int bufferMapBitsToNative(BufferMapBit bufferMapBits);
+
+typedef enum BufferTarget
+{
+    BufferTargetVertexArray,        // Vertex attribute data (positions, normals, texcoords, colors).
+    BufferTargetElementArray,       // Vertex indices for indexed drawing
+    BufferTargetShaderStorage,      // (SSBO) High-capacity, read-and-write structured memory arrays inside shaders.
+    BufferTargetUniform,            // (UBO) High-speed read-only constants for uniform blocks across multiple shaders.
+    BufferTargetAtomicCounter,      // High-performance storage specifically reserved for synchronized atomic counters shared across shaders.
+    BufferTargetDispatchIndirect,   // Arguments for compute shader dispatches (glDispatchComputeIndirect).
+    BufferTargetDrawIndirect,       // Arguments for structured draw calls (glDrawArraysIndirect, glDrawElementsIndirect).
+    BufferTargetPixelPack,          // Destination target for reading pixel data out of OpenGL (e.g., taking a screenshot with glReadPixels).
+    BufferTargetPixelUnpack,        // Source target for streaming pixel data into textures (e.g., glTexImage2D decompression/loading).
+    BufferTargetTexture,            // Backing data target used when wrapping a buffer object as a massive 1D texture wrapper ("Buffer Textures").
+    BufferTargetTransformFeedback,  // Captures vertex data emitted from the Geometry or Vertex shader stages before it rasterizes.
+    BufferTargetQuery,              // Destination target where asynchronous query results (like occlusion tests or timer benchmarks) are directly written.
+    BufferTargetCopyRead,           // A generic staging target used as the source when copying data from one buffer to another without breaking existing bindings.
+    BufferTargetCopyWrite,          // A generic staging target used as the destination when copying data between buffers.
+} BufferTarget;
+
+unsigned int bufferTargetToNative(BufferTarget bufferTarget);
+

@@ -1,4 +1,5 @@
 
+#include <assert.h>
 #include "error.h"
 #include "log/log.h"
 #include "glad/glad.h"
@@ -17,6 +18,10 @@ static const char* glErrorToString(GLenum errorCode)
         case GL_CONTEXT_LOST:                  return "context lost";
         default:                               return "unknown error";
     }
+
+    assert(0);
+
+    return "invalid error code";
 }
 
 void __glCheckErrorsImplementation(const char* file, int line)

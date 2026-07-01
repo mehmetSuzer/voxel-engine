@@ -9,11 +9,11 @@ typedef unsigned int SamplerID;
 
 typedef struct SamplerCreateInfo
 {
-    MinFilter minFilter;
-    MagFilter magFilter;
-    Wrap wrapS;
-    Wrap wrapT;
-    Wrap wrapR;
+    TextureMinFilter textureMinFilter;
+    TextureMagFilter textureMagFilter;
+    TextureWrap textureWrapS;
+    TextureWrap textureWrapT;
+    TextureWrap textureWrapR;
     float minLOD;
     float maxLOD;
     float biasLOD;

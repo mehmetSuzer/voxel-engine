@@ -124,5 +124,6 @@ void materialBind(MaterialID materialID)
     {
         samplerBind(material->samplerIDs[unit], unit);
     }
+    logVerbose("MATERIAL", "binded: %u", materialID);
 }
 

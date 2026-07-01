@@ -30,8 +30,8 @@ TextureID textureCreate(const char* texturePath)
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     const int bytesPerRow = width * channels;
     const int alignment =
@@ -51,6 +51,7 @@ TextureID textureCreate(const char* texturePath)
         (channels == 3) ? GL_RGB8 : GL_RGBA8;
 
     glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, externalFormat, GL_UNSIGNED_BYTE, pixels);
+
     glGenerateMipmap(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, 0);
     stbi_image_free(pixels);
@@ -76,6 +77,7 @@ void textureBind(TextureID textureID, unsigned int unit)
     assert(unit < 32u);
     glActiveTexture(GL_TEXTURE0 + unit);
     glBindTexture(GL_TEXTURE_2D, textureID);
+    logVerbose("TEXTURE", "binded: %u", textureID);
     glCheckErrors();
 }
 

@@ -1,7 +1,7 @@
 
 #include "error.h"
-#include "glad/glad.h"
 #include "log/log.h"
+#include "glad/glad.h"
 #include "graphics/graphics.h"
 
 typedef struct Rectangle
@@ -329,7 +329,7 @@ void graphicsEnable(Capability capability)
     if (!(*capabilityStatePointer))
     {
         *capabilityStatePointer = 1;
-        glEnable(capabilityToCode(capability));
+        glEnable(capabilityToNative(capability));
         glCheckErrors();
     }
 }
@@ -340,7 +340,7 @@ void graphicsDisable(Capability capability)
     if (*capabilityStatePointer)
     {
         *capabilityStatePointer = 0;
-        glDisable(capabilityToCode(capability));
+        glDisable(capabilityToNative(capability));
         glCheckErrors();
     }
 }
@@ -366,7 +366,7 @@ void graphicsDepthFunc(CompareFunc compareFunc)
     if (graphicsState.depthTest.compareFunc != compareFunc)
     {
         graphicsState.depthTest.compareFunc = compareFunc;
-        glDepthFunc(compareFuncToCode(compareFunc));
+        glDepthFunc(compareFuncToNative(compareFunc));
         glCheckErrors();
     }
 }
@@ -416,7 +416,7 @@ void graphicsStencilFunc(Face face, CompareFunc compareFunc, int reference, unsi
 
     if (dirty)
     {
-        glStencilFuncSeparate(faceToCode(face), compareFuncToCode(compareFunc), reference, testMask);
+        glStencilFuncSeparate(faceToNative(face), compareFuncToNative(compareFunc), reference, testMask);
         glCheckErrors();
     }
 }
@@ -440,7 +440,7 @@ void graphicsStencilWriteMask(Face face, unsigned int writeMask)
 
     if (dirty)
     {
-        glStencilMaskSeparate(faceToCode(face), writeMask);
+        glStencilMaskSeparate(faceToNative(face), writeMask);
         glCheckErrors();
     }
 }
@@ -469,7 +469,7 @@ void graphicsStencilOperation(Face face, StencilOperation stencilFail, StencilOp
 
     if (dirty)
     {
-        glStencilOpSeparate(faceToCode(face), stencilOperationToCode(stencilFail), stencilOperationToCode(depthFail), stencilOperationToCode(depthPass));
+        glStencilOpSeparate(faceToNative(face), stencilOperationToNative(stencilFail), stencilOperationToNative(depthFail), stencilOperationToNative(depthPass));
         glCheckErrors();
     }
 }
@@ -501,7 +501,7 @@ void graphicsBlendFactor(BlendFactor srcRGB, BlendFactor dstRGB, BlendFactor src
         graphicsState.blend.dstRGB   = dstRGB;
         graphicsState.blend.srcAlpha = srcAlpha;
         graphicsState.blend.dstAlpha = dstAlpha;
-        glBlendFuncSeparate(blendFactorToCode(srcRGB), blendFactorToCode(dstRGB), blendFactorToCode(srcAlpha), blendFactorToCode(dstAlpha));
+        glBlendFuncSeparate(blendFactorToNative(srcRGB), blendFactorToNative(dstRGB), blendFactorToNative(srcAlpha), blendFactorToNative(dstAlpha));
         glCheckErrors();
     }
 }
@@ -513,7 +513,7 @@ void graphicsBlendEquation(BlendEquation equationRGB, BlendEquation equationAlph
     {
         graphicsState.blend.equationRGB   = equationRGB;
         graphicsState.blend.equationAlpha = equationAlpha;
-        glBlendEquationSeparate(blendEquationToCode(equationRGB), blendEquationToCode(equationAlpha));
+        glBlendEquationSeparate(blendEquationToNative(equationRGB), blendEquationToNative(equationAlpha));
         glCheckErrors();
     }
 }
@@ -539,7 +539,7 @@ void graphicsCullFace(Face face)
     if (graphicsState.cullFace.face != face)
     {
         graphicsState.cullFace.face = face;
-        glCullFace(faceToCode(face));
+        glCullFace(faceToNative(face));
         glCheckErrors();
     }
 }
@@ -549,7 +549,7 @@ void graphicsFrontFace(FrontFace frontFace)
     if (graphicsState.cullFace.frontFace != frontFace)
     {
         graphicsState.cullFace.frontFace = frontFace;
-        glFrontFace(frontFaceToCode(frontFace));
+        glFrontFace(frontFaceToNative(frontFace));
         glCheckErrors();
     }
 }
@@ -614,7 +614,7 @@ void graphicsPolygonMode(Face face, PolygonMode polygonMode)
     
     if (dirty)
     {
-        glPolygonMode(faceToCode(face), polygonModeToCode(polygonMode));
+        glPolygonMode(faceToNative(face), polygonModeToNative(polygonMode));
         glCheckErrors();
     }
 }
@@ -657,7 +657,13 @@ void graphicsClearStencil(unsigned int stencil)
 
 void graphicsClear(BufferBit bufferBits)
 {
-    glClear(bufferBitsToCode(bufferBits));
+    glClear(bufferBitsToNative(bufferBits));
+    glCheckErrors();
+}
+
+void graphicsMemoryBarrier(MemoryBarrierBit memoryBarrierBits)
+{
+    glMemoryBarrier(memoryBarrierBitsToNative(memoryBarrierBits));
     glCheckErrors();
 }
 
