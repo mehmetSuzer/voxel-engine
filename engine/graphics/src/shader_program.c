@@ -496,16 +496,10 @@ void shaderProgramBind(ShaderProgramID shaderProgramID)
     glCheckErrors();
 }
 
-// TODO: You don't use shaderProgramID at all
-void shaderProgramDispatchCompute(ShaderProgramID shaderProgramID, unsigned int xGroupCount, unsigned int yGroupCount, unsigned int zGroupCount)
+void shaderProgramSetUniformSampler(ShaderProgramID shaderProgramID, const char* uniform, unsigned int sampler)
 {
-    glDispatchCompute(xGroupCount, yGroupCount, zGroupCount);
-}
-
-// TODO: You don't use shaderProgramID at all
-void shaderProgramDispatchComputeIndirect(ShaderProgramID shaderProgramID, long indirect)
-{
-    glDispatchComputeIndirect(indirect);
+    glUniform1i(getUniformLocation(shaderProgramID, uniform), (GLint)sampler);
+    glCheckErrors();
 }
 
 void shaderProgramSetUniformi(ShaderProgramID shaderProgramID, const char* uniform, int value)

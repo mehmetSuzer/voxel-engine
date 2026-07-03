@@ -141,6 +141,13 @@ typedef struct ClearState
     unsigned int stencil;
 } ClearState;
 
+typedef struct ComputeState
+{
+    ivec3 maxWorkGroupCount;
+    ivec3 maxWorkGroupSize;
+    int maxWorkGroupInvocationCount;
+} ComputeState;
+
 typedef struct GraphicsState
 {
     Rectangle viewport;
@@ -161,6 +168,7 @@ typedef struct GraphicsState
     FramebufferSRGBState framebufferSRGB;
     PrimitiveRestartState primitiveRestart;
     ClearState clear;
+    ComputeState compute;
 } GraphicsState;
 
 static GraphicsState graphicsState = {
@@ -265,6 +273,11 @@ static GraphicsState graphicsState = {
         .depth = DEPTH_FURTHEST,
         .stencil = 0u,
     },
+    .compute = {
+        .maxWorkGroupCount = {0, 0, 0},
+        .maxWorkGroupSize  = {0, 0, 0},
+        .maxWorkGroupInvocationCount = 0,
+    },
 };
 
 static int* getCapabilityStatePointer(Capability capability)
@@ -317,10 +330,29 @@ void graphicsInit(GraphicsFunctionLoader graphicsFunctionLoader)
         logError("GRAPHICS", "failed to initialise");
         return;
     }
-
     logInfo("GRAPHICS", "initialised");
+
+    logInfo("GRAPHICS", "physical device: %s", (const char*)glGetString(GL_RENDERER));
+    logInfo("GRAPHICS", "renderer version: %s", (const char*)glGetString(GL_VERSION));
+    logInfo("GRAPHICS", "GLSL version: %s", (const char*)glGetString(GL_SHADING_LANGUAGE_VERSION));
+
     glGetIntegerv(GL_SAMPLES, &graphicsState.multisample.samples);
     logInfo("GRAPHICS", "MSAA %i sample(s)", graphicsState.multisample.samples);
+
+    glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 0u, &graphicsState.compute.maxWorkGroupCount[0]);
+    glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 1u, &graphicsState.compute.maxWorkGroupCount[1]);
+    glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 2u, &graphicsState.compute.maxWorkGroupCount[2]);
+    logInfo("GRAPHICS", "max compute work group counts: (%i, %i, %i)", 
+        graphicsState.compute.maxWorkGroupCount[0], graphicsState.compute.maxWorkGroupCount[1], graphicsState.compute.maxWorkGroupCount[2]);
+
+    glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 0u, &graphicsState.compute.maxWorkGroupSize[0]);
+    glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 1u, &graphicsState.compute.maxWorkGroupSize[1]);
+    glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 2u, &graphicsState.compute.maxWorkGroupSize[2]);
+    logInfo("GRAPHICS", "max compute work group sizes: (%i, %i, %i)", 
+        graphicsState.compute.maxWorkGroupSize[0], graphicsState.compute.maxWorkGroupSize[1], graphicsState.compute.maxWorkGroupSize[2]);
+
+    glGetIntegerv(GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS, &graphicsState.compute.maxWorkGroupInvocationCount);
+    logInfo("GRAPHICS", "max compute work group invocation count: %i", graphicsState.compute.maxWorkGroupInvocationCount);
 }
 
 void graphicsEnable(Capability capability)
@@ -658,6 +690,21 @@ void graphicsClearStencil(unsigned int stencil)
 void graphicsClear(BufferBit bufferBits)
 {
     glClear(bufferBitsToNative(bufferBits));
+    glCheckErrors();
+}
+
+void graphicsDispatchCompute(int workGroupCountX, int workGroupCountY, int workGroupCountZ)
+{
+    if (workGroupCountX > graphicsState.compute.maxWorkGroupCount[0] ||
+        workGroupCountY > graphicsState.compute.maxWorkGroupCount[1] ||
+        workGroupCountZ > graphicsState.compute.maxWorkGroupCount[2])
+    {
+        logError("GRAPHICS", "work group counts (%i, %i, %i) exceed the limits (%i, %i, %i)", workGroupCountX, workGroupCountY, workGroupCountZ, 
+            graphicsState.compute.maxWorkGroupCount[0], graphicsState.compute.maxWorkGroupCount[1], graphicsState.compute.maxWorkGroupCount[2]);
+        return;
+    }
+
+    glDispatchCompute((GLuint)workGroupCountX, (GLuint)workGroupCountY, (GLuint)workGroupCountZ);
     glCheckErrors();
 }
 

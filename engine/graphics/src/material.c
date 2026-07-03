@@ -118,7 +118,7 @@ void materialBind(MaterialID materialID)
     shaderProgramBind(material->shaderProgramID);
     for (unsigned int unit = 0u; unit < material->textureCount; ++unit)
     {
-        textureBind(material->textureIDs[unit], unit);
+        textureBindSampler(material->textureIDs[unit], unit);
     }
     for (unsigned int unit = 0u; unit < material->samplerCount; ++unit)
     {

@@ -43,8 +43,7 @@ int shaderProgramIsActive(ShaderProgramID shaderProgramID);
 
 void shaderProgramBind(ShaderProgramID shaderProgramID);
 
-void shaderProgramDispatchCompute(ShaderProgramID shaderProgramID, unsigned int xGroupCount, unsigned int yGroupCount, unsigned int zGroupCount);
-void shaderProgramDispatchComputeIndirect(ShaderProgramID shaderProgramID, long indirect);
+void shaderProgramSetUniformSampler(ShaderProgramID shaderProgramID, const char* uniform, unsigned int sampler);
 
 void shaderProgramSetUniformi(ShaderProgramID shaderProgramID, const char* uniform, int          value);
 void shaderProgramSetUniformu(ShaderProgramID shaderProgramID, const char* uniform, unsigned int value);
@@ -68,4 +67,3 @@ void shaderProgramSetUniformMat4x2f(ShaderProgramID shaderProgramID, const char*
 void shaderProgramSetUniformMat4x3f(ShaderProgramID shaderProgramID, const char* uniform, mat4x3 matrix);
 void shaderProgramSetUniformMat4f  (ShaderProgramID shaderProgramID, const char* uniform, mat4   matrix);
 
-// TODO: Write SetUniformWithLocation functions

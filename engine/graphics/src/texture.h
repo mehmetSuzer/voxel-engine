@@ -13,5 +13,6 @@ void textureDestroy(TextureID textureID);
 
 int textureIsActive(TextureID textureID);
 
-void textureBind(TextureID textureID, unsigned int unit);
+void textureBindSampler(TextureID textureID, unsigned int unit);
+void textureBindImage(TextureID textureID, unsigned int unit, AccessPolicy accessPolicy, ExternalFormat externalFormat);
 

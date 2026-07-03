@@ -72,12 +72,19 @@ int textureIsActive(TextureID textureID)
     return (glIsTexture(textureID) == GL_TRUE);
 }
 
-void textureBind(TextureID textureID, unsigned int unit)
+void textureBindSampler(TextureID textureID, unsigned int unit)
 {
     assert(unit < 32u);
     glActiveTexture(GL_TEXTURE0 + unit);
     glBindTexture(GL_TEXTURE_2D, textureID);
     logVerbose("TEXTURE", "binded: %u", textureID);
+    glCheckErrors();
+}
+
+void textureBindImage(TextureID textureID, unsigned int unit, AccessPolicy accessPolicy, ExternalFormat externalFormat)
+{
+    assert(unit < 32u);
+    glBindImageTexture(unit, textureID, 0, GL_FALSE, 0, accessPolicyToNative(accessPolicy), externalFormatToNative(externalFormat));
     glCheckErrors();
 }
 

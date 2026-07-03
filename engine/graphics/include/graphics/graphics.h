@@ -8,6 +8,7 @@
 #define DEPTH_FURTHEST 1.0f
 
 typedef void*(*GraphicsFunctionLoader)(const char*);
+
 void graphicsInit(GraphicsFunctionLoader graphicsFunctionLoader);
 
 void graphicsEnable(Capability capability);
@@ -48,6 +49,8 @@ void graphicsClearColour(vec4 colour);
 void graphicsClearDepth(float depth);
 void graphicsClearStencil(unsigned int stencil);
 void graphicsClear(BufferBit bufferBits);
+
+void graphicsDispatchCompute(int workGroupCountX, int workGroupCountY, int workGroupCountZ);
 
 void graphicsMemoryBarrier(MemoryBarrierBit memoryBarrierBits);
 

@@ -8,7 +8,6 @@ int keyToNative(Key key)
 {
     switch (key)
     {
-        // Letters
         case KeyA:              return GLFW_KEY_A;
         case KeyB:              return GLFW_KEY_B;
         case KeyC:              return GLFW_KEY_C;
@@ -35,7 +34,6 @@ int keyToNative(Key key)
         case KeyX:              return GLFW_KEY_X;
         case KeyY:              return GLFW_KEY_Y;
         case KeyZ:              return GLFW_KEY_Z;
-        // Numbers (top row)
         case KeyNum0:           return GLFW_KEY_0;
         case KeyNum1:           return GLFW_KEY_1;
         case KeyNum2:           return GLFW_KEY_2;
@@ -46,7 +44,6 @@ int keyToNative(Key key)
         case KeyNum7:           return GLFW_KEY_7;
         case KeyNum8:           return GLFW_KEY_8;
         case KeyNum9:           return GLFW_KEY_9;
-        // Function keys
         case KeyF1:             return GLFW_KEY_F1;
         case KeyF2:             return GLFW_KEY_F2;
         case KeyF3:             return GLFW_KEY_F3;
@@ -59,7 +56,6 @@ int keyToNative(Key key)
         case KeyF10:            return GLFW_KEY_F10;
         case KeyF11:            return GLFW_KEY_F11;
         case KeyF12:            return GLFW_KEY_F12;
-        // Special keys
         case KeyEscape:         return GLFW_KEY_ESCAPE;
         case KeyTab:            return GLFW_KEY_TAB;
         case KeyCapsLock:       return GLFW_KEY_CAPS_LOCK;
@@ -82,7 +78,6 @@ int keyToNative(Key key)
         case KeyArrowDown:      return GLFW_KEY_DOWN;
         case KeyArrowLeft:      return GLFW_KEY_LEFT;
         case KeyArrowRight:     return GLFW_KEY_RIGHT;
-        // Punctuation / symbols
         case KeyMinus:          return GLFW_KEY_MINUS;
         case KeyEqual:          return GLFW_KEY_EQUAL;
         case KeyBracketLeft:    return GLFW_KEY_LEFT_BRACKET;
@@ -94,7 +89,6 @@ int keyToNative(Key key)
         case KeyPeriod:         return GLFW_KEY_PERIOD;
         case KeySlash:          return GLFW_KEY_SLASH;
         case KeyGraveAccent:    return GLFW_KEY_GRAVE_ACCENT;
-        // Numpad
         case KeyNumPad0:        return GLFW_KEY_KP_0;
         case KeyNumPad1:        return GLFW_KEY_KP_1;
         case KeyNumPad2:        return GLFW_KEY_KP_2;
@@ -112,7 +106,6 @@ int keyToNative(Key key)
         case KeyNumPadAdd:      return GLFW_KEY_KP_ADD;
         case KeyNumPadEnter:    return GLFW_KEY_KP_ENTER;
         case KeyNumPadEqual:    return GLFW_KEY_KP_EQUAL;
-        // Lock / misc
         case KeyNumLock:        return GLFW_KEY_NUM_LOCK;
         case KeyScrollLock:     return GLFW_KEY_SCROLL_LOCK;
         case KeyPause:          return GLFW_KEY_PAUSE;

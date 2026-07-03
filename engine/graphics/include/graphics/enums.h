@@ -11,7 +11,7 @@ typedef enum Capability
     CapabilityDither                =  5, // Mixes adjacent pixel colours slightly to prevent colour banding on low bit-depth displays.
     CapabilityMultisample           =  6, // Activates multi-sample anti-aliasing (MSAA) to smooth out jagged geometric edges.
     CapabilitySampleAlphaToCoverage =  7, // Uses the alpha value of a fragment to determine MSAA coverage masks, perfect for dense foliage.
-    CapabilitySampleAlphaToOne      =  8, // Forces the alpha component of a fragment to 1.0 after utilizing it for alpha-to-coverage.
+    CapabilitySampleAlphaToOne      =  8, // Forces the alpha component of a fragment to 1.0 after utilising it for alpha-to-coverage.
     CapabilitySampleCoverage        =  9, // Modifies the final fragment coverage values by applying an additional logical mask or inversion.
     CapabilityDepthClamp            = 10, // Clamps fragments that fall outside the near or far clipping planes instead of discarding them.
     CapabilityPolygonOffsetPoint    = 11, // Adds a small depth offset when rendering polygons in point/vertex mode to prevent z-fighting.
@@ -39,7 +39,7 @@ typedef enum TextureWrap
     TextureWrapRepeat            = 0, // Repeats the texture image like a grid pattern when coordinates go beyond the boundary.
     TextureWrapMirroredRepeat    = 1, // Repeats the texture image but mirrors it with every iteration to create a seamless tiling effect.
     TextureWrapClampToEdge       = 2, // Clamps out-of-bounds coordinates to the edge pixels, stretching the final border pixels infinitely.
-    TextureWrapClampToBorder     = 3, // Fills any coordinates outside the [0, 1] range with a user-specified, solid background border colour.
+    TextureWrapClampToBorder     = 3, // Fills any coordinates outside the [0, 1] range with a user-specified, solid background border colour. Check sampler.borderColour.
     TextureWrapMirrorClampToEdge = 4, // Mirrors the texture once across zero, then clamps any coordinates beyond that directly to the outermost edge pixels.
     TextureWrapCount,
 } TextureWrap;
@@ -67,15 +67,6 @@ typedef enum TextureMagFilter
 } TextureMagFilter;
 
 unsigned int textureMagFilterToNative(TextureMagFilter textureMagFilter);
-
-typedef enum TextureAccess
-{
-    TextureAccessReadOnly  = 0, // The shader can read pixel data from the texture, but it is strictly forbidden from modifying it.
-    TextureAccessWriteOnly = 1, // The shader can write new data to the texture, but it cannot read what was previously there.
-    TextureAccessReadWrite = 2, // The shader can both read from and write to the exact same texture during the same pass.
-} TextureAccess;
-
-unsigned int textureAccessToNative(TextureAccess textureAccess);
 
 typedef enum CompareMode
 {
@@ -161,7 +152,7 @@ typedef enum BlendEquation
 {
     BlendEquationAdd             = 0, // Adds the scaled source colour to the scaled destination colour (S + D) to create standard alpha transparency or additive lighting effects.
     BlendEquationSubtract        = 1, // Subtracts the scaled destination colour from the scaled source colour (S - D), typically used for advanced masking or darkening logic.
-    BlendEquationReverseSubtract = 2, // Subtracts the scaled source colour from the scaled destination color (D - S), useful for casting shadows or creating inverted colour variations.
+    BlendEquationReverseSubtract = 2, // Subtracts the scaled source colour from the scaled destination colour (D - S), useful for casting shadows or creating inverted colour variations.
     BlendEquationMin             = 3, // Compares the source and destination components and selects the smaller value for each colour channel (min(S, D)), ignoring the blend factors.
     BlendEquationMax             = 4, // Compares the source and destination components and selects the larger value for each colour channel (max(S, D)), ignoring the blend factors.
     BlendEquationCount,
@@ -188,6 +179,7 @@ typedef enum DrawMode
     DrawModeTriangles     = 4, // Groups every triplet of vertices into separate, independent triangles.
     DrawModeTriangleStrip = 5, // Creates a connected ribbon of triangles where each new triangle shares its first two vertices with the preceding one.
     DrawModeTriangleFan   = 6, // Creates a fan-like structure of connected triangles where all triangles share a single, central starting vertex.
+    DrawModeCount,
 } DrawMode;
 
 unsigned int drawModeToNative(DrawMode drawMode);
@@ -213,6 +205,16 @@ typedef enum MemoryBarrierBit
 
 unsigned int memoryBarrierBitsToNative(MemoryBarrierBit memoryBarrierBits);
 
+typedef enum AccessPolicy
+{
+    AccessPolicyReadOnly  = 0, // Indicates that the mapped buffer or the texture image can only be read.
+    AccessPolicyWriteOnly = 1, // Indicates that the mapped buffer or the texture image can only be written.
+    AccessPolicyReadWrite = 2, // Indicates that the mapped buffer or the texture image can be both read and written.
+    AccessPolicyCount,
+} AccessPolicy;
+
+unsigned int accessPolicyToNative(AccessPolicy accessPolicy);
+
 typedef enum BufferUsage
 {
     BufferUsageStaticDraw  = 0, // Tailored for vertex data uploaded once by the CPU and rendered frequently by the GPU (e.g., standard static 3D meshes).
@@ -224,18 +226,19 @@ typedef enum BufferUsage
     BufferUsageStaticCopy  = 6, // Reserved for persistent data populated by the GPU to be used exclusively as input for other GPU pipelines without CPU involvement.
     BufferUsageDynamicCopy = 7, // Adjusted for internal GPU-to-GPU data transfers that are modified occasionally by rendering side-effects (e.g., transform feedback loops).
     BufferUsageStreamCopy  = 8, // Tuned for high-frequency, internal GPU-to-GPU memory copies executed on almost every frame (e.g., physics computations fed right into render passes).
+    BufferUsageCount,
 } BufferUsage;
 
 unsigned int bufferUsageToNative(BufferUsage bufferUsage);
 
 typedef enum BufferStorageBit
 {
-    BufferStorageBitMapRead        = 0x00000001, // Allows the CPU to map this buffer using glMapBufferRange.
-    BufferStorageBitMapWrite       = 0x00000002, // Allows the CPU to write to this buffer using glMapBufferRange.
-    BufferStorageBitMapPersistent  = 0x00000004, // Allows the buffer pointer to remain mapped permanently, even during GPU execution.
-    BufferStorageBitMapCoherent    = 0x00000008, // Automatically synchronises CPU/GPU memory caches for persistent mapping.
-    BufferStorageBitDynamicStorage = 0x00000010, // Allows updating the buffer contents via glBufferSubData / glCopyBufferSubData.
-    BufferStorageBitClientStorage  = 0x00000020, // Hints that the driver should store this buffer in client (system) memory.
+    BufferStorageBitMapRead        = 0x00000001, // Allows the CPU to map this buffer for reading using glMapNamedBuffer or glMapNamedBufferRange.
+    BufferStorageBitMapWrite       = 0x00000002, // Allows the CPU to map this buffer for writing using glNamedBufferSubData.
+    BufferStorageBitMapPersistent  = 0x00000004, // Allows the buffer pointer to remain mapped permanently, even during GPU execution. Otherwise, glUnmapBuffer must be called before a draw call.
+    BufferStorageBitMapCoherent    = 0x00000008, // Automatically synchronises CPU/GPU memory caches for persistent mapping. Otherwise, manual synchronisation is needed with glMemoryBarrier or glFlushMappedBufferRange.
+    BufferStorageBitDynamicStorage = 0x00000010, // Allows updating the buffer contents directly from the CPU using glNamedBufferSubData.
+    BufferStorageBitClientStorage  = 0x00000020, // Hints that the driver should store this buffer in system RAM rather than local VRAM, if possible.
 } BufferStorageBit;
 
 unsigned int bufferStorageBitsToNative(BufferStorageBit bufferStorageBits);
@@ -256,21 +259,191 @@ unsigned int bufferMapBitsToNative(BufferMapBit bufferMapBits);
 
 typedef enum BufferTarget
 {
-    BufferTargetVertexArray,        // Vertex attribute data (positions, normals, texcoords, colors).
-    BufferTargetElementArray,       // Vertex indices for indexed drawing
-    BufferTargetShaderStorage,      // (SSBO) High-capacity, read-and-write structured memory arrays inside shaders.
-    BufferTargetUniform,            // (UBO) High-speed read-only constants for uniform blocks across multiple shaders.
-    BufferTargetAtomicCounter,      // High-performance storage specifically reserved for synchronized atomic counters shared across shaders.
-    BufferTargetDispatchIndirect,   // Arguments for compute shader dispatches (glDispatchComputeIndirect).
-    BufferTargetDrawIndirect,       // Arguments for structured draw calls (glDrawArraysIndirect, glDrawElementsIndirect).
-    BufferTargetPixelPack,          // Destination target for reading pixel data out of OpenGL (e.g., taking a screenshot with glReadPixels).
-    BufferTargetPixelUnpack,        // Source target for streaming pixel data into textures (e.g., glTexImage2D decompression/loading).
-    BufferTargetTexture,            // Backing data target used when wrapping a buffer object as a massive 1D texture wrapper ("Buffer Textures").
-    BufferTargetTransformFeedback,  // Captures vertex data emitted from the Geometry or Vertex shader stages before it rasterizes.
-    BufferTargetQuery,              // Destination target where asynchronous query results (like occlusion tests or timer benchmarks) are directly written.
-    BufferTargetCopyRead,           // A generic staging target used as the source when copying data from one buffer to another without breaking existing bindings.
-    BufferTargetCopyWrite,          // A generic staging target used as the destination when copying data between buffers.
+    BufferTargetVertexArray       =  0, // Vertex attribute data (positions, normals, texcoords, colours).
+    BufferTargetElementArray      =  1, // Vertex indices for indexed drawing
+    BufferTargetShaderStorage     =  2, // (SSBO) High-capacity, read-and-write structured memory arrays inside shaders.
+    BufferTargetUniform           =  3, // (UBO) High-speed read-only constants for uniform blocks across multiple shaders.
+    BufferTargetAtomicCounter     =  4, // High-performance storage specifically reserved for synchronised atomic counters shared across shaders.
+    BufferTargetDispatchIndirect  =  5, // Arguments for compute shader dispatches (glDispatchComputeIndirect).
+    BufferTargetDrawIndirect      =  6, // Arguments for structured draw calls (glDrawArraysIndirect, glDrawElementsIndirect).
+    BufferTargetPixelPack         =  7, // Destination target for reading pixel data out of OpenGL (e.g., taking a screenshot with glReadPixels).
+    BufferTargetPixelUnpack       =  8, // Source target for streaming pixel data into textures (e.g., glTexImage2D decompression/loading).
+    BufferTargetTexture           =  9, // Backing data target used when wrapping a buffer object as a massive 1D texture wrapper ("Buffer Textures").
+    BufferTargetTransformFeedback = 10, // Captures vertex data emitted from the Geometry or Vertex shader stages before it rasterises.
+    BufferTargetQuery             = 11, // Destination target where asynchronous query results (like occlusion tests or timer benchmarks) are directly written.
+    BufferTargetCopyRead          = 12, // A generic staging target used as the source when copying data from one buffer to another without breaking existing bindings.
+    BufferTargetCopyWrite         = 13, // A generic staging target used as the destination when copying data between buffers.
+    BufferTargetCount,
 } BufferTarget;
 
 unsigned int bufferTargetToNative(BufferTarget bufferTarget);
+
+typedef enum ExternalFormat
+{
+    // Standard Floating/Normalised Layouts
+
+    ExternalFormatRed   = 0, // 1 channel,             later normalised to [0.0, 1.0] for GPU, sampled via samplerND -> vec4(  R, 0.0, 0.0, 1.0)
+    ExternalFormatRG    = 1, // 2 channels,            later normalised to [0.0, 1.0] for GPU, sampled via samplerND -> vec4(  R,   G, 0.0, 1.0)
+    ExternalFormatRGB   = 2, // 3 channels,            later normalised to [0.0, 1.0] for GPU, sampled via samplerND -> vec4(  R,   G,   B, 1.0)
+    ExternalFormatRGBA  = 3, // 4 channels,            later normalised to [0.0, 1.0] for GPU, sampled via samplerND -> vec4(  R,   G,   B,   A)
+    ExternalFormatBGR   = 4, // 3 channels (reversed), later normalised to [0.0, 1.0] for GPU, sampled via samplerND -> vec4(  R,   G,   B, 1.0)
+    ExternalFormatBGRA  = 5, // 4 channels (reversed), later normalised to [0.0, 1.0] for GPU, sampled via samplerND -> vec4(  R,   G,   B,   A)
+
+    // Pure Integer Layouts
+
+    ExternalFormatRedInteger   =  6, // 1 channel,             remains as integer, sampled via isamplerND -> ivec4(  R, 0.0, 0.0, 1.0)
+    ExternalFormatRGInteger    =  7, // 2 channels,            remains as integer, sampled via isamplerND -> ivec4(  R,   G, 0.0, 1.0)
+    ExternalFormatRGBInteger   =  8, // 3 channels,            remains as integer, sampled via isamplerND -> ivec4(  R,   G,   B, 1.0)
+    ExternalFormatRGBAInteger  =  9, // 4 channels,            remains as integer, sampled via isamplerND -> ivec4(  R,   G,   B,   A)
+    ExternalFormatBGRInteger   = 10, // 3 channels (reversed), remains as integer, sampled via isamplerND -> ivec4(  R,   G,   B, 1.0)
+    ExternalFormatBGRAInteger  = 11, // 4 channels (reversed), remains as integer, sampled via isamplerND -> ivec4(  R,   G,   B,   A)
+
+    // Depth & Stencil Layouts
+
+    ExternalFormatDepth        = 12, // 1 channel,  normalised depth,                   sampled via  samplerND ->  vec4(  D, 0.0, 0.0, 1.0) or sampler2DShadow -> float
+    ExternalFormatStencil      = 13, // 1 channel,  remains as integer stencil,         sampled via usamplerND -> uvec4(  S, 0.0, 0.0, 1.0)
+    ExternalFormatDepthStencil = 14, // 2 channels, normalised depth + integer stencil, sampled via custom sampler configurations depending on hardware/view
+
+    ExternalFormatCount,
+} ExternalFormat;
+
+unsigned int externalFormatToNative(ExternalFormat externalFormat);
+
+typedef enum InternalFormat
+{
+    // 8-bit Normalised Formats (Standard Images / LDR)
+
+    InternalFormatR8    = 0,  // 1 channel,  8 bits per channel, normalised to [0.0, 1.0] on sample, sampled via samplerND -> vec4(  R, 0.0, 0.0, 1.0)
+    InternalFormatRG8   = 1,  // 2 channels, 8 bits per channel, normalised to [0.0, 1.0] on sample, sampled via samplerND -> vec4(  R,   G, 0.0, 1.0)
+    InternalFormatRGB8  = 2,  // 3 channels, 8 bits per channel, normalised to [0.0, 1.0] on sample, sampled via samplerND -> vec4(  R,   G,   B, 1.0)
+    InternalFormatRGBA8 = 3,  // 4 channels, 8 bits per channel, normalised to [0.0, 1.0] on sample, sampled via samplerND -> vec4(  R,   G,   B,   A)
+    
+    // Signed Normalised Formats (Values mapped from [-1.0, 1.0])
+    
+    InternalFormatR8SignedNormalised    = 4,  // 1 channel,  8 bits per channel, normalised to [-1.0, 1.0] on sample, sampled via samplerND -> vec4(  R, 0.0, 0.0, 1.0)
+    InternalFormatRG8SignedNormalised   = 5,  // 2 channels, 8 bits per channel, normalised to [-1.0, 1.0] on sample, sampled via samplerND -> vec4(  R,   G, 0.0, 1.0)
+    InternalFormatRGB8SignedNormalised  = 6,  // 3 channels, 8 bits per channel, normalised to [-1.0, 1.0] on sample, sampled via samplerND -> vec4(  R,   G,   B, 1.0)
+    InternalFormatRGBA8SignedNormalised = 7,  // 4 channels, 8 bits per channel, normalised to [-1.0, 1.0] on sample, sampled via samplerND -> vec4(  R,   G,   B,   A)
+
+    // 16-bit Normalised Formats (High-Precision LDR / UI / Heightmaps)
+    
+    InternalFormatR16    = 8,   // 1 channel,  16 bits per channel, normalised to [0.0, 1.0] on sample, sampled via samplerND -> vec4(  R, 0.0, 0.0, 1.0)
+    InternalFormatRG16   = 9,   // 2 channels, 16 bits per channel, normalised to [0.0, 1.0] on sample, sampled via samplerND -> vec4(  R,   G, 0.0, 1.0)
+    InternalFormatRGB16  = 10,  // 3 channels, 16 bits per channel, normalised to [0.0, 1.0] on sample, sampled via samplerND -> vec4(  R,   G,   B, 1.0)
+    InternalFormatRGBA16 = 11,  // 4 channels, 16 bits per channel, normalised to [0.0, 1.0] on sample, sampled via samplerND -> vec4(  R,   G,   B,   A)
+    
+    InternalFormatR16SignedNormalised    = 12, // 1 channel,  16 bits per channel, normalised to [-1.0, 1.0] on sample, sampled via samplerND -> vec4(  R, 0.0, 0.0, 1.0)
+    InternalFormatRG16SignedNormalised   = 13, // 2 channels, 16 bits per channel, normalised to [-1.0, 1.0] on sample, sampled via samplerND -> vec4(  R,   G, 0.0, 1.0)
+    InternalFormatRGB16SignedNormalised  = 14, // 3 channels, 16 bits per channel, normalised to [-1.0, 1.0] on sample, sampled via samplerND -> vec4(  R,   G,   B, 1.0)
+    InternalFormatRGBA16SignedNormalised = 15, // 4 channels, 16 bits per channel, normalised to [-1.0, 1.0] on sample, sampled via samplerND -> vec4(  R,   G,   B,   A)
+
+    // 16-bit Floating Point Formats (HDR / Mid-Precision / Post-Processing)
+    
+    InternalFormatR16F    = 16, // 1 channel,  passes raw half-floats directly to GPU, sampled via samplerND -> vec4(  R, 0.0, 0.0, 1.0)
+    InternalFormatRG16F   = 17, // 2 channels, passes raw half-floats directly to GPU, sampled via samplerND -> vec4(  R,   G, 0.0, 1.0)
+    InternalFormatRGB16F  = 18, // 3 channels, passes raw half-floats directly to GPU, sampled via samplerND -> vec4(  R,   G,   B, 1.0)
+    InternalFormatRGBA16F = 19, // 4 channels, passes raw half-floats directly to GPU, sampled via samplerND -> vec4(  R,   G,   B,   A)
+
+    // 32-bit Floating Point Formats (Extreme Precision / Compute / G-Buffer)
+    
+    InternalFormatR32F    = 20, // 1 channel,  passes raw single-floats directly to GPU, sampled via samplerND -> vec4(  R, 0.0, 0.0, 1.0)
+    InternalFormatRG32F   = 21, // 2 channels, passes raw single-floats directly to GPU, sampled via samplerND -> vec4(  R,   G, 0.0, 1.0)
+    InternalFormatRGB32F  = 22, // 3 channels, passes raw single-floats directly to GPU, sampled via samplerND -> vec4(  R,   G,   B, 1.0)
+    InternalFormatRGBA32F = 23, // 4 channels, passes raw single-floats directly to GPU, sampled via samplerND -> vec4(  R,   G,   B,   A)
+
+    // Pure Unsigned Integer Formats (IDs / Masks / Bitfields)
+    
+    InternalFormatR8UI    = 24, // 1 channel,  remains as unsigned 8-bit integer [0, 255], sampled via usamplerND -> uvec4(R, 0, 0, 1)
+    InternalFormatRG8UI   = 25, // 2 channels, remains as unsigned 8-bit integer [0, 255], sampled via usamplerND -> uvec4(R, G, 0, 1)
+    InternalFormatRGB8UI  = 26, // 3 channels, remains as unsigned 8-bit integer [0, 255], sampled via usamplerND -> uvec4(R, G, B, 1)
+    InternalFormatRGBA8UI = 27, // 4 channels, remains as unsigned 8-bit integer [0, 255], sampled via usamplerND -> uvec4(R, G, B, A)
+    
+    InternalFormatR16UI    = 28, // 1 channel,  remains as unsigned 16-bit integer [0, 65535], sampled via usamplerND -> uvec4(R, 0, 0, 1)
+    InternalFormatRG16UI   = 29, // 2 channels, remains as unsigned 16-bit integer [0, 65535], sampled via usamplerND -> uvec4(R, G, 0, 1)
+    InternalFormatRGB16UI  = 30, // 3 channels, remains as unsigned 16-bit integer [0, 65535], sampled via usamplerND -> uvec4(R, G, B, 1)
+    InternalFormatRGBA16UI = 31, // 4 channels, remains as unsigned 16-bit integer [0, 65535], sampled via usamplerND -> uvec4(R, G, B, A)
+    
+    InternalFormatR32UI    = 32, // 1 channel,  remains as unsigned 32-bit integer [0, 4294967295], sampled via usamplerND -> uvec4(R, 0, 0, 1)
+    InternalFormatRG32UI   = 33, // 2 channels, remains as unsigned 32-bit integer [0, 4294967295], sampled via usamplerND -> uvec4(R, G, 0, 1)
+    InternalFormatRGB32UI  = 34, // 3 channels, remains as unsigned 32-bit integer [0, 4294967295], sampled via usamplerND -> uvec4(R, G, B, 1)
+    InternalFormatRGBA32UI = 35, // 4 channels, remains as unsigned 32-bit integer [0, 4294967295], sampled via usamplerND -> uvec4(R, G, B, A)
+
+    // Pure Signed Integer Formats (Custom Math / Data Grids)
+    
+    InternalFormatR8I    = 36, // 1 channel,  remains as signed 8-bit integer [-128, 127], sampled via isamplerND -> ivec4(R, 0, 0, 1)
+    InternalFormatRG8I   = 37, // 2 channels, remains as signed 8-bit integer [-128, 127], sampled via isamplerND -> ivec4(R, G, 0, 1)
+    InternalFormatRGB8I  = 38, // 3 channels, remains as signed 8-bit integer [-128, 127], sampled via isamplerND -> ivec4(R, G, B, 1)
+    InternalFormatRGBA8I = 39, // 4 channels, remains as signed 8-bit integer [-128, 127], sampled via isamplerND -> ivec4(R, G, B, A)
+    
+    InternalFormatR16I    = 40, // 1 channel,  remains as signed 16-bit integer [-32768, 32767], sampled via isamplerND -> ivec4(R, 0, 0, 1)
+    InternalFormatRG16I   = 41, // 2 channels, remains as signed 16-bit integer [-32768, 32767], sampled via isamplerND -> ivec4(R, G, 0, 1)
+    InternalFormatRGB16I  = 42, // 3 channels, remains as signed 16-bit integer [-32768, 32767], sampled via isamplerND -> ivec4(R, G, B, 1)
+    InternalFormatRGBA16I = 43, // 4 channels, remains as signed 16-bit integer [-32768, 32767], sampled via isamplerND -> ivec4(R, G, B, A)
+    
+    InternalFormatR32I    = 44, // 1 channel,  remains as signed 32-bit integer [-2147483648, 2147483647], sampled via isamplerND -> ivec4(R, 0, 0, 1)
+    InternalFormatRG32I   = 45, // 2 channels, remains as signed 32-bit integer [-2147483648, 2147483647], sampled via isamplerND -> ivec4(R, G, 0, 1)
+    InternalFormatRGB32I  = 46, // 3 channels, remains as signed 32-bit integer [-2147483648, 2147483647], sampled via isamplerND -> ivec4(R, G, B, 1)
+    InternalFormatRGBA32I = 47, // 4 channels, remains as signed 32-bit integer [-2147483648, 2147483647], sampled via isamplerND -> ivec4(R, G, B, A)
+
+    // sRGB Formats (Gamma Corrected Colour Textures)
+    
+    InternalFormatSRGB8       = 48, // 3 channels, automatically linearised via pow(C, 2.2) on sample -> vec4(  R,   G,   B, 1.0)
+    InternalFormatSRGB8Alpha8 = 49, // 4 channels, automatically linearises RGB channels    on sample -> vec4(  R,   G,   B,   A)
+
+    // Depth and Stencil Formats
+    
+    InternalFormatDepth16          = 50, // 1 channel,  normalised fixed-depth, sampled via samplerND -> vec4(  D, 0.0, 0.0, 1.0) or samplerNDShadow -> float
+    InternalFormatDepth24          = 51, // 1 channel,  normalised fixed-depth, sampled via samplerND -> vec4(  D, 0.0, 0.0, 1.0) or samplerNDShadow -> float
+    InternalFormatDepth32F         = 52, // 1 channel,  passes raw depth float, sampled via samplerND -> vec4(  D, 0.0, 0.0, 1.0) or samplerNDShadow -> float
+    InternalFormatDepth24Stencil8  = 53, // 2 channels, interleaved depth + stencil, sampled via custom texture views per-aspect
+    InternalFormatDepth32FStencil8 = 54, // 2 channels, interleaved depth float + stencil with 24-bit hidden alignment padding
+
+    InternalFormatCount,
+} InternalFormat;
+
+unsigned int internalFormatToNative(InternalFormat internalFormat);
+
+typedef enum DataType
+{
+    // Standard Component Types
+
+    DataTypeByte    = 0, // Signed 8-bit integer
+    DataTypeUByte   = 1, // Unsigned 8-bit integer, the standard for basic PNG/JPG images
+    DataTypeShort   = 2, // Signed 16-bit integer
+    DataTypeUShort  = 3, // Unsigned 16-bit integer, used for high-precision UI masks or 16-bit heightmaps
+    DataTypeInt     = 4, // Signed 32-bit integer
+    DataTypeUInt    = 5, // Unsigned 32-bit integer
+    DataTypeFloat16 = 6, // 16-bit floating-point number, common for medium-precision HDR buffers
+    DataTypeFloat32 = 7, // Standard 32-bit float, used for high-precision vector fields, physics, and HDR calculations
+
+    // 8-Bit Packed Types
+
+    DataTypeR3G3B2 = 8, // [MSB] 3-bit R, 3-bit G, 2-bit B [LSB]
+    DataTypeB2G3R3 = 9, // [MSB] 2-bit B, 3-bit G, 3-bit R [LSB]
+
+    // 16-Bit Packed Types
+
+    DataTypeR5G6B5   = 10, // [MSB] 5-bit R, 6-bit G, 5-bit B [LSB]
+    DataTypeB5G6R5   = 11, // [MSB] 5-bit B, 6-bit G, 5-bit R [LSB]
+    DataTypeR4G4B4A4 = 12, // [MSB] 4-bit R, 4-bit G, 4-bit B, 4-bit A [LSB]
+    DataTypeA4B4G4R4 = 13, // [MSB] 4-bit A, 4-bit B, 4-bit G, 4-bit R [LSB]
+    DataTypeR5G5B5A1 = 14, // [MSB] 5-bit R, 5-bit G, 5-bit B, 1-bit A [LSB]
+    DataTypeA1B5G5R5 = 15, // [MSB] 1-bit A, 5-bit B, 5-bit G, 5-bit R [LSB]
+
+    // 32-Bit Packed Types
+
+    DataTypeR8G8B8A8    = 16, // [MSB]  8-bit R,  8-bit G,  8-bit B,  8-bit A [LSB]
+    DataTypeA8B8G8R8    = 17, // [MSB]  8-bit A,  8-bit B,  8-bit G,  8-bit R [LSB]
+    DataTypeR10G10B10A2 = 18, // [MSB] 10-bit R, 10-bit G, 10-bit B,  2-bit A [LSB]
+    DataTypeA2B10G10R10 = 19, // [MSB]  2-bit A, 10-bit B, 10-bit G, 10-bit R [LSB]
+
+    // Special Depth/Stencil Packed Types
+
+    DataTypeDepth24Stencil8  = 20, // [MSB] 24-bit Depth, 8-bit Stencil [LSB]
+    DataTypeDepth32FStencil8 = 21, // [MSB] 24-bit Padding, 8-bit Stencil, 32-bit Float Depth [LSB]
+
+    DataTypeCount,
+} DataType;
+
+unsigned int dataTypeToNative(DataType dataType);
 
