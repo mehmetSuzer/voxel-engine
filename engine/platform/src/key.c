@@ -4,7 +4,7 @@
 #include "log/log.h"
 #include "platform/key.h"
 
-int keyToNative(Key key)
+int32_t keyToNative(Key key)
 {
     switch (key)
     {

@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#define UNUSED(x) (void)(x)
+#define UNUSED(x) ((void)(x))
 
 #define STATIC_ASSERT(condition, message) _Static_assert(condition, message)
 
@@ -13,7 +13,7 @@
 
 #define OFFSET_OF(type, member) ((size_t)&(((type*)0)->member))
 
-#define CONTAINER_OF(ptr, type, member) ((type*)((char*)(ptr) - OFFSET_OF(type, member)))
+#define CONTAINER_OF(ptr, type, member) ((type*)((uint8_t*)(ptr) - OFFSET_OF(type, member)))
 
 #define ABS(x)  (((x) > (typeof(x))0) ? (x) : -(x))
 
@@ -36,11 +36,11 @@
 #define MIN(numbers, count)                                 \
     ({                                                      \
         typeof((numbers)[0]) __minNumber = (numbers)[0];    \
-        for (uint32_t i = 1u; i < (count); ++i)             \
+        for (size_t __i = 1; __i < (count); ++__i)          \
         {                                                   \
-            if ((numbers)[i] < __minNumber)                 \
+            if ((numbers)[__i] < __minNumber)               \
             {                                               \
-                __minNumber = (numbers)[i];                 \
+                __minNumber = (numbers)[__i];               \
             }                                               \
         }                                                   \
         __minNumber;                                        \
@@ -49,11 +49,11 @@
 #define MAX(numbers, count)                                 \
     ({                                                      \
         typeof((numbers)[0]) __maxNumber = (numbers)[0];    \
-        for (uint32_t i = 1u; i < (count); ++i)             \
+        for (size_t __i = 1; __i < (count); ++__i)          \
         {                                                   \
-            if ((numbers)[i] > __maxNumber)                 \
+            if ((numbers)[__i] > __maxNumber)               \
             {                                               \
-                __maxNumber = (numbers)[i];                 \
+                __maxNumber = (numbers)[__i];               \
             }                                               \
         }                                                   \
         __maxNumber;                                        \
@@ -61,14 +61,14 @@
 
 #define INDEX_OF_MIN(numbers, count)                        \
     ({                                                      \
-        uint32_t __index = 0u;                              \
+        size_t __index = 0;                                 \
         typeof((numbers)[0]) __minNumber = (numbers)[0];    \
-        for (uint32_t i = 1u; i < (count); ++i)             \
+        for (size_t __i = 1; __i < (count); ++__i)          \
         {                                                   \
-            if ((numbers)[i] < __minNumber)                 \
+            if ((numbers)[__i] < __minNumber)               \
             {                                               \
-                __index = i;                                \
-                __minNumber = (numbers)[i];                 \
+                __index = __i;                              \
+                __minNumber = (numbers)[__i];               \
             }                                               \
         }                                                   \
         __index;                                            \
@@ -76,14 +76,14 @@
 
 #define INDEX_OF_MAX(numbers, count)                        \
     ({                                                      \
-        uint32_t __index = 0u;                              \
+        size_t __index = 0;                                 \
         typeof((numbers)[0]) __maxNumber = (numbers)[0];    \
-        for (uint32_t i = 1u; i < (count); ++i)             \
+        for (size_t __i = 1; __i < (count); ++__i)          \
         {                                                   \
-            if ((numbers)[i] > __maxNumber)                 \
+            if ((numbers)[__i] > __maxNumber)               \
             {                                               \
-                __index = i;                                \
-                __maxNumber = (numbers)[i];                 \
+                __index = __i;                              \
+                __maxNumber = (numbers)[__i];               \
             }                                               \
         }                                                   \
         __index;                                            \
@@ -92,21 +92,21 @@
 #define SUM(numbers, count)                         \
     ({                                              \
         typeof((numbers)[0]) __total = 0;           \
-        for (uint32_t i = 0u; i < (count); ++i)     \
+        for (size_t __i = 0; __i < (count); ++__i)  \
         {                                           \
-            __total += (numbers)[i];                \
+            __total += (numbers)[__i];              \
         }                                           \
         __total;                                    \
     })
 
 #define CONTAINS(array, count, value)               \
     ({                                              \
-        int __found = 0;                            \
-        for (uint32_t i = 0u; i < (count); ++i)     \
+        bool __found = false;                       \
+        for (size_t __i = 0; __i < (count); ++__i)  \
         {                                           \
-            if ((array)[i] == (value))              \
+            if ((array)[__i] == (value))            \
             {                                       \
-                __found = 1;                        \
+                __found = true;                     \
                 break;                              \
             }                                       \
         }                                           \
@@ -115,12 +115,12 @@
 
 #define INDEX_OF(array, count, value)               \
     ({                                              \
-        uint32_t __index = UINT32_MAX;              \
-        for (uint32_t i = 0u; i < (count); ++i)     \
+        size_t __index = SIZE_MAX;                  \
+        for (size_t __i = 0; __i < (count); ++__i)  \
         {                                           \
-            if ((array)[i] == (value))              \
+            if ((array)[__i] == (value))            \
             {                                       \
-                __index = i;                        \
+                __index = __i;                      \
                 break;                              \
             }                                       \
         }                                           \

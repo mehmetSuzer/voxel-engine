@@ -10,7 +10,7 @@
 // Fragment Shader:         .frag
 // Compute Shader:          .comp
 
-typedef unsigned int ShaderProgramID;
+typedef uint32_t ShaderProgramID;
 
 #define SHADER_PROGRAM_NULL ((ShaderProgramID)0)
 
@@ -39,15 +39,15 @@ ShaderProgramID shaderProgramCreateVTTGF(
 
 void shaderProgramDestroy(ShaderProgramID shaderProgramID);
 
-int shaderProgramIsActive(ShaderProgramID shaderProgramID);
+bool shaderProgramIsActive(ShaderProgramID shaderProgramID);
 
 void shaderProgramBind(ShaderProgramID shaderProgramID);
 
-void shaderProgramSetUniformSampler(ShaderProgramID shaderProgramID, const char* uniform, unsigned int sampler);
+void shaderProgramSetUniformSampler(ShaderProgramID shaderProgramID, const char* uniform, uint32_t sampler);
 
-void shaderProgramSetUniformi(ShaderProgramID shaderProgramID, const char* uniform, int          value);
-void shaderProgramSetUniformu(ShaderProgramID shaderProgramID, const char* uniform, unsigned int value);
-void shaderProgramSetUniformf(ShaderProgramID shaderProgramID, const char* uniform, float        value);
+void shaderProgramSetUniformi(ShaderProgramID shaderProgramID, const char* uniform, int32_t  value);
+void shaderProgramSetUniformu(ShaderProgramID shaderProgramID, const char* uniform, uint32_t value);
+void shaderProgramSetUniformf(ShaderProgramID shaderProgramID, const char* uniform, float    value);
 
 void shaderProgramSetUniform2i(ShaderProgramID shaderProgramID, const char* uniform, ivec2 vector);
 void shaderProgramSetUniform3i(ShaderProgramID shaderProgramID, const char* uniform, ivec3 vector);

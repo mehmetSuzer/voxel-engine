@@ -8,19 +8,27 @@
 
 TextureID textureCreate(const char* texturePath)
 {
-    int width, height, channels;
+    int width = 0; 
+    int height = 0;
+    int channelCount = 0;
     stbi_set_flip_vertically_on_load(1);
-    unsigned char* pixels = stbi_load(texturePath, &width, &height, &channels, 0);
+    stbi_uc* pixels = stbi_load(texturePath, &width, &height, &channelCount, 0);
     if (pixels == NULL)
     {
         logError("TEXTURE", "failed to read %s", texturePath);
         return TEXTURE_NULL;
     }
 
-    if (channels < 1 || channels > 4)
+    if (width == 0 || height == 0 || channelCount == 0)
+    {
+        logError("TEXTURE", "failed to detect dimensions: (W, H, C) = (%i, %i, %i)", width, height, channelCount);
+        return TEXTURE_NULL;
+    }
+
+    if (channelCount < 1 || channelCount > 4)
     {
         stbi_image_free(pixels);
-        logError("TEXTURE", "unsupported channels (%i) for %s", channels, texturePath);
+        logError("TEXTURE", "unsupported channel count (%i) for %s", channelCount, texturePath);
         return TEXTURE_NULL;
     }
 
@@ -33,7 +41,7 @@ TextureID textureCreate(const char* texturePath)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    const int bytesPerRow = width * channels;
+    const int bytesPerRow = width * channelCount;
     const int alignment =
         (bytesPerRow % 8 == 0) ? 8 :
         (bytesPerRow % 4 == 0) ? 4 :
@@ -41,14 +49,14 @@ TextureID textureCreate(const char* texturePath)
     glPixelStorei(GL_UNPACK_ALIGNMENT, alignment);
 
     const GLenum externalFormat =
-        (channels == 1) ? GL_RED :
-        (channels == 2) ? GL_RG  :
-        (channels == 3) ? GL_RGB : GL_RGBA;
+        (channelCount == 1) ? GL_RED :
+        (channelCount == 2) ? GL_RG  :
+        (channelCount == 3) ? GL_RGB : GL_RGBA;
 
     const GLenum internalFormat =
-        (channels == 1) ? GL_R8   :
-        (channels == 2) ? GL_RG8  :
-        (channels == 3) ? GL_RGB8 : GL_RGBA8;
+        (channelCount == 1) ? GL_R8   :
+        (channelCount == 2) ? GL_RG8  :
+        (channelCount == 3) ? GL_RGB8 : GL_RGBA8;
 
     glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, externalFormat, GL_UNSIGNED_BYTE, pixels);
 
@@ -67,24 +75,24 @@ void textureDestroy(TextureID textureID)
     glCheckErrors();
 }
 
-int textureIsActive(TextureID textureID)
+bool textureIsActive(TextureID textureID)
 {
     return (glIsTexture(textureID) == GL_TRUE);
 }
 
-void textureBindSampler(TextureID textureID, unsigned int unit)
+void textureBindSampler(TextureID textureID, uint32_t unit)
 {
-    assert(unit < 32u);
+    assert(unit < 32);
     glActiveTexture(GL_TEXTURE0 + unit);
     glBindTexture(GL_TEXTURE_2D, textureID);
     logVerbose("TEXTURE", "binded: %u", textureID);
     glCheckErrors();
 }
 
-void textureBindImage(TextureID textureID, unsigned int unit, AccessPolicy accessPolicy, ExternalFormat externalFormat)
+void textureBindImage(TextureID textureID, uint32_t unit, int32_t mipLevel, AccessPolicy accessPolicy, ExternalFormat externalFormat)
 {
-    assert(unit < 32u);
-    glBindImageTexture(unit, textureID, 0, GL_FALSE, 0, accessPolicyToNative(accessPolicy), externalFormatToNative(externalFormat));
+    assert(unit < 32);
+    glBindImageTexture(unit, textureID, mipLevel, GL_FALSE, 0, accessPolicyToNative(accessPolicy), externalFormatToNative(externalFormat));
     glCheckErrors();
 }
 

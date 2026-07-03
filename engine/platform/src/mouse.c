@@ -4,7 +4,7 @@
 #include "log/log.h"
 #include "platform/mouse.h"
 
-int mouseButtonToNative(MouseButton mouseButton)
+int32_t mouseButtonToNative(MouseButton mouseButton)
 {
     switch (mouseButton)
     {

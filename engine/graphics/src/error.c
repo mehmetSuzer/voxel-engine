@@ -24,13 +24,13 @@ static const char* glErrorToString(GLenum errorCode)
     return "invalid error code";
 }
 
-void __glCheckErrorsImplementation(const char* file, int line)
+void __glCheckErrorsImplementation(const char* file, uint32_t line)
 {
-    GLenum errorCode;
+    GLenum errorCode = GL_NO_ERROR;
     while ((errorCode = glGetError()) != GL_NO_ERROR)
     {
         const char* error = glErrorToString(errorCode);
-        logError("OPENGL", "%s | %s (%i)", error, file, line);
+        logError("OPENGL", "%s | %s (%u)", error, file, line);
     }
 }
 

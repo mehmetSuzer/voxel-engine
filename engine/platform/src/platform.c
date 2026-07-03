@@ -28,16 +28,18 @@ static void errorCallback(int error, const char* description)
     }
 }
 
-void platformInit()
+bool platformInit(void)
 {
     if (!glfwInit())
     {
-        logError("GLFW", "failed to initialise");
-        return;
+        logError("PLATFORM", "failed to initialise");
+        return false;
     }
 
-    const int openGLMajor = 3;
-    const int openGLMinor = 3;
+    const int openGLMajor = 4;
+    const int openGLMinor = 6;
+    logInfo("PLATFORM", "OpenGL Core %i.%i", openGLMajor, openGLMinor);
+
     glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, openGLMajor);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, openGLMinor);
@@ -56,8 +58,6 @@ void platformInit()
     glfwWindowHint(GLFW_SAMPLES, 0); // MSAA
     glfwWindowHint(GLFW_DOUBLEBUFFER, GLFW_TRUE);
     glfwWindowHint(GLFW_SRGB_CAPABLE, GLFW_TRUE);
-
-    logInfo("OPENGL", "core %i.%i", openGLMajor, openGLMinor);
 
     glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);               // Allows the user to resize the window by dragging its edges/corners.
     glfwWindowHint(GLFW_VISIBLE, GLFW_TRUE);                  // Controls whether the window is shown immediately after creation.
@@ -87,24 +87,26 @@ void platformInit()
         (platform == GLFW_PLATFORM_COCOA  ) ? "Cocoa"   : 
         (platform == GLFW_PLATFORM_WAYLAND) ? "Wayland" : 
         (platform == GLFW_PLATFORM_X11    ) ? "X11"     : 
-        (platform == GLFW_PLATFORM_NULL   ) ? "Null"    : "unknown";
+        (platform == GLFW_PLATFORM_NULL   ) ? "Null"    : "unknown platform";
     logInfo("PLATFORM", "%s is detected", platformName);
 
     GLFWmonitor* primaryMonitor = glfwGetPrimaryMonitor();
     const char* monitorName = glfwGetMonitorName(primaryMonitor);
-    logInfo("MONITOR", "%s is detected", monitorName);    
+    logInfo("PLATFORM", "%s is detected", monitorName);    
 
     const GLFWvidmode* videoMode = glfwGetVideoMode(primaryMonitor);
-    logInfo("MONITOR", "%ix%i %i Hz", videoMode->width, videoMode->height, videoMode->refreshRate);
+    logInfo("PLATFORM", "%ix%i %i Hz", videoMode->width, videoMode->height, videoMode->refreshRate);
+
+    return true;
 }
 
-void platformTerminate()
+void platformTerminate(void)
 {
     glfwTerminate();
     logInfo("PLATFORM", "terminated");
 }
 
-double platformGetTime()
+double platformGetTime(void)
 {
     return glfwGetTime();
 }
@@ -115,12 +117,12 @@ void platformSetTime(double time)
     logVerbose("PLATFORM", "time is set to % .6f", time);
 }
 
-void platformPollEvents()
+void platformPollEvents(void)
 {
     glfwPollEvents();
 }
 
-void platformWaitEvents()
+void platformWaitEvents(void)
 {
     glfwWaitEvents();
 }
@@ -130,17 +132,17 @@ void platformWaitEventsTimeout(double timeout)
     glfwWaitEventsTimeout(timeout);
 }
 
-void platformPostEmptyEvent()
+void platformPostEmptyEvent(void)
 {
     glfwPostEmptyEvent();
 }
 
-GLFunctionLoader platformGetGLFunctionLoader()
+GLFunctionLoader platformGetGLFunctionLoader(void)
 {
     return (GLFunctionLoader)glfwGetProcAddress;
 }
 
-int platformIsExtensionSupported(const char* extension)
+bool platformIsExtensionSupported(const char* extension)
 {
     return (glfwExtensionSupported(extension) == GLFW_TRUE);
 }

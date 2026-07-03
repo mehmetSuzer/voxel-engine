@@ -23,7 +23,7 @@ void samplerGetDefaultCreateInfo(SamplerCreateInfo* samplerCreateInfoOut)
     samplerCreateInfoOut->borderColour[0] = 0.0f;
     samplerCreateInfoOut->borderColour[1] = 0.0f;
     samplerCreateInfoOut->borderColour[2] = 0.0f;
-    samplerCreateInfoOut->borderColour[3] = 0.0f;
+    samplerCreateInfoOut->borderColour[3] = 1.0f;
 }
 
 SamplerID samplerCreate(const SamplerCreateInfo* samplerCreateInfo)
@@ -57,12 +57,12 @@ void samplerDestroy(SamplerID samplerID)
     glCheckErrors();
 }
 
-int samplerIsActive(SamplerID samplerID)
+bool samplerIsActive(SamplerID samplerID)
 {
     return (glIsSampler(samplerID) == GL_TRUE);
 }
 
-void samplerBind(SamplerID samplerID, unsigned int unit)
+void samplerBind(SamplerID samplerID, uint32_t unit)
 {
     glBindSampler(unit, samplerID);
     logVerbose("SAMPLER", "binded: %u", samplerID);

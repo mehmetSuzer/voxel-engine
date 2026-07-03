@@ -1,7 +1,9 @@
 
 #pragma once
 
-void __glCheckErrorsImplementation(const char* file, int line);
+#include <stdint.h>
+
+void __glCheckErrorsImplementation(const char* file, uint32_t line);
 
 #ifdef NDEBUG
     #define glCheckErrors() ((void)(0))

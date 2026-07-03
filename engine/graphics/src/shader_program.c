@@ -6,7 +6,7 @@
 #include "log/log.h"
 #include "glad/glad.h"
 
-#define SHADER_NULL 0u
+#define SHADER_NULL 0
 
 static char* readFile(const char* filePath, size_t* sizeOut)
 {
@@ -14,16 +14,16 @@ static char* readFile(const char* filePath, size_t* sizeOut)
     if (file == NULL)
     {
         logError("SHADER", "failed to read %s", filePath);
-        if (sizeOut != NULL) { *sizeOut = 0ul; }
+        if (sizeOut != NULL) { *sizeOut = 0; }
         return NULL;
     }
 
-    fseek(file, 0l, SEEK_END);
+    fseek(file, 0, SEEK_END);
     size_t size = (size_t)ftell(file);
     rewind(file);
 
-    char* buffer = (char*)malloc((size + 1ul) * sizeof(char));
-    size = fread(buffer, 1ul, size, file);
+    char* buffer = (char*)malloc((size + 1) * sizeof(char));
+    size = fread(buffer, 1, size, file);
     buffer[size] = '\0';
     fclose(file);
 
@@ -53,7 +53,7 @@ static GLuint createShader(const char* shaderPath, GLenum type)
         GLsizei infoLogLength = 0;
         glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infoLogLength);
 
-        char* infoLog = (char*)malloc((infoLogLength + 1ul) * sizeof(char));
+        char* infoLog = (char*)malloc((infoLogLength + 1) * sizeof(char));
         glGetShaderInfoLog(shader, infoLogLength, NULL, infoLog);
         infoLog[infoLogLength] = '\0';
 
@@ -96,7 +96,7 @@ static GLint linkShaderProgram(ShaderProgramID shaderProgramID)
         GLsizei infoLogLength = 0;
         glGetProgramiv(shaderProgramID, GL_INFO_LOG_LENGTH, &infoLogLength);
 
-        char* infoLog = (char*)malloc((infoLogLength + 1ul) * sizeof(char));
+        char* infoLog = (char*)malloc((infoLogLength + 1) * sizeof(char));
         glGetProgramInfoLog(shaderProgramID, infoLogLength, NULL, infoLog);
         infoLog[infoLogLength] = '\0';
 
@@ -122,7 +122,7 @@ static GLint validateShaderProgram(ShaderProgramID shaderProgramID)
         GLsizei infoLogLength = 0;
         glGetProgramiv(shaderProgramID, GL_INFO_LOG_LENGTH, &infoLogLength);
 
-        char* infoLog = (char*)malloc((infoLogLength + 1ul) * sizeof(char));
+        char* infoLog = (char*)malloc((infoLogLength + 1) * sizeof(char));
         glGetProgramInfoLog(shaderProgramID, infoLogLength, NULL, infoLog);
         infoLog[infoLogLength] = '\0';
 
@@ -484,7 +484,7 @@ void shaderProgramDestroy(ShaderProgramID shaderProgramID)
     logVerbose("PROGRAM", "destroyed");
 }
 
-int shaderProgramIsActive(ShaderProgramID shaderProgramID)
+bool shaderProgramIsActive(ShaderProgramID shaderProgramID)
 {
     return (glIsProgram(shaderProgramID) == GL_TRUE);
 }
@@ -496,19 +496,19 @@ void shaderProgramBind(ShaderProgramID shaderProgramID)
     glCheckErrors();
 }
 
-void shaderProgramSetUniformSampler(ShaderProgramID shaderProgramID, const char* uniform, unsigned int sampler)
+void shaderProgramSetUniformSampler(ShaderProgramID shaderProgramID, const char* uniform, uint32_t sampler)
 {
     glUniform1i(getUniformLocation(shaderProgramID, uniform), (GLint)sampler);
     glCheckErrors();
 }
 
-void shaderProgramSetUniformi(ShaderProgramID shaderProgramID, const char* uniform, int value)
+void shaderProgramSetUniformi(ShaderProgramID shaderProgramID, const char* uniform, int32_t value)
 {
     glUniform1i(getUniformLocation(shaderProgramID, uniform), value);
     glCheckErrors();
 }
 
-void shaderProgramSetUniformu(ShaderProgramID shaderProgramID, const char* uniform, unsigned int value)
+void shaderProgramSetUniformu(ShaderProgramID shaderProgramID, const char* uniform, uint32_t value)
 {
     glUniform1ui(getUniformLocation(shaderProgramID, uniform), value);
     glCheckErrors();

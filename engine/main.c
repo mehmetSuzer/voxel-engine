@@ -9,20 +9,34 @@
 
 #define WINDOW_WIDTH  1200
 #define WINDOW_HEIGHT 1000
-#define WINDOW_TITLE  "Voxel Engine"
 #define WINDOW_ASPECT_RATIO  ((float)WINDOW_WIDTH/(float)WINDOW_HEIGHT)
 
-int main()
+int main(void)
 {
-    platformInit();
-    Window* window = windowCreate(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE);
+    if (!platformInit())
+    {
+        return EXIT_FAILURE;
+    }
+
+    Window* window = windowCreate(WINDOW_WIDTH, WINDOW_HEIGHT, "Voxel Engine");
+    if (window == NULL)
+    {
+        platformTerminate();
+        return EXIT_FAILURE;
+    }
     windowMakeContextCurrent(window);
 
-    graphicsInit((GraphicsFunctionLoader)platformGetGLFunctionLoader());
+    if (!graphicsInit((GraphicsFunctionLoader)platformGetGLFunctionLoader()))
+    {
+        windowDestroy(window);
+        platformTerminate();
+        return EXIT_FAILURE;
+    }
+
     graphicsViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
     
     graphicsEnable(CapabilityDepthTest);
-    graphicsDepthWriteEnable(1);
+    graphicsDepthWriteEnable(true);
     graphicsDepthFunc(CompareFuncLess);
     graphicsDepthRange(0.0f, 1.0f);
 
@@ -59,11 +73,11 @@ int main()
         }
 
         const float cameraSpeed = 0.1f;
-        if (windowIsKeyPressed(window, KeyA))           { cameraTranslate(&camera, (vec3){-cameraSpeed, 0.0f, 0.0f}); }
-        if (windowIsKeyPressed(window, KeyD))           { cameraTranslate(&camera, (vec3){ cameraSpeed, 0.0f, 0.0f}); }
-        if (windowIsKeyPressed(window, KeyS))           { cameraTranslate(&camera, (vec3){0.0f, 0.0f,  cameraSpeed}); }
-        if (windowIsKeyPressed(window, KeyW))           { cameraTranslate(&camera, (vec3){0.0f, 0.0f, -cameraSpeed}); }
-        if (windowIsKeyPressed(window, KeySpace))       { cameraTranslate(&camera, (vec3){0.0f,  cameraSpeed, 0.0f}); }
+        if (windowIsKeyPressed(window, KeyA          )) { cameraTranslate(&camera, (vec3){-cameraSpeed, 0.0f, 0.0f}); }
+        if (windowIsKeyPressed(window, KeyD          )) { cameraTranslate(&camera, (vec3){ cameraSpeed, 0.0f, 0.0f}); }
+        if (windowIsKeyPressed(window, KeyS          )) { cameraTranslate(&camera, (vec3){0.0f, 0.0f,  cameraSpeed}); }
+        if (windowIsKeyPressed(window, KeyW          )) { cameraTranslate(&camera, (vec3){0.0f, 0.0f, -cameraSpeed}); }
+        if (windowIsKeyPressed(window, KeySpace      )) { cameraTranslate(&camera, (vec3){0.0f,  cameraSpeed, 0.0f}); }
         if (windowIsKeyPressed(window, KeyControlLeft)) { cameraTranslate(&camera, (vec3){0.0f, -cameraSpeed, 0.0f}); }
 
         graphicsClear(BufferBitColour | BufferBitDepth);

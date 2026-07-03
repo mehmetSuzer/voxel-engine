@@ -130,5 +130,5 @@ typedef enum Key
     KeyCount,
 } Key;
 
-int keyToNative(Key key);
+int32_t keyToNative(Key key);
 

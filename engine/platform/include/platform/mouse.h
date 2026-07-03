@@ -18,5 +18,5 @@ typedef enum MouseButton
     MouseButtonMiddle = MouseButton3, // Same as MouseButton3
 } MouseButton;
 
-int mouseButtonToNative(MouseButton mouseButton);
+int32_t mouseButtonToNative(MouseButton mouseButton);
 

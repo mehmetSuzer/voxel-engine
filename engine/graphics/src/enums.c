@@ -4,7 +4,7 @@
 #include "glad/glad.h"
 #include "graphics/enums.h"
 
-unsigned int capabilityToNative(Capability capability)
+uint32_t capabilityToNative(Capability capability)
 {
     switch (capability)
     {
@@ -33,14 +33,14 @@ unsigned int capabilityToNative(Capability capability)
     return GL_DEPTH_TEST;
 }
 
-unsigned int bufferBitsToNative(BufferBit bufferBits)
+uint32_t bufferBitsToNative(BufferBit bufferBits)
 {
-    unsigned int native = 0u;
+    uint32_t native = 0;
     if (bufferBits & BufferBitColour  != 0) { native |= GL_COLOR_BUFFER_BIT;   }
     if (bufferBits & BufferBitDepth   != 0) { native |= GL_DEPTH_BUFFER_BIT;   }
     if (bufferBits & BufferBitStencil != 0) { native |= GL_STENCIL_BUFFER_BIT; }
 
-    if (native == 0u)
+    if (native == 0)
     {
         logError("ENUMS", "invalid buffer bits");
         assert(0);
@@ -51,7 +51,7 @@ unsigned int bufferBitsToNative(BufferBit bufferBits)
     return native;
 }
 
-unsigned int textureWrapToNative(TextureWrap textureWrap)
+int32_t textureWrapToNative(TextureWrap textureWrap)
 {
     switch (textureWrap)
     {
@@ -68,7 +68,7 @@ unsigned int textureWrapToNative(TextureWrap textureWrap)
     return GL_REPEAT;
 }
 
-unsigned int textureMinFilterToNative(TextureMinFilter textureMinFilter)
+int32_t textureMinFilterToNative(TextureMinFilter textureMinFilter)
 {
     switch (textureMinFilter)
     {
@@ -86,7 +86,7 @@ unsigned int textureMinFilterToNative(TextureMinFilter textureMinFilter)
     return GL_NEAREST;
 }
 
-unsigned int textureMagFilterToNative(TextureMagFilter textureMagFilter)
+int32_t textureMagFilterToNative(TextureMagFilter textureMagFilter)
 {
     switch (textureMagFilter)
     {
@@ -100,7 +100,7 @@ unsigned int textureMagFilterToNative(TextureMagFilter textureMagFilter)
     return GL_NEAREST;
 }
 
-unsigned int compareModeToNative(CompareMode compareMode)
+int32_t compareModeToNative(CompareMode compareMode)
 {
     switch (compareMode)
     {
@@ -114,7 +114,7 @@ unsigned int compareModeToNative(CompareMode compareMode)
     return GL_NONE;
 }
 
-unsigned int compareFuncToNative(CompareFunc compareFunc)
+uint32_t compareFuncToNative(CompareFunc compareFunc)
 {
     switch (compareFunc)
     {
@@ -134,7 +134,7 @@ unsigned int compareFuncToNative(CompareFunc compareFunc)
     return GL_NEVER;
 }
 
-unsigned int stencilOperationToNative(StencilOperation stencilOperation)
+uint32_t stencilOperationToNative(StencilOperation stencilOperation)
 {
     switch (stencilOperation)
     {
@@ -154,7 +154,7 @@ unsigned int stencilOperationToNative(StencilOperation stencilOperation)
     return GL_KEEP;
 }
 
-unsigned int faceToNative(Face face)
+uint32_t faceToNative(Face face)
 {
     switch (face)
     {
@@ -169,7 +169,7 @@ unsigned int faceToNative(Face face)
     return GL_FRONT;
 }
 
-unsigned int frontFaceToNative(FrontFace frontFace)
+uint32_t frontFaceToNative(FrontFace frontFace)
 {
     switch (frontFace)
     {
@@ -183,7 +183,7 @@ unsigned int frontFaceToNative(FrontFace frontFace)
     return GL_CW;
 }
 
-unsigned int blendFactorToNative(BlendFactor blendFactor)
+uint32_t blendFactorToNative(BlendFactor blendFactor)
 {
     switch (blendFactor)
     {
@@ -210,7 +210,7 @@ unsigned int blendFactorToNative(BlendFactor blendFactor)
     return GL_ZERO;
 }
 
-unsigned int blendEquationToNative(BlendEquation blendEquation)
+uint32_t blendEquationToNative(BlendEquation blendEquation)
 {
     switch (blendEquation)
     {
@@ -227,7 +227,7 @@ unsigned int blendEquationToNative(BlendEquation blendEquation)
     return GL_FUNC_ADD;
 }
 
-unsigned int polygonModeToNative(PolygonMode polygonMode)
+uint32_t polygonModeToNative(PolygonMode polygonMode)
 {
     switch (polygonMode)
     {
@@ -242,7 +242,7 @@ unsigned int polygonModeToNative(PolygonMode polygonMode)
     return GL_POINT;
 }
 
-unsigned int drawModeToNative(DrawMode drawMode)
+uint32_t drawModeToNative(DrawMode drawMode)
 {
     switch (drawMode)
     {
@@ -261,9 +261,9 @@ unsigned int drawModeToNative(DrawMode drawMode)
     return GL_POINTS;
 }
 
-unsigned int memoryBarrierBitsToNative(MemoryBarrierBit memoryBarrierBits)
+uint32_t memoryBarrierBitsToNative(MemoryBarrierBit memoryBarrierBits)
 {
-    unsigned int native = 0u;
+    uint32_t native = 0;
     if (memoryBarrierBits & MemoryBarrierBitVertexAttributeArray != 0) { native |= GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT;  } 
     if (memoryBarrierBits & MemoryBarrierBitElementArray         != 0) { native |= GL_ELEMENT_ARRAY_BARRIER_BIT;        }       
     if (memoryBarrierBits & MemoryBarrierBitUniform              != 0) { native |= GL_UNIFORM_BARRIER_BIT;              }
@@ -280,7 +280,7 @@ unsigned int memoryBarrierBitsToNative(MemoryBarrierBit memoryBarrierBits)
     if (memoryBarrierBits & MemoryBarrierBitClientMappedBuffer   != 0) { native |= GL_CLIENT_MAPPED_BUFFER_BARRIER_BIT; }
     if (memoryBarrierBits & MemoryBarrierBitQueryBuffer          != 0) { native |= GL_QUERY_BUFFER_BARRIER_BIT;         }
 
-    if (native == 0u)
+    if (native == 0)
     {
         logError("ENUMS", "invalid memory barrier bits");
         assert(0);
@@ -291,7 +291,7 @@ unsigned int memoryBarrierBitsToNative(MemoryBarrierBit memoryBarrierBits)
     return native;
 }
 
-unsigned int accessPolicyToNative(AccessPolicy accessPolicy)
+uint32_t accessPolicyToNative(AccessPolicy accessPolicy)
 {
     switch (accessPolicy)
     {
@@ -306,7 +306,7 @@ unsigned int accessPolicyToNative(AccessPolicy accessPolicy)
     return GL_READ_ONLY;
 }
 
-unsigned int bufferUsageToNative(BufferUsage bufferUsage)
+uint32_t bufferUsageToNative(BufferUsage bufferUsage)
 {
     switch (bufferUsage)
     {
@@ -327,14 +327,14 @@ unsigned int bufferUsageToNative(BufferUsage bufferUsage)
     return GL_STATIC_DRAW;
 }
 
-unsigned int bufferStorageBitsToNative(BufferStorageBit bufferStorageBits)
+uint32_t bufferStorageBitsToNative(BufferStorageBit bufferStorageBits)
 {
     if (bufferStorageBits == 0)
     {
-        return 0u;
+        return 0;
     }
 
-    unsigned int native = 0u;
+    uint32_t native = 0;
     if (bufferStorageBits & BufferStorageBitMapRead        != 0) { native |= GL_MAP_READ_BIT;        }
     if (bufferStorageBits & BufferStorageBitMapWrite       != 0) { native |= GL_MAP_WRITE_BIT;       }
     if (bufferStorageBits & BufferStorageBitMapPersistent  != 0) { native |= GL_MAP_PERSISTENT_BIT;  }
@@ -342,7 +342,7 @@ unsigned int bufferStorageBitsToNative(BufferStorageBit bufferStorageBits)
     if (bufferStorageBits & BufferStorageBitDynamicStorage != 0) { native |= GL_DYNAMIC_STORAGE_BIT; }
     if (bufferStorageBits & BufferStorageBitClientStorage  != 0) { native |= GL_CLIENT_STORAGE_BIT;  }
 
-    if (native == 0u)
+    if (native == 0)
     {
         logError("ENUMS", "invalid buffer storage bits");
         assert(0);
@@ -353,9 +353,9 @@ unsigned int bufferStorageBitsToNative(BufferStorageBit bufferStorageBits)
     return native;
 }
 
-unsigned int bufferMapBitsToNative(BufferMapBit bufferMapBits)
+uint32_t bufferMapBitsToNative(BufferMapBit bufferMapBits)
 {
-    unsigned int native = 0u;
+    uint32_t native = 0;
     if (bufferMapBits & BufferMapBitRead             != 0) { native |= GL_MAP_READ_BIT;              }
     if (bufferMapBits & BufferMapBitWrite            != 0) { native |= GL_MAP_WRITE_BIT;             }
     if (bufferMapBits & BufferMapBitInvalidateRange  != 0) { native |= GL_MAP_INVALIDATE_RANGE_BIT;  }
@@ -365,7 +365,7 @@ unsigned int bufferMapBitsToNative(BufferMapBit bufferMapBits)
     if (bufferMapBits & BufferMapBitPersistent       != 0) { native |= GL_MAP_PERSISTENT_BIT;        }
     if (bufferMapBits & BufferMapBitCoherent         != 0) { native |= GL_MAP_COHERENT_BIT;          }
 
-    if (native == 0u)
+    if (native == 0)
     {
         logError("ENUMS", "invalid buffer map bits");
         assert(0);
@@ -376,7 +376,7 @@ unsigned int bufferMapBitsToNative(BufferMapBit bufferMapBits)
     return native;
 }
 
-unsigned int bufferTargetToNative(BufferTarget bufferTarget)
+uint32_t bufferTargetToNative(BufferTarget bufferTarget)
 {
     switch (bufferTarget)
     {
@@ -402,7 +402,7 @@ unsigned int bufferTargetToNative(BufferTarget bufferTarget)
     return GL_ARRAY_BUFFER;
 }
 
-unsigned int externalFormatToNative(ExternalFormat externalFormat)
+uint32_t externalFormatToNative(ExternalFormat externalFormat)
 {
     switch (externalFormat)
     {
@@ -429,7 +429,7 @@ unsigned int externalFormatToNative(ExternalFormat externalFormat)
     return GL_RED;
 }
 
-unsigned int internalFormatToNative(InternalFormat internalFormat)
+uint32_t internalFormatToNative(InternalFormat internalFormat)
 {
     switch (internalFormat)
     {
@@ -496,7 +496,7 @@ unsigned int internalFormatToNative(InternalFormat internalFormat)
     return GL_R8;
 }
 
-unsigned int dataTypeToNative(DataType dataType)
+uint32_t dataTypeToNative(DataType dataType)
 {
     switch (dataType)
     {

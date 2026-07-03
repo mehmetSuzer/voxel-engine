@@ -9,13 +9,16 @@
 struct Window
 {
     GLFWwindow* handle;
-    int isFullScreen;
-    int windowedPositionX;
-    int windowedPositionY;
-    int windowedWidth;
-    int windowedHeight;
+    int32_t windowedPositionX;
+    int32_t windowedPositionY;
+    int32_t windowedWidth;
+    int32_t windowedHeight;
+    bool isFullScreen;
+    
     // ------- OPENGL SPECIFIC ------- //
-    int isVSyncEnabled;
+
+    bool isVSyncEnabled;
+
     // ------------------------------- //
 };
 
@@ -195,7 +198,7 @@ static void dropCallback(GLFWwindow* handle, int count, const char** paths)
 
 // ------------------------------------------------------------------------------------------------------- //
 
-Window* windowCreate(int width, int height, const char* title)
+Window* windowCreate(int32_t width, int32_t height, const char* title)
 {
     Window* window = (Window*)calloc(1, sizeof(Window));
     window->handle = glfwCreateWindow(width, height, title, NULL, NULL);
@@ -282,7 +285,7 @@ int windowGetFlag(Window* window, WindowFlag windowFlag)
     return (glfwGetWindowAttrib(window->handle, windowFlagToNative(windowFlag)) == GLFW_TRUE);
 }
 
-void windowSetFlag(Window* window, WindowFlag windowFlag, int enabled)
+void windowSetFlag(Window* window, WindowFlag windowFlag, bool enabled)
 {
     glfwSetWindowAttrib(window->handle, windowFlagToNative(windowFlag), (enabled) ? GLFW_TRUE : GLFW_FALSE);
     const char* message = 
@@ -300,28 +303,40 @@ int windowGetState(Window* window, WindowState windowState)
     return (glfwGetWindowAttrib(window->handle, windowStateToNative(windowState)) == GLFW_TRUE);
 }
 
-void windowGetWindowSize(Window* window, int* widthOut, int* heightOut)
+void windowGetWindowSize(Window* window, int32_t* widthOut, int32_t* heightOut)
 {
-    glfwGetWindowSize(window->handle, widthOut, heightOut);
+    int width = 0;
+    int height = 0;
+    glfwGetWindowSize(window->handle, &width, &height);
+    if (widthOut  != NULL) { *widthOut  = width;  }
+    if (heightOut != NULL) { *heightOut = height; }
 }
 
-void windowSetWindowSize(Window* window, int width, int height)
+void windowSetWindowSize(Window* window, int32_t width, int32_t height)
 {
     glfwSetWindowSize(window->handle, width, height);
     logVerbose("WINDOW", "size: (%i, %i)", width, height);
 }
 
-void windowGetFramebufferSize(Window* window, int* widthOut, int* heightOut)
+void windowGetFramebufferSize(Window* window, int32_t* widthOut, int32_t* heightOut)
 {
-    glfwGetFramebufferSize(window->handle, widthOut, heightOut);
+    int width = 0;
+    int height = 0;
+    glfwGetFramebufferSize(window->handle, &width, &height);
+    if (widthOut  != NULL) { *widthOut  = width;  }
+    if (heightOut != NULL) { *heightOut = height; }
 }
 
-void windowGetWindowPosition(Window* window, int* xOut, int* yOut)
+void windowGetWindowPosition(Window* window, int32_t* xOut, int32_t* yOut)
 {
-    glfwGetWindowPos(window->handle, xOut, yOut);
+    int x = 0;
+    int y = 0;
+    glfwGetWindowPos(window->handle, &x, &y);
+    if (xOut != NULL) { *xOut = x; }
+    if (yOut != NULL) { *yOut = y; }
 }
 
-void windowSetWindowPosition(Window* window, int x, int y)
+void windowSetWindowPosition(Window* window, int32_t x, int32_t y)
 {
     glfwSetWindowPos(window->handle, x, y);
     logVerbose("WINDOW", "position: (%i, %i)", x, y);
@@ -332,7 +347,7 @@ void windowGetContentScale(Window* window, float* xOut, float* yOut)
     glfwGetWindowContentScale(window->handle, xOut, yOut);
 }
 
-int windowHasNonNativeScale(Window* window)
+bool windowHasNonNativeScale(Window* window)
 {
     float xScale = 1.0f;
     float yScale = 1.0f;
@@ -340,12 +355,12 @@ int windowHasNonNativeScale(Window* window)
     return (xScale != 1.0f || yScale != 1.0f);
 }
 
-int windowIsFullScreen(Window* window)
+bool windowIsFullScreen(Window* window)
 {
     return window->isFullScreen;
 }
 
-void windowSetFullScreen(Window* window, int enabled)
+void windowSetFullScreen(Window* window, bool enabled)
 {
     if (window->isFullScreen == enabled)
     { 
@@ -368,7 +383,7 @@ void windowSetFullScreen(Window* window, int enabled)
     logVerbose("WINDOW", "full screen is %s", (enabled) ? "enabled" : "disabled");
 }
 
-int windowShouldClose(Window* window)
+bool windowShouldClose(Window* window)
 {
     return glfwWindowShouldClose(window->handle);
 }
@@ -379,22 +394,22 @@ void windowSetShouldClose(Window* window)
     logVerbose("WINDOW", "closed");
 }
 
-int windowIsKeyPressed(Window* window, Key key)
+bool windowIsKeyPressed(Window* window, Key key)
 {
     return (glfwGetKey(window->handle, keyToNative(key)) == GLFW_PRESS);
 }
 
-int windowIsKeyReleased(Window* window, Key key)
+bool windowIsKeyReleased(Window* window, Key key)
 {
     return (glfwGetKey(window->handle, keyToNative(key)) == GLFW_RELEASE);
 }
 
-int windowIsMouseButtonPressed(Window* window, MouseButton mouseButton)
+bool windowIsMouseButtonPressed(Window* window, MouseButton mouseButton)
 {
     return (glfwGetMouseButton(window->handle, mouseButtonToNative(mouseButton)) == GLFW_PRESS);
 }
 
-int windowIsMouseButtonReleased(Window* window, MouseButton mouseButton)
+bool windowIsMouseButtonReleased(Window* window, MouseButton mouseButton)
 {
     return (glfwGetMouseButton(window->handle, mouseButtonToNative(mouseButton)) == GLFW_RELEASE);
 }
@@ -434,45 +449,45 @@ void windowSetCursorMode(Window* window, CursorMode cursorMode)
     logVerbose("CURSOR", "%s mode", message);
 }
 
-int windowIsStickyKeysEnabled(Window* window)
+bool windowIsStickyKeysEnabled(Window* window)
 {
     return (glfwGetInputMode(window->handle, GLFW_STICKY_KEYS) == GLFW_TRUE);
 }
 
-void windowEnableStickyKeys(Window* window, int enabled)
+void windowEnableStickyKeys(Window* window, bool enabled)
 {
     glfwSetInputMode(window->handle, GLFW_STICKY_KEYS, (enabled) ? GLFW_TRUE : GLFW_FALSE);
     logVerbose("WINDOW", "sticky keys are %s", (enabled) ? "enabled" : "disabled");
 }
 
-int windowIsStickyMouseButtonsEnabled(Window* window)
+bool windowIsStickyMouseButtonsEnabled(Window* window)
 {
     return (glfwGetInputMode(window->handle, GLFW_STICKY_MOUSE_BUTTONS) == GLFW_TRUE);
 }
 
-void windowEnableStickyMouseButtons(Window* window, int enabled)
+void windowEnableStickyMouseButtons(Window* window, bool enabled)
 {
     glfwSetInputMode(window->handle, GLFW_STICKY_MOUSE_BUTTONS, (enabled) ? GLFW_TRUE : GLFW_FALSE);
     logVerbose("WINDOW", "sticky mouse buttons are %s", (enabled) ? "enabled" : "disabled");
 }
 
-int windowIsLockKeyModsEnabled(Window* window)
+bool windowIsLockKeyModsEnabled(Window* window)
 {
     return (glfwGetInputMode(window->handle, GLFW_LOCK_KEY_MODS) == GLFW_TRUE);
 }
 
-void windowEnableLockKeyMods(Window* window, int enabled)
+void windowEnableLockKeyMods(Window* window, bool enabled)
 {
     glfwSetInputMode(window->handle, GLFW_LOCK_KEY_MODS, (enabled) ? GLFW_TRUE : GLFW_FALSE);
     logVerbose("WINDOW", "lock key mods are %s", (enabled) ? "enabled" : "disabled");
 }
     
-int windowIsRawMouseMotionEnabled(Window* window)
+bool windowIsRawMouseMotionEnabled(Window* window)
 {
     return (glfwGetInputMode(window->handle, GLFW_RAW_MOUSE_MOTION) == GLFW_TRUE);
 }
 
-void windowEnableRawMouseMotion(Window* window, int enabled)
+void windowEnableRawMouseMotion(Window* window, bool enabled)
 {
     if (glfwRawMouseMotionSupported() != GLFW_TRUE)
     {
@@ -492,12 +507,12 @@ void windowMakeContextCurrent(Window* window)
     logVerbose("WINDOW", "context has changed");
 }
 
-int windowIsVSyncEnabled(Window* window)
+bool windowIsVSyncEnabled(Window* window)
 {
     return window->isVSyncEnabled;
 }
 
-void windowSetVSync(Window* window, int enabled)
+void windowSetVSync(Window* window, bool enabled)
 {
     GLFWwindow* currentWindow = glfwGetCurrentContext();
     glfwMakeContextCurrent(window->handle);

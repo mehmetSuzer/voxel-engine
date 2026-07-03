@@ -4,7 +4,7 @@
 #include "mesh.h"
 #include "material.h"
 
-#define MODEL_MAX_MESH_MATERIAL_COUNT 4u
+#define MODEL_MAX_MESH_MATERIAL_COUNT 4
 
 typedef struct MeshMaterialPair
 {
@@ -12,13 +12,13 @@ typedef struct MeshMaterialPair
     MaterialID materialID;
 } MeshMaterialPair;
 
-typedef unsigned int ModelID;
+typedef uint32_t ModelID;
 
-ModelID modelCreate(const MeshMaterialPair* meshMaterialPairs, unsigned int meshMaterialPairCount);
+ModelID modelCreate(const MeshMaterialPair* meshMaterialPairs, uint32_t meshMaterialPairCount);
 
 void modelDestroy(ModelID modelID);
 
-int modelIsActive(ModelID modelID);
+bool modelIsActive(ModelID modelID);
 
 void modelDraw(ModelID modelID);
 

@@ -6,22 +6,22 @@
 typedef struct Model
 {
     MeshMaterialPair meshMaterialPairs[MODEL_MAX_MESH_MATERIAL_COUNT];
-    unsigned int meshMaterialPairCount;
-    int active;
+    uint32_t meshMaterialPairCount;
+    bool active;
 } Model;
 
 typedef struct ModelArray
 {
     Model* data;
-    unsigned int size;
-    unsigned int capacity;
+    uint32_t size;
+    uint32_t capacity;
 } ModelArray;
 
 static ModelArray modelArray = {0};
 
 static ModelID modelArrayPush(const Model* model)
 {
-    ModelID modelID = 0u;
+    ModelID modelID = 0;
     while (modelID < modelArray.size && modelArray.data[modelID].active) 
     { 
         modelID++;
@@ -40,7 +40,7 @@ static ModelID modelArrayPush(const Model* model)
         return modelID;
     }
 
-    const unsigned int newCapacity = (modelArray.capacity != 0u) ? 2u * modelArray.capacity : 8u;
+    const uint32_t newCapacity = (modelArray.capacity != 0) ? 2 * modelArray.capacity : 8;
     modelArray.data = (Model*)realloc(modelArray.data, newCapacity * sizeof(Model));
     modelArray.capacity = newCapacity;
 
@@ -49,7 +49,7 @@ static ModelID modelArrayPush(const Model* model)
     return modelID;
 }
 
-ModelID modelCreate(const MeshMaterialPair* meshMaterialPairs, unsigned int meshMaterialPairCount)
+ModelID modelCreate(const MeshMaterialPair* meshMaterialPairs, uint32_t meshMaterialPairCount)
 {
     Model model;
     model.active = true;
@@ -66,7 +66,7 @@ void modelDestroy(ModelID modelID)
     *model = (Model){0};
 }
 
-int modelIsActive(ModelID modelID)
+bool modelIsActive(ModelID modelID)
 {
     return (modelID < modelArray.size && modelArray.data[modelID].active);
 }
@@ -74,8 +74,7 @@ int modelIsActive(ModelID modelID)
 void modelDraw(ModelID modelID)
 {
     const Model* model = &modelArray.data[modelID];
-
-    for (unsigned int i = 0u; i < model->meshMaterialPairCount; ++i)
+    for (uint32_t i = 0; i < model->meshMaterialPairCount; ++i)
     {
         materialBind(model->meshMaterialPairs[i].materialID);
         meshDraw(model->meshMaterialPairs[i].meshID);

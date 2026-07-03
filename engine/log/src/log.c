@@ -5,6 +5,8 @@
 #include <pthread.h>
 #include "log/log.h"
 
+#define TIME_BUFFER_MAX_LENGTH 32
+
 #ifdef NDEBUG
     static LogSeverity minSeverity = LogSeverityWarning;
 #else
@@ -68,7 +70,7 @@ void __logImplementation(LogSeverity severity, const char* __restrict__ category
     localtime_r(&ts.tv_sec, &tm_info);
 #endif
 
-    char timeBuffer[32] = {0};
+    char timeBuffer[TIME_BUFFER_MAX_LENGTH] = {0};
     snprintf(timeBuffer, sizeof(timeBuffer), "%02d:%02d:%02d.%03ld",
         tm_info.tm_hour,
         tm_info.tm_min,
@@ -82,11 +84,11 @@ void __logImplementation(LogSeverity severity, const char* __restrict__ category
         (severity == LogSeverityError  ) ? "ERROR"   : "UNKNOWN";
 
     char logBuffer[LOG_MAX_LENGTH] = {0};
-    const int offset = snprintf(logBuffer, LOG_MAX_LENGTH, "[%s] [%-7s] [%-8s] ", timeBuffer, severityStr, category);
+    const int offset = snprintf(logBuffer, sizeof(logBuffer), "[%s] [%-7s] [%-8s] ", timeBuffer, severityStr, category);
 
     va_list args;
     va_start(args, format);
-    vsnprintf(logBuffer + offset, LOG_MAX_LENGTH - offset, format, args);
+    vsnprintf(logBuffer + offset, sizeof(logBuffer) - offset, format, args);
     va_end(args);
 
     printf("%s\n", logBuffer);

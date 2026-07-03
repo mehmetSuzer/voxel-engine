@@ -23,6 +23,14 @@ target_compile_options(${PROJECT_NAME}
         -Wall
         -Wextra
         -Wshadow
+        -Wpedantic
+        -Wconversion
+        -Wsign-conversion
+        -Wpointer-arith
+        -Wcast-align
+        -Wmissing-prototypes
+        -Wstrict-prototypes
+        # -Werror
 )
 
 target_link_options(${PROJECT_NAME} 

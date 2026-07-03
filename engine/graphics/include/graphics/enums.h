@@ -1,6 +1,8 @@
 
 #pragma once
 
+#include <stdint.h>
+
 typedef enum Capability
 {
     CapabilityDepthTest             =  0, // Compares the depth of incoming fragments with the depth buffer to discard hidden pixels.
@@ -23,7 +25,7 @@ typedef enum Capability
     CapabilityCount,
 } Capability;
 
-unsigned int capabilityToNative(Capability capability);
+uint32_t capabilityToNative(Capability capability);
 
 typedef enum BufferBit
 {
@@ -32,7 +34,7 @@ typedef enum BufferBit
     BufferBitStencil = 0x00000004, // Represents the stencil buffer, which stores integer masks used to restrict or allow rendering on a per-pixel basis.
 } BufferBit;
 
-unsigned int bufferBitsToNative(BufferBit bufferBits);
+uint32_t bufferBitsToNative(BufferBit bufferBits);
 
 typedef enum TextureWrap
 {
@@ -44,7 +46,7 @@ typedef enum TextureWrap
     TextureWrapCount,
 } TextureWrap;
 
-unsigned int textureWrapToNative(TextureWrap textureWrap);
+int32_t textureWrapToNative(TextureWrap textureWrap);
 
 typedef enum TextureMinFilter
 {
@@ -57,7 +59,7 @@ typedef enum TextureMinFilter
     TextureMinFilterCount,
 } TextureMinFilter;
 
-unsigned int textureMinFilterToNative(TextureMinFilter textureMinFilter);
+int32_t textureMinFilterToNative(TextureMinFilter textureMinFilter);
 
 typedef enum TextureMagFilter
 {
@@ -66,7 +68,7 @@ typedef enum TextureMagFilter
     TextureMagFilterCount,
 } TextureMagFilter;
 
-unsigned int textureMagFilterToNative(TextureMagFilter textureMagFilter);
+int32_t textureMagFilterToNative(TextureMagFilter textureMagFilter);
 
 typedef enum CompareMode
 {
@@ -75,7 +77,7 @@ typedef enum CompareMode
     CompareModeCount,
 } CompareMode;
 
-unsigned int compareModeToNative(CompareMode compareMode);
+int32_t compareModeToNative(CompareMode compareMode);
 
 typedef enum CompareFunc
 {
@@ -90,7 +92,7 @@ typedef enum CompareFunc
     CompareFuncCount,
 } CompareFunc;
 
-unsigned int compareFuncToNative(CompareFunc compareFunc);
+uint32_t compareFuncToNative(CompareFunc compareFunc);
 
 typedef enum StencilOperation
 {
@@ -105,7 +107,7 @@ typedef enum StencilOperation
     StencilOperationCount,
 } StencilOperation;
 
-unsigned int stencilOperationToNative(StencilOperation stencilOperation);
+uint32_t stencilOperationToNative(StencilOperation stencilOperation);
 
 typedef enum Face
 {
@@ -115,7 +117,7 @@ typedef enum Face
     FaceCount,
 } Face;
 
-unsigned int faceToNative(Face face);
+uint32_t faceToNative(Face face);
 
 typedef enum FrontFace
 {
@@ -124,7 +126,7 @@ typedef enum FrontFace
     FrontFaceCount,
 } FrontFace;
 
-unsigned int frontFaceToNative(FrontFace frontFace);
+uint32_t frontFaceToNative(FrontFace frontFace);
 
 typedef enum BlendFactor
 {
@@ -146,7 +148,7 @@ typedef enum BlendFactor
     BlendFactorCount,
 } BlendFactor;
 
-unsigned int blendFactorToNative(BlendFactor blendFactor);
+uint32_t blendFactorToNative(BlendFactor blendFactor);
 
 typedef enum BlendEquation
 {
@@ -158,7 +160,7 @@ typedef enum BlendEquation
     BlendEquationCount,
 } BlendEquation;
 
-unsigned int blendEquationToNative(BlendEquation blendEquation);
+uint32_t blendEquationToNative(BlendEquation blendEquation);
 
 typedef enum PolygonMode
 {
@@ -168,7 +170,7 @@ typedef enum PolygonMode
     PolygonModeCount,
 } PolygonMode;
 
-unsigned int polygonModeToNative(PolygonMode polygonMode);
+uint32_t polygonModeToNative(PolygonMode polygonMode);
 
 typedef enum DrawMode
 {
@@ -182,7 +184,7 @@ typedef enum DrawMode
     DrawModeCount,
 } DrawMode;
 
-unsigned int drawModeToNative(DrawMode drawMode);
+uint32_t drawModeToNative(DrawMode drawMode);
 
 typedef enum MemoryBarrierBit
 {
@@ -203,7 +205,7 @@ typedef enum MemoryBarrierBit
     MemoryBarrierBitQueryBuffer          = 0x00004000, // Ensures writes to query result buffers are visible before the results are read back.
 } MemoryBarrierBit;
 
-unsigned int memoryBarrierBitsToNative(MemoryBarrierBit memoryBarrierBits);
+uint32_t memoryBarrierBitsToNative(MemoryBarrierBit memoryBarrierBits);
 
 typedef enum AccessPolicy
 {
@@ -213,7 +215,7 @@ typedef enum AccessPolicy
     AccessPolicyCount,
 } AccessPolicy;
 
-unsigned int accessPolicyToNative(AccessPolicy accessPolicy);
+uint32_t accessPolicyToNative(AccessPolicy accessPolicy);
 
 typedef enum BufferUsage
 {
@@ -229,7 +231,7 @@ typedef enum BufferUsage
     BufferUsageCount,
 } BufferUsage;
 
-unsigned int bufferUsageToNative(BufferUsage bufferUsage);
+uint32_t bufferUsageToNative(BufferUsage bufferUsage);
 
 typedef enum BufferStorageBit
 {
@@ -241,7 +243,7 @@ typedef enum BufferStorageBit
     BufferStorageBitClientStorage  = 0x00000020, // Hints that the driver should store this buffer in system RAM rather than local VRAM, if possible.
 } BufferStorageBit;
 
-unsigned int bufferStorageBitsToNative(BufferStorageBit bufferStorageBits);
+uint32_t bufferStorageBitsToNative(BufferStorageBit bufferStorageBits);
 
 typedef enum BufferMapBit
 {
@@ -255,7 +257,7 @@ typedef enum BufferMapBit
     BufferMapBitCoherent         = 0x00000080, // Guarantees that CPU writes are automatically visible to the GPU (and vice versa) without requiring manual flushing commands. Must be used with Persistent.
 } BufferMapBit;
 
-unsigned int bufferMapBitsToNative(BufferMapBit bufferMapBits);
+uint32_t bufferMapBitsToNative(BufferMapBit bufferMapBits);
 
 typedef enum BufferTarget
 {
@@ -276,7 +278,7 @@ typedef enum BufferTarget
     BufferTargetCount,
 } BufferTarget;
 
-unsigned int bufferTargetToNative(BufferTarget bufferTarget);
+uint32_t bufferTargetToNative(BufferTarget bufferTarget);
 
 typedef enum ExternalFormat
 {
@@ -307,7 +309,7 @@ typedef enum ExternalFormat
     ExternalFormatCount,
 } ExternalFormat;
 
-unsigned int externalFormatToNative(ExternalFormat externalFormat);
+uint32_t externalFormatToNative(ExternalFormat externalFormat);
 
 typedef enum InternalFormat
 {
@@ -401,7 +403,7 @@ typedef enum InternalFormat
     InternalFormatCount,
 } InternalFormat;
 
-unsigned int internalFormatToNative(InternalFormat internalFormat);
+uint32_t internalFormatToNative(InternalFormat internalFormat);
 
 typedef enum DataType
 {
@@ -445,5 +447,5 @@ typedef enum DataType
     DataTypeCount,
 } DataType;
 
-unsigned int dataTypeToNative(DataType dataType);
+uint32_t dataTypeToNative(DataType dataType);
 

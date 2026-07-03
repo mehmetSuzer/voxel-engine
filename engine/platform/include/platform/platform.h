@@ -1,20 +1,25 @@
 
 #pragma once
 
-void platformInit();
-void platformTerminate();
+#include <stdbool.h>
 
-double platformGetTime();
+bool platformInit(void);
+void platformTerminate(void);
+
+double platformGetTime(void);
 void platformSetTime(double time);
 
-void platformPollEvents();
-void platformWaitEvents();
+void platformPollEvents(void);
+void platformWaitEvents(void);
 void platformWaitEventsTimeout(double timeout);
-void platformPostEmptyEvent();
+void platformPostEmptyEvent(void);
 
 // --------------------- OPENGL SPECIFIC --------------------- //
+
 typedef void*(*GLFunctionLoader)(const char*);
-GLFunctionLoader platformGetGLFunctionLoader();
-int platformIsExtensionSupported(const char* extension);
+
+GLFunctionLoader platformGetGLFunctionLoader(void);
+bool platformIsExtensionSupported(const char* extension);
+
 // ----------------------------------------------------------- //
 

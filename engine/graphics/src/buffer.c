@@ -5,11 +5,11 @@
 #include "buffer.h"
 #include "glad/glad.h"
 
-BufferID bufferCreate(unsigned int size, const void* data, BufferStorageBit bufferStorageBits)
+BufferID bufferCreate(size_t size, const void* data, BufferStorageBit bufferStorageBits)
 {
     GLuint bufferID;
     glCreateBuffers(1, &bufferID);
-    glNamedBufferStorage(bufferID, size, data, bufferStorageBitsToNative(bufferStorageBits));
+    glNamedBufferStorage(bufferID, (GLsizeiptr)size, data, bufferStorageBitsToNative(bufferStorageBits));
     glCheckErrors();
     return bufferID;
 }
@@ -20,20 +20,20 @@ void bufferDestroy(BufferID bufferID)
     glCheckErrors();
 }
 
-int bufferIsActive(BufferID bufferID)
+bool bufferIsActive(BufferID bufferID)
 {
     return (glIsBuffer(bufferID) == GL_TRUE);
 }
 
 void bufferWrite(BufferID bufferID, const void* data)
 {
-    glNamedBufferSubData(bufferID, 0, bufferGetSize(bufferID), data);
+    glNamedBufferSubData(bufferID, 0, (GLsizeiptr)bufferGetSize(bufferID), data);
     glCheckErrors();
 }
 
-void bufferWriteRange(BufferID bufferID, unsigned int offset, unsigned int size, const void* data)
+void bufferWriteRange(BufferID bufferID, size_t offset, size_t size, const void* data)
 {
-    glNamedBufferSubData(bufferID, offset, size, data);
+    glNamedBufferSubData(bufferID, (GLintptr)offset, (GLsizeiptr)size, data);
     glCheckErrors();
 }
 
@@ -43,9 +43,9 @@ void bufferRead(BufferID bufferID, void* dataOut)
     glCheckErrors();
 }
 
-void bufferReadRange(BufferID bufferID, unsigned int offset, unsigned int size, void* dataOut)
+void bufferReadRange(BufferID bufferID, size_t offset, size_t size, void* dataOut)
 {
-    glGetNamedBufferSubData(bufferID, offset, size, dataOut);
+    glGetNamedBufferSubData(bufferID, (GLintptr)offset, (GLsizeiptr)size, dataOut);
     glCheckErrors();
 }
 
@@ -55,9 +55,10 @@ void bufferClear(BufferID bufferID, InternalFormat internalFormat, ExternalForma
     glCheckErrors();
 }
 
-void bufferClearRange(BufferID bufferID, InternalFormat internalFormat, ExternalFormat externalFormat, DataType dataType, unsigned int offset, unsigned int size, const void* data)
+void bufferClearRange(BufferID bufferID, InternalFormat internalFormat, ExternalFormat externalFormat, DataType dataType, size_t offset, size_t size, const void* data)
 {
-    glClearNamedBufferSubData(bufferID, internalFormatToNative(internalFormat), offset, size, externalFormatToNative(externalFormat), dataTypeToNative(dataType), data);
+    glClearNamedBufferSubData(bufferID, internalFormatToNative(internalFormat), (GLintptr)offset, 
+        (GLsizeiptr)size, externalFormatToNative(externalFormat), dataTypeToNative(dataType), data);
     glCheckErrors();
 }
 
@@ -67,21 +68,21 @@ void bufferCopy(BufferID readBufferID, BufferID writeBufferID)
     glCheckErrors();
 }
 
-void bufferCopyRange(BufferID readBufferID, BufferID writeBufferID, unsigned int readOffset, unsigned int writeOffset, unsigned int size)
+void bufferCopyRange(BufferID readBufferID, BufferID writeBufferID, size_t readOffset, size_t writeOffset, size_t size)
 {
-    glCopyNamedBufferSubData(readBufferID, writeBufferID, readOffset, writeOffset, size);
+    glCopyNamedBufferSubData(readBufferID, writeBufferID, (GLintptr)readOffset, (GLintptr)writeOffset, (GLsizeiptr)size);
     glCheckErrors();
 }
 
-void bufferBind(BufferID bufferID, BufferTarget bufferTarget, unsigned int bindingPoint)
+void bufferBind(BufferID bufferID, BufferTarget bufferTarget, uint32_t bindingPoint)
 {
     glBindBufferBase(bufferTargetToNative(bufferTarget), bindingPoint, bufferID);
     glCheckErrors();
 }
 
-void bufferBindRange(BufferID bufferID, BufferTarget bufferTarget, unsigned int bindingPoint, unsigned int offset, unsigned int size)
+void bufferBindRange(BufferID bufferID, BufferTarget bufferTarget, uint32_t bindingPoint, size_t offset, size_t size)
 {
-    glBindBufferRange(bufferTargetToNative(bufferTarget), bindingPoint, bufferID, offset, size);
+    glBindBufferRange(bufferTargetToNative(bufferTarget), bindingPoint, bufferID, (GLintptr)offset, (GLsizeiptr)size);
     glCheckErrors();
 }
 
@@ -92,51 +93,51 @@ void* bufferMap(BufferID bufferID, AccessPolicy accessPolicy)
     return pointer;
 }
 
-void* bufferMapRange(BufferID bufferID, unsigned int offset, unsigned int length, BufferMapBit bufferMapBits)
+void* bufferMapRange(BufferID bufferID, size_t offset, size_t length, BufferMapBit bufferMapBits)
 {
-    void* pointer = glMapNamedBufferRange(bufferID, offset, length, bufferMapBitsToNative(bufferMapBits));
+    void* pointer = glMapNamedBufferRange(bufferID, (GLintptr)offset, (GLsizeiptr)length, bufferMapBitsToNative(bufferMapBits));
     glCheckErrors();
     return pointer;
 }
 
-int bufferUnmap(BufferID bufferID)
+bool bufferUnmap(BufferID bufferID)
 {
     return (glUnmapNamedBuffer(bufferID) == GL_TRUE);
 }
 
-void bufferFlushMappedRange(BufferID bufferID, unsigned int offset, unsigned int length)
+void bufferFlushMappedRange(BufferID bufferID, size_t offset, size_t length)
 {
-    glFlushMappedNamedBufferRange(bufferID, offset, length);
+    glFlushMappedNamedBufferRange(bufferID, (GLintptr)offset, (GLsizeiptr)length);
     glCheckErrors();
 }
 
-int bufferIsMapped(BufferID bufferID)
+bool bufferIsMapped(BufferID bufferID)
 {
     GLint mapped = 0;
     glGetNamedBufferParameteriv(bufferID, GL_BUFFER_MAPPED, &mapped);
     glCheckErrors();
-    return mapped;
+    return (mapped == GL_TRUE);
 }
 
-long bufferGetSize(BufferID bufferID)
+int64_t bufferGetSize(BufferID bufferID)
 {
-    GLint64 size = 0l;
+    GLint64 size = 0;
     glGetNamedBufferParameteri64v(bufferID, GL_BUFFER_SIZE, &size);
     glCheckErrors();
     return size;
 }
 
-long bufferGetMapOffset(BufferID bufferID)
+int64_t bufferGetMapOffset(BufferID bufferID)
 {
-    GLint64 offset = 0l;
+    GLint64 offset = 0;
     glGetNamedBufferParameteri64v(bufferID, GL_BUFFER_MAP_OFFSET, &offset);
     glCheckErrors();
     return offset;
 }
 
-long bufferGetMapLength(BufferID bufferID)
+int64_t bufferGetMapLength(BufferID bufferID)
 {
-    GLint64 length = 0l;
+    GLint64 length = 0;
     glGetNamedBufferParameteri64v(bufferID, GL_BUFFER_MAP_LENGTH, &length);
     glCheckErrors();
     return length;

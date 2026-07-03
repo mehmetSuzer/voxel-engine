@@ -1,9 +1,10 @@
 
 #pragma once
 
+#include <stdbool.h>
 #include "graphics/enums.h"
 
-typedef unsigned int SamplerID;
+typedef uint32_t SamplerID;
 
 #define SAMPLER_NULL ((SamplerID)0)
 
@@ -28,7 +29,7 @@ SamplerID samplerCreate(const SamplerCreateInfo* samplerCreateInfo);
 
 void samplerDestroy(SamplerID samplerID);
 
-int samplerIsActive(SamplerID samplerID);
+bool samplerIsActive(SamplerID samplerID);
 
-void samplerBind(SamplerID samplerID, unsigned int unit);
+void samplerBind(SamplerID samplerID, uint32_t unit);
 

@@ -13,7 +13,7 @@ typedef struct VertexPBR
 
 void vertexPBRLinkAttributes();
 
-typedef unsigned int VertexVoxel;
+typedef uint32_t VertexVoxel;
 
 void vertexVoxelLinkAttributes();
 
