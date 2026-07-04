@@ -148,6 +148,11 @@ typedef struct ComputeState
     int32_t maxWorkGroupInvocationCount;
 } ComputeState;
 
+typedef struct TextureState
+{
+    float maxAnisotropy;
+} TextureState;
+
 typedef struct GraphicsState
 {
     Rectangle viewport;
@@ -169,6 +174,7 @@ typedef struct GraphicsState
     PrimitiveRestartState primitiveRestart;
     ClearState clear;
     ComputeState compute;
+    TextureState texture;
 } GraphicsState;
 
 static GraphicsState graphicsState = {
@@ -278,6 +284,9 @@ static GraphicsState graphicsState = {
         .maxWorkGroupSize  = {0, 0, 0},
         .maxWorkGroupInvocationCount = 0,
     },
+    .texture = {
+        .maxAnisotropy = 1.0f,
+    },
 };
 
 static bool* getCapabilityStatePointer(Capability capability)
@@ -354,6 +363,9 @@ bool graphicsInit(GraphicsFunctionLoader graphicsFunctionLoader)
     glGetIntegerv(GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS, &graphicsState.compute.maxWorkGroupInvocationCount);
     logInfo("GRAPHICS", "max compute work group invocation count: %i", graphicsState.compute.maxWorkGroupInvocationCount);
 
+    glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY, &graphicsState.texture.maxAnisotropy);
+    logInfo("GRAPHICS", "max texture max anisotropy: %.1f", graphicsState.texture.maxAnisotropy);
+    
     return true;
 }
 

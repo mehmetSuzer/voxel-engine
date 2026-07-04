@@ -1,221 +1,137 @@
 
+#include <math.h>
+#include <stddef.h>
 #include <assert.h>
 #include "error.h"
 #include "texture.h"
-#include "stb_image.h"
 #include "log/log.h"
 #include "glad/glad.h"
 #include "utils/macros.h"
 
-TextureID textureCreateEmpty(
-    uint32_t width,
-    uint32_t height,
-    uint32_t channelCount,
-    InternalFormat internalFormat,
-    bool mipmapEnabled,
-    TextureWrap wrapS,
-    TextureWrap wrapT,
-    TextureMinFilter minFilter,
-    TextureMagFilter magFilter,
-    vec4 borderColour)
+TextureID textureCreate(const TextureCreateInfo* textureCreateInfo)
 {
+    const GLsizei width  = textureCreateInfo->width;
+    const GLsizei height = textureCreateInfo->height;
+    const GLsizei depth  = textureCreateInfo->depth;
+
+    const GLenum target = 
+        (depth >= 1 && height >= 1 && width >= 1) ? GL_TEXTURE_3D :
+        (depth == 1 && height >= 1 && width >= 1) ? GL_TEXTURE_2D :
+        (depth == 1 && height == 1 && width >= 1) ? GL_TEXTURE_1D : GL_NONE;
+
+    if (target == GL_NONE)
+    {
+        logError("TEXTURE", "at least one dimension must be greater than 1: (%i, %i, %i)", width, height, depth);
+        return TEXTURE_NULL;
+    }
+
     GLuint textureID;
-    glCreateTextures(GL_TEXTURE_2D, 1, &textureID);
-    
-    const GLsizei mipmapLevelCount = (!mipmapEnabled || minFilter == TextureMinFilterNearest || minFilter == TextureMinFilterLinear) ? 1 
-        : (GLsizei)floorf(log2f((float)GREATER(width, height))) + 1;
+    glCreateTextures(target, 1, &textureID);
 
-    glTextureStorage2D(textureID, mipmapLevelCount, internalFormatToNative(internalFormat), width, height);
+    const bool generateMipmap = textureCreateInfo->minFilter != TextureMinFilterNearest && textureCreateInfo->minFilter != TextureMinFilterLinear;
+    const GLsizei levelCount = (generateMipmap) ? (GLsizei)floorf(log2f((float)GREATER(GREATER(width, height), depth))) + 1 : 1;
 
-    glTextureParameteri(textureID, GL_TEXTURE_WRAP_S, textureWrapToNative(wrapS));
-    glTextureParameteri(textureID, GL_TEXTURE_WRAP_T, textureWrapToNative(wrapT));
-    glTextureParameteri(textureID, GL_TEXTURE_MIN_FILTER, textureMinFilterToNative(minFilter));
-    glTextureParameteri(textureID, GL_TEXTURE_MAG_FILTER, textureMagFilterToNative(magFilter));
-    glTextureParameterfv(textureID, GL_TEXTURE_BORDER_COLOR, borderColour);
+    const GLenum internalFormat = internalFormatToNative(textureCreateInfo->internalFormat);
 
-    logVerbose("TEXTURE", "created empty (%ux%ux%u)", width, height, channelCount);
+         if (target == GL_TEXTURE_1D) { glTextureStorage1D(textureID, levelCount, internalFormat, width);                }
+    else if (target == GL_TEXTURE_2D) { glTextureStorage2D(textureID, levelCount, internalFormat, width, height);        }
+    else                              { glTextureStorage3D(textureID, levelCount, internalFormat, width, height, depth); }
+
+    glTextureParameteri(textureID, GL_TEXTURE_WRAP_S, textureWrapToNative(textureCreateInfo->wrapS));
+    glTextureParameteri(textureID, GL_TEXTURE_WRAP_T, textureWrapToNative(textureCreateInfo->wrapT));
+    glTextureParameteri(textureID, GL_TEXTURE_WRAP_R, textureWrapToNative(textureCreateInfo->wrapR));
+    glTextureParameteri(textureID, GL_TEXTURE_MIN_FILTER, textureMinFilterToNative(textureCreateInfo->minFilter));
+    glTextureParameteri(textureID, GL_TEXTURE_MAG_FILTER, textureMagFilterToNative(textureCreateInfo->magFilter));
+    glTextureParameterf(textureID, GL_TEXTURE_MAX_ANISOTROPY, textureCreateInfo->maxAnisotropy);
+    glTextureParameterfv(textureID, GL_TEXTURE_BORDER_COLOR, textureCreateInfo->borderColour);
+    glCheckErrors();
+
+    logVerbose("TEXTURE", "created with dimensions = (%i, %i, %i)", width, height, depth);
+
     return textureID;
 }
 
-TextureID textureCreateFromImage(
-    const char* imagePath,
-    TextureWrap wrapS,
-    TextureWrap wrapT,
-    TextureMinFilter minFilter,
-    TextureMagFilter magFilter,
-    vec4 borderColour)
+void textureFill(TextureID textureID, const TextureFillInfo* textureFillInfo)
 {
-    int width = 0; 
-    int height = 0;
-    int channelCount = 0;
-    stbi_set_flip_vertically_on_load(true);
-    stbi_uc* pixels = stbi_load(imagePath, &width, &height, &channelCount, STBI_default);
+    const GLsizei width  = textureFillInfo->width;
+    const GLsizei height = textureFillInfo->height;
+    const GLsizei depth  = textureFillInfo->depth;
+   
+    const GLint xOffset = textureFillInfo->xOffset;
+    const GLint yOffset = textureFillInfo->yOffset;
+    const GLint zOffset = textureFillInfo->zOffset;
 
-    if (pixels == NULL)
+    const GLenum target = 
+        (depth >= 1 && height >= 1 && width >= 1) ? GL_TEXTURE_3D :
+        (depth == 1 && height >= 1 && width >= 1) ? GL_TEXTURE_2D :
+        (depth == 1 && height == 1 && width >= 1) ? GL_TEXTURE_1D : GL_NONE;
+
+    if (target == GL_NONE)
     {
-        logError("TEXTURE", "failed to load from image %s", imagePath);
-        return TEXTURE_NULL;
-    }
-    if (width == 0 || height == 0 || channelCount == 0)
-    {
-        stbi_image_free(pixels);
-        logError("TEXTURE", "failed to detect dimensions: (WxHxC) = (%ix%ix%i)", width, height, channelCount);
-        return TEXTURE_NULL;
-    }
-    if (channelCount < 1 || channelCount > 4)
-    {
-        stbi_image_free(pixels);
-        logError("TEXTURE", "unsupported channel count (%i) for image %s", channelCount, imagePath);
-        return TEXTURE_NULL;
+        logError("TEXTURE", "at least one dimension must be greater than 1: (%i, %i, %i)", width, height, depth);
+        return;
     }
 
-    GLuint textureID;
-    glCreateTextures(GL_TEXTURE_2D, 1, &textureID);
+    const void* data = textureFillInfo->data;
+    const GLint level = textureFillInfo->level;
+    const GLenum dataType = dataTypeToNative(textureFillInfo->dataType);
+    const GLenum externalFormat = externalFormatToNative(textureFillInfo->externalFormat);
 
-    const GLenum externalFormat =
-        (channelCount == 1) ? GL_RED :
-        (channelCount == 2) ? GL_RG  :
-        (channelCount == 3) ? GL_RGB : GL_RGBA;
+         if (target == GL_TEXTURE_1D) { glTextureSubImage1D(textureID, level, xOffset, width, externalFormat, dataType, data);                                  }
+    else if (target == GL_TEXTURE_1D) { glTextureSubImage2D(textureID, level, xOffset, yOffset, width, height, externalFormat, dataType, data);                 }
+    else                              { glTextureSubImage3D(textureID, level, xOffset, yOffset, zOffset, width, height, depth, externalFormat, dataType, data); }
 
-    const GLenum internalFormat =
-        (channelCount == 1) ? GL_R8   :
-        (channelCount == 2) ? GL_RG8  :
-        (channelCount == 3) ? GL_RGB8 : GL_RGBA8;
-
-    const GLsizei mipmapLevelCount = 
-        (minFilter == TextureMinFilterNearest || minFilter == TextureMinFilterLinear) ? 1 : (GLsizei)floorf(log2f((float)GREATER(width, height))) + 1;
-
-    glTextureStorage2D(textureID, mipmapLevelCount, internalFormat, width, height);
-    glTextureSubImage2D(textureID, 0, 0, 0, width, height, externalFormat, GL_UNSIGNED_BYTE, pixels);
-
-    glTextureParameteri(textureID, GL_TEXTURE_WRAP_S, textureWrapToNative(wrapS));
-    glTextureParameteri(textureID, GL_TEXTURE_WRAP_T, textureWrapToNative(wrapT));
-    glTextureParameteri(textureID, GL_TEXTURE_MIN_FILTER, textureMinFilterToNative(minFilter));
-    glTextureParameteri(textureID, GL_TEXTURE_MAG_FILTER, textureMagFilterToNative(magFilter));
-    glTextureParameterfv(textureID, GL_TEXTURE_BORDER_COLOR, borderColour);
-
-    if (mipmapLevelCount > 1)
-    {
-        glGenerateTextureMipmap(textureID);
-    }
-
-    stbi_image_free(pixels);
     glCheckErrors();
 
-    logVerbose("TEXTURE", "created from image %s", imagePath);
-    return textureID;
+    logVerbose("TEXTURE", "filled with offsets = (%i, %i, %i) and dimensions = (%i, %i, %i)", xOffset, yOffset, zOffset, width, height, depth);
 }
 
-TextureID textureCreateFromMemory(
-    const uint8_t* data,
-    uint32_t length,
-    TextureWrap wrapS,
-    TextureWrap wrapT,
-    TextureMinFilter minFilter,
-    TextureMagFilter magFilter,
-    vec4 borderColour)
+TextureID textureCreateCubeMap(const TextureCreateCubeMapInfo* textureCreateCubeMapInfo)
 {
-    int width = 0; 
-    int height = 0;
-    int channelCount = 0;
-    stbi_set_flip_vertically_on_load(true);
-    stbi_uc* pixels = stbi_load_from_memory(data, (int)length, &width, &height, &channelCount, STBI_default);
-
-    if (pixels == NULL)
-    {
-        logError("TEXTURE", "failed to load from memory %p (%u bytes)", (void*)data, length);
-        return TEXTURE_NULL;
-    }
-    if (width == 0 || height == 0 || channelCount == 0)
-    {
-        stbi_image_free(pixels);
-        logError("TEXTURE", "failed to detect dimensions: (WxHxC) = (%ix%ix%i)", width, height, channelCount);
-        return TEXTURE_NULL;
-    }
-    if (channelCount < 1 || channelCount > 4)
-    {
-        stbi_image_free(pixels);
-        logError("TEXTURE", "unsupported channel count (%i) for memory %p (%u bytes)", channelCount, (void*)data, length);
-        return TEXTURE_NULL;
-    }
-
     GLuint textureID;
-    glCreateTextures(GL_TEXTURE_2D, 1, &textureID);
+    glCreateTextures(GL_TEXTURE_CUBE_MAP, 1, &textureID);
 
-    const GLenum externalFormat =
-        (channelCount == 1) ? GL_RED :
-        (channelCount == 2) ? GL_RG  :
-        (channelCount == 3) ? GL_RGB : GL_RGBA;
+    const GLsizei size = textureCreateCubeMapInfo->size;
+    const GLsizei levelCount = (GLsizei)floorf(log2f((float)size)) + 1;
 
-    const GLenum internalFormat =
-        (channelCount == 1) ? GL_R8   :
-        (channelCount == 2) ? GL_RG8  :
-        (channelCount == 3) ? GL_RGB8 : GL_RGBA8;
+    glTextureStorage2D(textureID, levelCount, internalFormatToNative(textureCreateCubeMapInfo->internalFormat), size, size);
 
-    const GLsizei mipmapLevelCount = 
-        (minFilter == TextureMinFilterNearest || minFilter == TextureMinFilterLinear) ? 1 : (GLsizei)floorf(log2f((float)GREATER(width, height))) + 1;
-
-    glTextureStorage2D(textureID, mipmapLevelCount, internalFormat, width, height);
-    glTextureSubImage2D(textureID, 0, 0, 0, width, height, externalFormat, GL_UNSIGNED_BYTE, pixels);
-
-    glTextureParameteri(textureID, GL_TEXTURE_WRAP_S, textureWrapToNative(wrapS));
-    glTextureParameteri(textureID, GL_TEXTURE_WRAP_T, textureWrapToNative(wrapT));
-    glTextureParameteri(textureID, GL_TEXTURE_MIN_FILTER, textureMinFilterToNative(minFilter));
-    glTextureParameteri(textureID, GL_TEXTURE_MAG_FILTER, textureMagFilterToNative(magFilter));
-    glTextureParameterfv(textureID, GL_TEXTURE_BORDER_COLOR, borderColour);
-
-    if (mipmapLevelCount > 1)
-    {
-        glGenerateTextureMipmap(textureID);
-    }
-
-    stbi_image_free(pixels);
+    glTextureParameteri(textureID, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTextureParameteri(textureID, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTextureParameteri(textureID, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    glTextureParameteri(textureID, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTextureParameteri(textureID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTextureParameterf(textureID, GL_TEXTURE_MAX_ANISOTROPY, textureCreateCubeMapInfo->maxAnisotropy);
     glCheckErrors();
 
-    logVerbose("TEXTURE", "created from memory %p (%u)", (void*)data, length);
-    return textureID;
+    logVerbose("TEXTURE", "created cube map with size = %i", size);
 }
 
-TextureID textureCreateFromRawData(
-    const uint8_t* pixels,
-    uint32_t width,
-    uint32_t height,
-    uint32_t channelCount,
-    ExternalFormat externalFormat,
-    TextureWrap wrapS,
-    TextureWrap wrapT,
-    TextureMinFilter minFilter,
-    TextureMagFilter magFilter,
-    vec4 borderColour)
+void textureFillCubeMap(TextureID textureID, const TextureFillCubeMapInfo* textureFillCubeMapInfo)
 {
-    GLuint textureID;
-    glCreateTextures(GL_TEXTURE_2D, 1, &textureID);
+    const GLsizei size = textureFillCubeMapInfo->size;
+    const GLenum dataType = dataTypeToNative(textureFillCubeMapInfo->dataType);
+    const GLenum externalFormat = externalFormatToNative(textureFillCubeMapInfo->externalFormat);
 
-    const GLenum internalFormat =
-        (channelCount == 1) ? GL_R8   :
-        (channelCount == 2) ? GL_RG8  :
-        (channelCount == 3) ? GL_RGB8 : GL_RGBA8;
+    const void* faceData[6] = {
+        textureFillCubeMapInfo->rightData,  // +x
+        textureFillCubeMapInfo->leftData,   // -X
+        textureFillCubeMapInfo->topData,    // +Y
+        textureFillCubeMapInfo->bottomData, // -Y
+        textureFillCubeMapInfo->backData,   // +Z
+        textureFillCubeMapInfo->frontData,  // -Z
+    };
 
-    const GLsizei mipmapLevelCount = 
-        (minFilter == TextureMinFilterNearest || minFilter == TextureMinFilterLinear) ? 1 : (GLsizei)floorf(log2f((float)GREATER(width, height))) + 1;
-
-    glTextureStorage2D(textureID, mipmapLevelCount, internalFormat, width, height);
-    glTextureSubImage2D(textureID, 0, 0, 0, width, height, externalFormat, GL_UNSIGNED_BYTE, pixels);
-
-    glTextureParameteri(textureID, GL_TEXTURE_WRAP_S, textureWrapToNative(wrapS));
-    glTextureParameteri(textureID, GL_TEXTURE_WRAP_T, textureWrapToNative(wrapT));
-    glTextureParameteri(textureID, GL_TEXTURE_MIN_FILTER, textureMinFilterToNative(minFilter));
-    glTextureParameteri(textureID, GL_TEXTURE_MAG_FILTER, textureMagFilterToNative(magFilter));
-    glTextureParameterfv(textureID, GL_TEXTURE_BORDER_COLOR, borderColour);
-
-    if (mipmapLevelCount > 1)
+    for (GLint face = 0; face < COUNT_OF(faceData); ++face)
     {
-        glGenerateTextureMipmap(textureID);
+        if (faceData[face] != NULL)
+        {
+            glTextureSubImage3D(textureID, 0, 0, 0, face, size, size, 1, externalFormat, dataType, faceData[face]);
+        }
     }
     glCheckErrors();
 
-    logVerbose("TEXTURE", "created from raw data %p (%ux%ux%u)", (void*)pixels, width, height, channelCount);
-    return textureID;
+    logVerbose("TEXTURE", "filled cube map with size = %i", size);
 }
 
 void textureDestroy(TextureID textureID)
@@ -235,24 +151,21 @@ void textureGenerateMipmap(TextureID textureID)
     glCheckErrors();
 }
 
-void textureGetImage(TextureID textureID, int32_t mipmapLevel, ExternalFormat externalFormat, DataType dataType, int32_t size, void* bufferOut)
+void textureGetImage(TextureID textureID, const TextureGetImageInfo* textureGetImageInfo, size_t bufferSize, void* bufferOut)
 {
-    glGetTextureImage(textureID, mipmapLevel, externalFormatToNative(externalFormat), dataTypeToNative(dataType), size, bufferOut);
-    glCheckErrors();
-}
-
-void textureGetImageRange(
-    TextureID textureID, 
-    int32_t mipmapLevel, 
-    ivec3 offsets,
-    ivec3 dimensions,
-    ExternalFormat externalFormat, 
-    DataType dataType, 
-    int32_t size, 
-    void* bufferOut)
-{
-    glGetTextureSubImage(textureID, mipmapLevel, offsets[0], offsets[1], offsets[2], 
-        dimensions[0], dimensions[1], dimensions[2], externalFormatToNative(externalFormat), dataTypeToNative(dataType), size, bufferOut);
+    glGetTextureSubImage(
+        textureID,
+        textureGetImageInfo->level,
+        textureGetImageInfo->xOffset,
+        textureGetImageInfo->yOffset,
+        textureGetImageInfo->zOffset,
+        textureGetImageInfo->width,
+        textureGetImageInfo->height,
+        textureGetImageInfo->depth,
+        dataTypeToNative(textureGetImageInfo->dataType),
+        externalFormatToNative(textureGetImageInfo->externalFormat),
+        bufferSize,
+        bufferOut);
     glCheckErrors();
 }
 
@@ -264,21 +177,24 @@ void textureBindSampler(TextureID textureID, uint32_t unit)
     glCheckErrors();
 }
 
-void textureBindImage(TextureID textureID, uint32_t unit, int32_t mipLevel, AccessPolicy accessPolicy, ExternalFormat externalFormat)
+void textureBindImage(TextureID textureID, uint32_t unit, uint32_t level, bool layered, uint32_t layer, AccessPolicy accessPolicy, ExternalFormat externalFormat)
 {
     assert(unit < 32);
-    glBindImageTexture(unit, textureID, mipLevel, GL_FALSE, 0, accessPolicyToNative(accessPolicy), externalFormatToNative(externalFormat));
+    glBindImageTexture(unit, textureID, level, layered, layer, accessPolicyToNative(accessPolicy), externalFormatToNative(externalFormat));
     logVerbose("TEXTURE", "image binded: %u", textureID);
     glCheckErrors();
 }
 
-void textureGetDimensions(TextureID textureID, int32_t mipmapLevel, int32_t* widthOut, int32_t* heightOut)
+void textureGetDimensions(TextureID textureID, int32_t level, uint32_t* widthOut, uint32_t* heightOut, uint32_t* depthOut)
 {
     GLint width  = 0;
     GLint height = 0;
-    glGetTextureLevelParameteriv(textureID, mipmapLevel, GL_TEXTURE_WIDTH, &width);
-    glGetTextureLevelParameteriv(textureID, mipmapLevel, GL_TEXTURE_HEIGHT, &height);
+    GLint depth  = 0;
+    glGetTextureLevelParameteriv(textureID, level, GL_TEXTURE_WIDTH, &width);
+    glGetTextureLevelParameteriv(textureID, level, GL_TEXTURE_HEIGHT, &height);
+    glGetTextureLevelParameteriv(textureID, level, GL_TEXTURE_DEPTH, &depth);
     if (widthOut  != NULL) { *widthOut  = width;  }
     if (heightOut != NULL) { *heightOut = height; }
+    if (depthOut  != NULL) { *depthOut  = depth;  }
 }
 
