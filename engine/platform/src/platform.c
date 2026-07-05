@@ -55,7 +55,7 @@ bool platformInit(void)
     glfwWindowHint(GLFW_ALPHA_BITS, 8);
     glfwWindowHint(GLFW_DEPTH_BITS, 24);
     glfwWindowHint(GLFW_STENCIL_BITS, 8);
-    glfwWindowHint(GLFW_SAMPLES, 0); // MSAA
+    glfwWindowHint(GLFW_SAMPLES, 4); // MSAA
     glfwWindowHint(GLFW_DOUBLEBUFFER, GLFW_TRUE);
     glfwWindowHint(GLFW_SRGB_CAPABLE, GLFW_TRUE);
 

@@ -4,6 +4,44 @@
 #include "glad/glad.h"
 #include "graphics/graphics.h"
 
+typedef struct HardwareCapabilityState
+{
+    int32_t maxViewportCount;
+    ivec2 maxViewportDimensions;
+
+    int32_t maxVertexAttributeCount;
+    int32_t maxElementsIndexCount;
+    int32_t maxElementsVertexCount;
+
+    int32_t maxSampleCount;
+    int32_t maxDrawBufferCount;
+    int32_t maxColourAttachmentCount;
+
+    int32_t maxTextureSize;
+    int32_t max3DTextureSize;
+    int32_t maxTextureImageUnitCount;
+    int32_t maxCombinedTextureImageUnitCount;
+    float maxTextureMaxAnisotropy;
+
+    int32_t maxUniformBlockSize;
+    int32_t maxShaderStorageBlockSize;
+
+    int32_t maxUniformBufferBindingCount;
+    int32_t maxShaderStorageBufferBindingCount;
+
+    int32_t uniformBufferOffsetAlignment;
+    int32_t shaderStorageBufferOffsetAlignment;
+
+    int32_t maxDebugMessageLength;
+    int32_t maxDebugLoggedMessageCount;
+    int32_t maxDebugGroupStackDepth;
+
+    ivec3 maxComputeWorkGroupCount;
+    ivec3 maxComputeWorkGroupSize;
+    int32_t maxComputeWorkGroupInvocationCount;
+    int32_t maxComputeSharedMemorySize;
+} HardwareCapabilityState;
+
 typedef struct Rectangle
 {
     int32_t x;
@@ -141,20 +179,9 @@ typedef struct ClearState
     int32_t stencil;
 } ClearState;
 
-typedef struct ComputeState
-{
-    ivec3 maxWorkGroupCount;
-    ivec3 maxWorkGroupSize;
-    int32_t maxWorkGroupInvocationCount;
-} ComputeState;
-
-typedef struct TextureState
-{
-    float maxAnisotropy;
-} TextureState;
-
 typedef struct GraphicsState
 {
+    HardwareCapabilityState hardwareCapability;
     Rectangle viewport;
     DepthTestState depthTest;
     StencilTestState stencilTest;
@@ -173,11 +200,10 @@ typedef struct GraphicsState
     FramebufferSRGBState framebufferSRGB;
     PrimitiveRestartState primitiveRestart;
     ClearState clear;
-    ComputeState compute;
-    TextureState texture;
 } GraphicsState;
 
 static GraphicsState graphicsState = {
+    .hardwareCapability = {0},
     .viewport = {0, 0, 0, 0},
     .depthTest = {
         .enabled = false,
@@ -279,14 +305,6 @@ static GraphicsState graphicsState = {
         .depth = DEPTH_FURTHEST,
         .stencil = 0,
     },
-    .compute = {
-        .maxWorkGroupCount = {0, 0, 0},
-        .maxWorkGroupSize  = {0, 0, 0},
-        .maxWorkGroupInvocationCount = 0,
-    },
-    .texture = {
-        .maxAnisotropy = 1.0f,
-    },
 };
 
 static bool* getCapabilityStatePointer(Capability capability)
@@ -346,26 +364,100 @@ bool graphicsInit(GraphicsFunctionLoader graphicsFunctionLoader)
     logInfo("GRAPHICS", "GLSL version: %s", (const char*)glGetString(GL_SHADING_LANGUAGE_VERSION));
 
     glGetIntegerv(GL_SAMPLES, &graphicsState.multisample.samples);
-    logInfo("GRAPHICS", "MSAA %i sample(s)", graphicsState.multisample.samples);
+    logInfo("GRAPHICS", "active MSAA sample count: %i", graphicsState.multisample.samples);
 
-    glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 0, &graphicsState.compute.maxWorkGroupCount[0]);
-    glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 1, &graphicsState.compute.maxWorkGroupCount[1]);
-    glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 2, &graphicsState.compute.maxWorkGroupCount[2]);
+    glGetIntegerv(GL_MAX_VIEWPORTS, &graphicsState.hardwareCapability.maxViewportCount);
+    logInfo("GRAPHICS", "max viewport count: %i", graphicsState.hardwareCapability.maxViewportCount);
+
+    glGetIntegerv(GL_MAX_VIEWPORT_DIMS, graphicsState.hardwareCapability.maxViewportDimensions);
+    logInfo("GRAPHICS", "max viewport dimensions: (%i, %i)", 
+        graphicsState.hardwareCapability.maxViewportDimensions[0],
+        graphicsState.hardwareCapability.maxViewportDimensions[1]);
+
+    glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &graphicsState.hardwareCapability.maxVertexAttributeCount);
+    logInfo("GRAPHICS", "max vertex attribute count: %i", graphicsState.hardwareCapability.maxVertexAttributeCount);
+
+    glGetIntegerv(GL_MAX_ELEMENTS_INDICES, &graphicsState.hardwareCapability.maxElementsIndexCount);
+    logInfo("GRAPHICS", "max elements index count: %i", graphicsState.hardwareCapability.maxElementsIndexCount);
+
+    glGetIntegerv(GL_MAX_ELEMENTS_VERTICES, &graphicsState.hardwareCapability.maxElementsVertexCount);
+    logInfo("GRAPHICS", "max elements vertex count: %i", graphicsState.hardwareCapability.maxElementsVertexCount);
+
+    glGetIntegerv(GL_MAX_SAMPLES, &graphicsState.hardwareCapability.maxSampleCount);
+    logInfo("GRAPHICS", "max MSAA sample count: %i", graphicsState.hardwareCapability.maxSampleCount);
+
+    glGetIntegerv(GL_MAX_DRAW_BUFFERS, &graphicsState.hardwareCapability.maxDrawBufferCount);
+    logInfo("GRAPHICS", "max draw buffer count: %i", graphicsState.hardwareCapability.maxDrawBufferCount);
+
+    glGetIntegerv(GL_MAX_COLOR_ATTACHMENTS, &graphicsState.hardwareCapability.maxColourAttachmentCount);
+    logInfo("GRAPHICS", "max colour attachment count: %i", graphicsState.hardwareCapability.maxColourAttachmentCount);
+
+    glGetIntegerv(GL_MAX_TEXTURE_SIZE, &graphicsState.hardwareCapability.maxTextureSize);
+    logInfo("GRAPHICS", "max texture size: %i", graphicsState.hardwareCapability.maxTextureSize);
+
+    glGetIntegerv(GL_MAX_3D_TEXTURE_SIZE, &graphicsState.hardwareCapability.max3DTextureSize);
+    logInfo("GRAPHICS", "max 3D texture size: %i", graphicsState.hardwareCapability.max3DTextureSize);
+
+    glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &graphicsState.hardwareCapability.maxTextureImageUnitCount);
+    logInfo("GRAPHICS", "max texture image unit count: %i", graphicsState.hardwareCapability.maxTextureImageUnitCount);
+
+    glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &graphicsState.hardwareCapability.maxCombinedTextureImageUnitCount);
+    logInfo("GRAPHICS", "max combined texture image unit count: %i", graphicsState.hardwareCapability.maxCombinedTextureImageUnitCount);
+
+    glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY, &graphicsState.hardwareCapability.maxTextureMaxAnisotropy);
+    logInfo("GRAPHICS", "max texture max anisotropy: %.1f", graphicsState.hardwareCapability.maxTextureMaxAnisotropy);
+
+    glGetIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE, &graphicsState.hardwareCapability.maxUniformBlockSize);
+    logInfo("GRAPHICS", "max uniform block size: %i", graphicsState.hardwareCapability.maxUniformBlockSize);
+
+    glGetIntegerv(GL_MAX_SHADER_STORAGE_BLOCK_SIZE, &graphicsState.hardwareCapability.maxShaderStorageBlockSize);
+    logInfo("GRAPHICS", "max shader storage block size: %i", graphicsState.hardwareCapability.maxShaderStorageBlockSize);
+
+    glGetIntegerv(GL_MAX_UNIFORM_BUFFER_BINDINGS, &graphicsState.hardwareCapability.maxUniformBufferBindingCount);
+    logInfo("GRAPHICS", "max uniform buffer binding count: %i", graphicsState.hardwareCapability.maxUniformBufferBindingCount);
+
+    glGetIntegerv(GL_MAX_SHADER_STORAGE_BUFFER_BINDINGS, &graphicsState.hardwareCapability.maxShaderStorageBufferBindingCount);
+    logInfo("GRAPHICS", "max shader storage buffer binding count: %i", graphicsState.hardwareCapability.maxShaderStorageBufferBindingCount);
+
+    glGetIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, &graphicsState.hardwareCapability.uniformBufferOffsetAlignment);
+    logInfo("GRAPHICS", "uniform buffer offset alignment: %i", graphicsState.hardwareCapability.uniformBufferOffsetAlignment);
+
+    glGetIntegerv(GL_SHADER_STORAGE_BUFFER_OFFSET_ALIGNMENT, &graphicsState.hardwareCapability.shaderStorageBufferOffsetAlignment);
+    logInfo("GRAPHICS", "shader storage buffer offset alignment: %i", graphicsState.hardwareCapability.shaderStorageBufferOffsetAlignment);
+
+    glGetIntegerv(GL_MAX_DEBUG_MESSAGE_LENGTH, &graphicsState.hardwareCapability.maxDebugMessageLength);
+    logInfo("GRAPHICS", "max debug message length: %i", graphicsState.hardwareCapability.maxDebugMessageLength);
+
+    glGetIntegerv(GL_MAX_DEBUG_LOGGED_MESSAGES, &graphicsState.hardwareCapability.maxDebugLoggedMessageCount);
+    logInfo("GRAPHICS", "max debug logged message count: %i", graphicsState.hardwareCapability.maxDebugLoggedMessageCount);
+
+    glGetIntegerv(GL_MAX_DEBUG_GROUP_STACK_DEPTH, &graphicsState.hardwareCapability.maxDebugGroupStackDepth);
+    logInfo("GRAPHICS", "max debug group stack depth: %i", graphicsState.hardwareCapability.maxDebugGroupStackDepth);
+
+    glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 0, &graphicsState.hardwareCapability.maxComputeWorkGroupCount[0]);
+    glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 1, &graphicsState.hardwareCapability.maxComputeWorkGroupCount[1]);
+    glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 2, &graphicsState.hardwareCapability.maxComputeWorkGroupCount[2]);
     logInfo("GRAPHICS", "max compute work group counts: (%i, %i, %i)", 
-        graphicsState.compute.maxWorkGroupCount[0], graphicsState.compute.maxWorkGroupCount[1], graphicsState.compute.maxWorkGroupCount[2]);
+        graphicsState.hardwareCapability.maxComputeWorkGroupCount[0], 
+        graphicsState.hardwareCapability.maxComputeWorkGroupCount[1], 
+        graphicsState.hardwareCapability.maxComputeWorkGroupCount[2]);
 
-    glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 0, &graphicsState.compute.maxWorkGroupSize[0]);
-    glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 1, &graphicsState.compute.maxWorkGroupSize[1]);
-    glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 2, &graphicsState.compute.maxWorkGroupSize[2]);
+    glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 0, &graphicsState.hardwareCapability.maxComputeWorkGroupSize[0]);
+    glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 1, &graphicsState.hardwareCapability.maxComputeWorkGroupSize[1]);
+    glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 2, &graphicsState.hardwareCapability.maxComputeWorkGroupSize[2]);
     logInfo("GRAPHICS", "max compute work group sizes: (%i, %i, %i)", 
-        graphicsState.compute.maxWorkGroupSize[0], graphicsState.compute.maxWorkGroupSize[1], graphicsState.compute.maxWorkGroupSize[2]);
+        graphicsState.hardwareCapability.maxComputeWorkGroupSize[0], 
+        graphicsState.hardwareCapability.maxComputeWorkGroupSize[1], 
+        graphicsState.hardwareCapability.maxComputeWorkGroupSize[2]);
 
-    glGetIntegerv(GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS, &graphicsState.compute.maxWorkGroupInvocationCount);
-    logInfo("GRAPHICS", "max compute work group invocation count: %i", graphicsState.compute.maxWorkGroupInvocationCount);
+    glGetIntegerv(GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS, &graphicsState.hardwareCapability.maxComputeWorkGroupInvocationCount);
+    logInfo("GRAPHICS", "max compute work group invocation count: %i", graphicsState.hardwareCapability.maxComputeWorkGroupInvocationCount);
 
-    glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY, &graphicsState.texture.maxAnisotropy);
-    logInfo("GRAPHICS", "max texture max anisotropy: %.1f", graphicsState.texture.maxAnisotropy);
+    glGetIntegerv(GL_MAX_COMPUTE_SHARED_MEMORY_SIZE, &graphicsState.hardwareCapability.maxComputeSharedMemorySize);
+    logInfo("GRAPHICS", "max compute shared memory size: %i", graphicsState.hardwareCapability.maxComputeSharedMemorySize);
     
+    glCheckErrors();
+
     return true;
 }
 
@@ -723,12 +815,15 @@ void graphicsClear(BufferBit bufferBits)
 
 void graphicsDispatchCompute(uint32_t workGroupCountX, uint32_t workGroupCountY, uint32_t workGroupCountZ)
 {
-    if (workGroupCountX > graphicsState.compute.maxWorkGroupCount[0] ||
-        workGroupCountY > graphicsState.compute.maxWorkGroupCount[1] ||
-        workGroupCountZ > graphicsState.compute.maxWorkGroupCount[2])
+    if (workGroupCountX > graphicsState.hardwareCapability.maxComputeWorkGroupCount[0] ||
+        workGroupCountY > graphicsState.hardwareCapability.maxComputeWorkGroupCount[1] ||
+        workGroupCountZ > graphicsState.hardwareCapability.maxComputeWorkGroupCount[2])
     {
-        logError("GRAPHICS", "work group counts (%u, %u, %u) exceed the limits (%i, %i, %i)", workGroupCountX, workGroupCountY, workGroupCountZ, 
-            graphicsState.compute.maxWorkGroupCount[0], graphicsState.compute.maxWorkGroupCount[1], graphicsState.compute.maxWorkGroupCount[2]);
+        logError("GRAPHICS", "compute work group counts (%u, %u, %u) exceed the limits (%i, %i, %i)", 
+            workGroupCountX, workGroupCountY, workGroupCountZ, 
+            graphicsState.hardwareCapability.maxComputeWorkGroupCount[0], 
+            graphicsState.hardwareCapability.maxComputeWorkGroupCount[1], 
+            graphicsState.hardwareCapability.maxComputeWorkGroupCount[2]);
         return;
     }
 
