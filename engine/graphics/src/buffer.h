@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include <stddef.h>
 #include <stdbool.h>
 #include "graphics/enums.h"
 

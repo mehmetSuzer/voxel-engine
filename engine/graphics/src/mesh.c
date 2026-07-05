@@ -4,14 +4,16 @@
 #include "error.h"
 #include "log/log.h"
 #include "glad/glad.h"
+#include "buffer.h"
+#include "vertex_array.h"
 
 typedef struct Mesh
 {
-    GLuint VAO;
-    GLuint VBO;
-    GLuint EBO;
-    GLsizei indexCount;
-    DrawMode drawMode;
+    VertexArrayID VAO;
+    BufferID VBO;
+    BufferID EBO;
+    uint32_t indexCount;
+    GLenum drawMode;
     bool active;
 } Mesh;
 
@@ -57,25 +59,23 @@ static MeshID meshArrayPush(const Mesh* mesh)
 MeshID meshCreatePBR(const VertexPBR* vertices, uint32_t vertexCount, const uint32_t* indices, uint32_t indexCount, DrawMode drawMode)
 {
     Mesh mesh;
+
+    mesh.VAO = vertexArrayCreate();
+    mesh.VBO = bufferCreate(vertexCount * sizeof(VertexPBR), vertices, (BufferStorageBit)0);
+    mesh.EBO = bufferCreate(indexCount * sizeof(uint32_t), indices, (BufferStorageBit)0);
+
+    vertexArraySetVertexBuffer(mesh.VAO, 0, mesh.VBO, 0, sizeof(VertexPBR));
+    vertexArraySetElementBuffer(mesh.VAO, mesh.EBO);
+
+    vertexArrayLinkAttributeFloat(mesh.VAO, 0, 0, 3, offsetof(VertexPBR, position));
+    vertexArrayLinkAttributeFloat(mesh.VAO, 0, 1, 3, offsetof(VertexPBR, normal));
+    vertexArrayLinkAttributeFloat(mesh.VAO, 0, 2, 3, offsetof(VertexPBR, tangent));
+    vertexArrayLinkAttributeFloat(mesh.VAO, 0, 3, 2, offsetof(VertexPBR, texCoord));
+
+    mesh.drawMode = drawModeToNative(drawMode);
+    mesh.indexCount = indexCount;
     mesh.active = true;
 
-    glGenVertexArrays(1, &mesh.VAO);
-    glGenBuffers(1, &mesh.VBO);
-    glGenBuffers(1, &mesh.EBO);
-
-    glBindVertexArray(mesh.VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, mesh.VBO);
-    glBufferData(GL_ARRAY_BUFFER, vertexCount * sizeof(VertexPBR), vertices, GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexCount * sizeof(uint32_t), indices, GL_STATIC_DRAW);
-
-    vertexPBRLinkAttributes();
-    glBindVertexArray(0);
-    glCheckErrors();
-
-    mesh.drawMode = drawMode;
-    mesh.indexCount = indexCount;
     const MeshID meshID = meshArrayPush(&mesh);
     return meshID;
 }
@@ -83,36 +83,31 @@ MeshID meshCreatePBR(const VertexPBR* vertices, uint32_t vertexCount, const uint
 MeshID meshCreateVoxel(const VertexVoxel* vertices, uint32_t vertexCount, const uint32_t* indices, uint32_t indexCount, DrawMode drawMode)
 {
     Mesh mesh;
+
+    mesh.VAO = vertexArrayCreate();
+    mesh.VBO = bufferCreate(vertexCount * sizeof(VertexVoxel), vertices, (BufferStorageBit)0);
+    mesh.EBO = bufferCreate(indexCount * sizeof(uint32_t), indices, (BufferStorageBit)0);
+
+    vertexArraySetVertexBuffer(mesh.VAO, 0, mesh.VBO, 0, sizeof(VertexVoxel));
+    vertexArraySetElementBuffer(mesh.VBO, mesh.EBO);
+
+    vertexArrayLinkAttributeUint(mesh.VAO, 0, 0, 1, 0);
+
+    mesh.drawMode = drawModeToNative(drawMode);
+    mesh.indexCount = indexCount;
     mesh.active = true;
 
-    glGenVertexArrays(1, &mesh.VAO);
-    glGenBuffers(1, &mesh.VBO);
-    glGenBuffers(1, &mesh.EBO);
-
-    glBindVertexArray(mesh.VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, mesh.VBO);
-    glBufferData(GL_ARRAY_BUFFER, vertexCount * sizeof(VertexVoxel), vertices, GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexCount * sizeof(uint32_t), indices, GL_STATIC_DRAW);
-
-    vertexVoxelLinkAttributes();
-    glBindVertexArray(0);
-    glCheckErrors();
-
-    mesh.drawMode = drawMode;
-    mesh.indexCount = indexCount;
     const MeshID meshID = meshArrayPush(&mesh);
+
     return meshID;
 }
 
 void meshDestroy(MeshID meshID)
 {
     Mesh* mesh = &meshArray.data[meshID];
-    glDeleteVertexArrays(1, &mesh->VAO);
-    glDeleteBuffers(1, &mesh->VBO);
-    glDeleteBuffers(1, &mesh->EBO);
-    glCheckErrors();
+    vertexArrayDestroy(mesh->VAO);
+    bufferDestroy(mesh->VBO);
+    bufferDestroy(mesh->EBO);
     *mesh = (Mesh){0};
 }
 
@@ -123,10 +118,9 @@ void meshDestroyAll()
         const Mesh* mesh = &meshArray.data[i];
         if (mesh->active)
         {
-            glDeleteVertexArrays(1, &mesh->VAO);
-            glDeleteBuffers(1, &mesh->VBO);
-            glDeleteBuffers(1, &mesh->EBO);
-            glCheckErrors();
+            vertexArrayDestroy(mesh->VAO);
+            bufferDestroy(mesh->VBO);
+            bufferDestroy(mesh->EBO);
         }
     }
 
@@ -143,9 +137,9 @@ bool meshIsActive(MeshID meshID)
 void meshDraw(MeshID meshID)
 {
     const Mesh* mesh = &meshArray.data[meshID];
-    glBindVertexArray(mesh->VAO);
-    glDrawElements(drawModeToNative(mesh->drawMode), mesh->indexCount, GL_UNSIGNED_INT, NULL);
-    logVerbose("MESH", "drawn: %u", meshID);
+    vertexArrayBind(mesh->VAO);
+    glDrawElements(mesh->drawMode, mesh->indexCount, GL_UNSIGNED_INT, NULL);
     glCheckErrors();
+    logVerbose("MESH", "drawn: %u", meshID);
 }
 

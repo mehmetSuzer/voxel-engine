@@ -11,9 +11,5 @@ typedef struct VertexPBR
     vec2 texCoord;
 } VertexPBR;
 
-void vertexPBRLinkAttributes();
-
 typedef uint32_t VertexVoxel;
-
-void vertexVoxelLinkAttributes();
 

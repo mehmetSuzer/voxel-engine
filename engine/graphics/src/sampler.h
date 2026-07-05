@@ -10,16 +10,17 @@ typedef uint32_t SamplerID;
 
 typedef struct SamplerCreateInfo
 {
-    TextureMinFilter textureMinFilter;
-    TextureMagFilter textureMagFilter;
     TextureWrap textureWrapS;
     TextureWrap textureWrapT;
     TextureWrap textureWrapR;
+    TextureMinFilter textureMinFilter;
+    TextureMagFilter textureMagFilter;
+    CompareMode compareMode;
+    CompareFunc compareFunc;
     float minLOD;
     float maxLOD;
     float biasLOD;
-    CompareMode compareMode;
-    CompareFunc compareFunc;
+    float maxAnisotropy;
     float borderColour[4]; // only matters if wrapS, wrapT, or wrapR is WrapClampToBorder
 } SamplerCreateInfo;
 
@@ -32,4 +33,5 @@ void samplerDestroy(SamplerID samplerID);
 bool samplerIsActive(SamplerID samplerID);
 
 void samplerBind(SamplerID samplerID, uint32_t unit);
+void samplerBindMultiple(const SamplerID* samplers, uint32_t firstUnit, uint32_t count);
 
