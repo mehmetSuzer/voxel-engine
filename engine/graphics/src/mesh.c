@@ -1,10 +1,9 @@
 
 #include <string.h>
 #include "mesh.h"
-#include "error.h"
+#include "buffer.h"
 #include "log/log.h"
 #include "glad/glad.h"
-#include "buffer.h"
 #include "vertex_array.h"
 
 typedef struct Mesh
@@ -59,7 +58,6 @@ static MeshID meshArrayPush(const Mesh* mesh)
 MeshID meshCreatePBR(const VertexPBR* vertices, uint32_t vertexCount, const uint32_t* indices, uint32_t indexCount, DrawMode drawMode)
 {
     Mesh mesh;
-
     mesh.VAO = vertexArrayCreate();
     mesh.VBO = bufferCreate(vertexCount * sizeof(VertexPBR), vertices, (BufferStorageBit)0);
     mesh.EBO = bufferCreate(indexCount * sizeof(uint32_t), indices, (BufferStorageBit)0);
@@ -83,7 +81,6 @@ MeshID meshCreatePBR(const VertexPBR* vertices, uint32_t vertexCount, const uint
 MeshID meshCreateVoxel(const VertexVoxel* vertices, uint32_t vertexCount, const uint32_t* indices, uint32_t indexCount, DrawMode drawMode)
 {
     Mesh mesh;
-
     mesh.VAO = vertexArrayCreate();
     mesh.VBO = bufferCreate(vertexCount * sizeof(VertexVoxel), vertices, (BufferStorageBit)0);
     mesh.EBO = bufferCreate(indexCount * sizeof(uint32_t), indices, (BufferStorageBit)0);
@@ -98,7 +95,6 @@ MeshID meshCreateVoxel(const VertexVoxel* vertices, uint32_t vertexCount, const 
     mesh.active = true;
 
     const MeshID meshID = meshArrayPush(&mesh);
-
     return meshID;
 }
 
@@ -139,7 +135,6 @@ void meshDraw(MeshID meshID)
     const Mesh* mesh = &meshArray.data[meshID];
     vertexArrayBind(mesh->VAO);
     glDrawElements(mesh->drawMode, mesh->indexCount, GL_UNSIGNED_INT, NULL);
-    glCheckErrors();
     logVerbose("MESH", "drawn: %u", meshID);
 }
 

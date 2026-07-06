@@ -4,9 +4,9 @@
 #include "log/log.h"
 #include "glad/glad.h"
 
-static const char* glErrorToString(GLenum errorCode)
+static const char* errorStringFromNative(GLenum error)
 {
-    switch (errorCode)
+    switch (error)
     {
         case GL_INVALID_ENUM:                  return "invalid enum";
         case GL_INVALID_VALUE:                 return "invalid value";
@@ -16,21 +16,20 @@ static const char* glErrorToString(GLenum errorCode)
         case GL_OUT_OF_MEMORY:                 return "out of memory";
         case GL_INVALID_FRAMEBUFFER_OPERATION: return "invalid framebuffer operation";
         case GL_CONTEXT_LOST:                  return "context lost";
-        default:                               return "unknown error";
     }
 
     assert(0);
 
-    return "invalid error code";
+    return "invalid error";
 }
 
 void __glCheckErrorsImplementation(const char* file, uint32_t line)
 {
-    GLenum errorCode = GL_NO_ERROR;
-    while ((errorCode = glGetError()) != GL_NO_ERROR)
+    GLenum error = GL_NO_ERROR;
+    while ((error = glGetError()) != GL_NO_ERROR)
     {
-        const char* error = glErrorToString(errorCode);
-        logError("OPENGL", "%s | %s (%u)", error, file, line);
+        const char* errorString = errorStringFromNative(error);
+        logError("OPENGL", "%s | %s (%u)", errorString, file, line);
     }
 }
 

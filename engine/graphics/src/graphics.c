@@ -1,5 +1,4 @@
 
-#include "error.h"
 #include "log/log.h"
 #include "glad/glad.h"
 #include "graphics/graphics.h"
@@ -307,65 +306,58 @@ static GraphicsState graphicsState = {
     },
 };
 
-static bool* getCapabilityStatePointer(Capability capability)
+static const char* debugSourceStringFromNative(GLenum debugSource)
 {
-    switch (capability)
+    switch (debugSource)
     {
-    case CapabilityDepthTest:
-        return &graphicsState.depthTest.enabled;
-    case CapabilityStencilTest:
-        return &graphicsState.stencilTest.enabled;
-    case CapabilityScissorTest:
-        return &graphicsState.scissorTest.enabled;
-    case CapabilityBlend:
-        return &graphicsState.blend.enabled;
-    case CapabilityCullFace:
-        return &graphicsState.cullFace.enabled;
-    case CapabilityDither:
-        return &graphicsState.dither.enabled;
-    case CapabilityMultisample:
-        return &graphicsState.multisample.enabled;
-    case CapabilitySampleAlphaToCoverage:
-        return &graphicsState.sampleAlphaToCoverage.enabled;
-    case CapabilitySampleAlphaToOne:
-        return &graphicsState.sampleAlphaToOne.enabled;
-    case CapabilitySampleCoverage:
-        return &graphicsState.sampleCoverage.enabled;
-    case CapabilityDepthClamp:
-        return &graphicsState.depthClamp.enabled;
-    case CapabilityPolygonOffsetPoint:
-        return &graphicsState.polygonOffset.pointEnabled;
-    case CapabilityPolygonOffsetLine:
-        return &graphicsState.polygonOffset.lineEnabled;
-    case CapabilityPolygonOffsetFill:
-        return &graphicsState.polygonOffset.fillEnabled;
-    case CapabilityProgramPointSize:
-        return &graphicsState.programPointSize.enabled;
-    case CapabilityFramebufferSRGB:
-        return &graphicsState.framebufferSRGB.enabled;
-    case CapabilityPrimitiveRestart:
-        return &graphicsState.primitiveRestart.enabled;
-    default:
-        return NULL;
+        case GL_DEBUG_SOURCE_API:             return "API";
+        case GL_DEBUG_SOURCE_WINDOW_SYSTEM:   return "window system";
+        case GL_DEBUG_SOURCE_SHADER_COMPILER: return "shader compiler";
+        case GL_DEBUG_SOURCE_THIRD_PARTY:     return "third party";
+        case GL_DEBUG_SOURCE_APPLICATION:     return "application";
+        case GL_DEBUG_SOURCE_OTHER:           return "other";
+    }
+
+    assert(0);
+
+    return "invalid debug source";
+}
+
+static const char* debugTypeStringFromNative(GLenum debugType)
+{
+    switch (debugType)
+    {
+        case GL_DEBUG_TYPE_ERROR:               return "error";
+        case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: return "deprecated behaviour";
+        case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:  return "undefined behaviour";
+        case GL_DEBUG_TYPE_PORTABILITY:         return "portability";
+        case GL_DEBUG_TYPE_PERFORMANCE:         return "performance";
+        case GL_DEBUG_TYPE_MARKER:              return "marker";
+        case GL_DEBUG_TYPE_PUSH_GROUP:          return "push group";
+        case GL_DEBUG_TYPE_POP_GROUP:           return "pop group";
+        case GL_DEBUG_TYPE_OTHER:               return "other";
+    }
+
+    assert(0);
+
+    return "invalid debug type";
+}
+
+static void APIENTRY debugMessageCallback(GLenum source, GLenum type, unsigned int id, GLenum severity, GLsizei length, const char* message, const void* userParam)
+{
+    const char* debugSource = debugSourceStringFromNative(source);
+    const char* debugType = debugTypeStringFromNative(type);
+    switch (severity)
+    {
+        case GL_DEBUG_SEVERITY_NOTIFICATION: logVerbose("OPENGL", "source: %s | type: %s | %s (%u)", debugSource, debugType, message, id); break;
+        case GL_DEBUG_SEVERITY_LOW:          logInfo("OPENGL", "source: %s | type: %s | %s (%u)", debugSource, debugType, message, id);    break;
+        case GL_DEBUG_SEVERITY_MEDIUM:       logWarning("OPENGL", "source: %s | type: %s | %s (%u)", debugSource, debugType, message, id); break;
+        case GL_DEBUG_SEVERITY_HIGH:         logError("OPENGL", "source: %s | type: %s | %s (%u)", debugSource, debugType, message, id);   break;
     }
 }
 
-bool graphicsInit(GraphicsFunctionLoader graphicsFunctionLoader)
+static void getHardwareCapabilities(void)
 {
-    if (!gladLoadGLLoader(graphicsFunctionLoader))
-    {
-        logError("GRAPHICS", "failed to initialise");
-        return false;
-    }
-    logInfo("GRAPHICS", "initialised");
-
-    logInfo("GRAPHICS", "physical device: %s", (const char*)glGetString(GL_RENDERER));
-    logInfo("GRAPHICS", "renderer version: %s", (const char*)glGetString(GL_VERSION));
-    logInfo("GRAPHICS", "GLSL version: %s", (const char*)glGetString(GL_SHADING_LANGUAGE_VERSION));
-
-    glGetIntegerv(GL_SAMPLES, &graphicsState.multisample.samples);
-    logInfo("GRAPHICS", "active MSAA sample count: %i", graphicsState.multisample.samples);
-
     glGetIntegerv(GL_MAX_VIEWPORTS, &graphicsState.hardwareCapability.maxViewportCount);
     logInfo("GRAPHICS", "max viewport count: %i", graphicsState.hardwareCapability.maxViewportCount);
 
@@ -455,8 +447,69 @@ bool graphicsInit(GraphicsFunctionLoader graphicsFunctionLoader)
 
     glGetIntegerv(GL_MAX_COMPUTE_SHARED_MEMORY_SIZE, &graphicsState.hardwareCapability.maxComputeSharedMemorySize);
     logInfo("GRAPHICS", "max compute shared memory size: %i", graphicsState.hardwareCapability.maxComputeSharedMemorySize);
+}
+
+static bool* getCapabilityStatePointer(Capability capability)
+{
+    switch (capability)
+    {
+        case CapabilityDepthTest:             return &graphicsState.depthTest.enabled;
+        case CapabilityStencilTest:           return &graphicsState.stencilTest.enabled;
+        case CapabilityScissorTest:           return &graphicsState.scissorTest.enabled;
+        case CapabilityBlend:                 return &graphicsState.blend.enabled;
+        case CapabilityCullFace:              return &graphicsState.cullFace.enabled;
+        case CapabilityDither:                return &graphicsState.dither.enabled;
+        case CapabilityMultisample:           return &graphicsState.multisample.enabled;
+        case CapabilitySampleAlphaToCoverage: return &graphicsState.sampleAlphaToCoverage.enabled;
+        case CapabilitySampleAlphaToOne:      return &graphicsState.sampleAlphaToOne.enabled;
+        case CapabilitySampleCoverage:        return &graphicsState.sampleCoverage.enabled;
+        case CapabilityDepthClamp:            return &graphicsState.depthClamp.enabled;
+        case CapabilityPolygonOffsetPoint:    return &graphicsState.polygonOffset.pointEnabled;
+        case CapabilityPolygonOffsetLine:     return &graphicsState.polygonOffset.lineEnabled;
+        case CapabilityPolygonOffsetFill:     return &graphicsState.polygonOffset.fillEnabled;
+        case CapabilityProgramPointSize:      return &graphicsState.programPointSize.enabled;
+        case CapabilityFramebufferSRGB:       return &graphicsState.framebufferSRGB.enabled;
+        case CapabilityPrimitiveRestart:      return &graphicsState.primitiveRestart.enabled;
+    }
+
+    logError("GRAPHICS", "invalid capability");
+    assert(0);
+
+    return NULL;
+}
+
+bool graphicsInit(GraphicsFunctionLoader graphicsFunctionLoader)
+{
+    if (!gladLoadGLLoader(graphicsFunctionLoader))
+    {
+        logError("GRAPHICS", "failed to initialise");
+        return false;
+    }
+    logInfo("GRAPHICS", "initialised");
+
+    logInfo("GRAPHICS", "physical device: %s", (const char*)glGetString(GL_RENDERER));
+    logInfo("GRAPHICS", "renderer version: %s", (const char*)glGetString(GL_VERSION));
+    logInfo("GRAPHICS", "GLSL version: %s", (const char*)glGetString(GL_SHADING_LANGUAGE_VERSION));
+
+    GLint contextFlags = 0;
+    glGetIntegerv(GL_CONTEXT_FLAGS, &contextFlags);
+    if (contextFlags & GL_CONTEXT_FLAG_FORWARD_COMPATIBLE_BIT) { logInfo("GRAPHICS", "enabled context forward compatible"); }
+    if (contextFlags & GL_CONTEXT_FLAG_ROBUST_ACCESS_BIT)      { logInfo("GRAPHICS", "enabled context robust access");      }
+    if (contextFlags & GL_CONTEXT_FLAG_NO_ERROR_BIT)           { logInfo("GRAPHICS", "enabled context no error");           }
+
+    if (contextFlags & GL_CONTEXT_FLAG_DEBUG_BIT)
+    {
+        glEnable(GL_DEBUG_OUTPUT);
+        glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+        glDebugMessageCallback(debugMessageCallback, NULL);
+        glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_TRUE);
+        logInfo("GRAPHICS", "enabled context debug output");
+    }
+
+    glGetIntegerv(GL_SAMPLES, &graphicsState.multisample.samples);
+    logInfo("GRAPHICS", "active MSAA sample count: %i", graphicsState.multisample.samples);
     
-    glCheckErrors();
+    getHardwareCapabilities();
 
     return true;
 }
@@ -464,36 +517,22 @@ bool graphicsInit(GraphicsFunctionLoader graphicsFunctionLoader)
 void graphicsEnable(Capability capability)
 {
     bool* capabilityStatePointer = getCapabilityStatePointer(capability);
-    if (capabilityStatePointer == NULL)
-    {
-        logError("GRAPHICS", "cannot enable, capability is invalid");
-        return;
-    }
-
     bool capabilityIsEnabled = *capabilityStatePointer;
     if (!capabilityIsEnabled)
     {
         *capabilityStatePointer = true;
         glEnable(capabilityToNative(capability));
-        glCheckErrors();
     }
 }
 
 void graphicsDisable(Capability capability)
 {
     bool* capabilityStatePointer = getCapabilityStatePointer(capability);
-    if (capabilityStatePointer == NULL)
-    {
-        logError("GRAPHICS", "cannot disable, capability is invalid");
-        return;
-    }
-
     bool capabilityIsEnabled = *capabilityStatePointer;
     if (capabilityIsEnabled)
     {
         *capabilityStatePointer = false;
         glDisable(capabilityToNative(capability));
-        glCheckErrors();
     }
 }
 
@@ -509,7 +548,6 @@ void graphicsViewport(int32_t x, int32_t y, int32_t width, int32_t height)
         graphicsState.viewport.width  = width;
         graphicsState.viewport.height = height;
         glViewport(x, y, width, height);
-        glCheckErrors();
     }
 }
 
@@ -519,7 +557,6 @@ void graphicsDepthFunc(CompareFunc compareFunc)
     {
         graphicsState.depthTest.compareFunc = compareFunc;
         glDepthFunc(compareFuncToNative(compareFunc));
-        glCheckErrors();
     }
 }
 
@@ -529,7 +566,6 @@ void graphicsDepthWriteEnable(bool writeEnabled)
     {
         graphicsState.depthTest.writeEnabled = writeEnabled;
         glDepthMask(writeEnabled);
-        glCheckErrors();
     }
 }
 
@@ -541,7 +577,6 @@ void graphicsDepthRange(float near, float far)
         graphicsState.depthTest.near = near;
         graphicsState.depthTest.far  = far;
         glDepthRangef(near, far);
-        glCheckErrors();
     }
 }
 
@@ -569,7 +604,6 @@ void graphicsStencilFunc(Face face, CompareFunc compareFunc, int32_t reference, 
     if (dirty)
     {
         glStencilFuncSeparate(faceToNative(face), compareFuncToNative(compareFunc), reference, testMask);
-        glCheckErrors();
     }
 }
 
@@ -593,7 +627,6 @@ void graphicsStencilWriteMask(Face face, uint32_t writeMask)
     if (dirty)
     {
         glStencilMaskSeparate(faceToNative(face), writeMask);
-        glCheckErrors();
     }
 }
 
@@ -622,7 +655,6 @@ void graphicsStencilOperation(Face face, StencilOperation stencilFail, StencilOp
     if (dirty)
     {
         glStencilOpSeparate(faceToNative(face), stencilOperationToNative(stencilFail), stencilOperationToNative(depthFail), stencilOperationToNative(depthPass));
-        glCheckErrors();
     }
 }
 
@@ -638,7 +670,6 @@ void graphicsScissor(int32_t x, int32_t y, int32_t width, int32_t height)
         graphicsState.scissorTest.rectangle.width  = width;
         graphicsState.scissorTest.rectangle.height = height;
         glScissor(x, y, width, height);
-        glCheckErrors();
     }
 }
 
@@ -654,7 +685,6 @@ void graphicsBlendFactor(BlendFactor srcRGB, BlendFactor dstRGB, BlendFactor src
         graphicsState.blend.srcAlpha = srcAlpha;
         graphicsState.blend.dstAlpha = dstAlpha;
         glBlendFuncSeparate(blendFactorToNative(srcRGB), blendFactorToNative(dstRGB), blendFactorToNative(srcAlpha), blendFactorToNative(dstAlpha));
-        glCheckErrors();
     }
 }
 
@@ -666,7 +696,6 @@ void graphicsBlendEquation(BlendEquation equationRGB, BlendEquation equationAlph
         graphicsState.blend.equationRGB   = equationRGB;
         graphicsState.blend.equationAlpha = equationAlpha;
         glBlendEquationSeparate(blendEquationToNative(equationRGB), blendEquationToNative(equationAlpha));
-        glCheckErrors();
     }
 }
 
@@ -682,7 +711,6 @@ void graphicsBlendColour(vec4 colour)
         graphicsState.blend.colour[2] = colour[2];
         graphicsState.blend.colour[3] = colour[3];
         glBlendColor(colour[0], colour[1], colour[2], colour[3]);
-        glCheckErrors();
     }
 }
 
@@ -692,7 +720,6 @@ void graphicsCullFace(Face face)
     {
         graphicsState.cullFace.face = face;
         glCullFace(faceToNative(face));
-        glCheckErrors();
     }
 }
 
@@ -702,7 +729,6 @@ void graphicsFrontFace(FrontFace frontFace)
     {
         graphicsState.cullFace.frontFace = frontFace;
         glFrontFace(frontFaceToNative(frontFace));
-        glCheckErrors();
     }
 }
 
@@ -714,7 +740,6 @@ void graphicsSampleCoverage(float coverage, bool invert)
         graphicsState.sampleCoverage.coverage = coverage;
         graphicsState.sampleCoverage.invert   = invert;
         glSampleCoverage(coverage, invert);
-        glCheckErrors();
     }
 }
 
@@ -726,7 +751,6 @@ void graphicsPolygonOffset(float factor, float units)
         graphicsState.polygonOffset.factor = factor;
         graphicsState.polygonOffset.units  = units;
         glPolygonOffset(factor, units);
-        glCheckErrors();
     }
 }
 
@@ -736,7 +760,6 @@ void graphicsPointSize(float size)
     {
         graphicsState.programPointSize.size = size;
         glPointSize(size);
-        glCheckErrors();
     }
 }
 
@@ -746,7 +769,6 @@ void graphicsPrimitiveRestartIndex(uint32_t restartIndex)
     {
         graphicsState.primitiveRestart.restartIndex = restartIndex;
         glPrimitiveRestartIndex(restartIndex);
-        glCheckErrors();
     }
 }
 
@@ -767,7 +789,6 @@ void graphicsPolygonMode(Face face, PolygonMode polygonMode)
     if (dirty)
     {
         glPolygonMode(faceToNative(face), polygonModeToNative(polygonMode));
-        glCheckErrors();
     }
 }
 
@@ -783,7 +804,6 @@ void graphicsClearColour(vec4 colour)
         graphicsState.clear.colour[2] = colour[2];
         graphicsState.clear.colour[3] = colour[3];
         glClearColor(colour[0], colour[1], colour[2], colour[3]);
-        glCheckErrors();        
     }
 }
 
@@ -793,7 +813,6 @@ void graphicsClearDepth(float depth)
     {
         graphicsState.clear.depth = depth;
         glClearDepth(depth);
-        glCheckErrors();
     }
 }
 
@@ -803,14 +822,12 @@ void graphicsClearStencil(int32_t stencil)
     {
         graphicsState.clear.stencil = stencil;
         glClearStencil(stencil);
-        glCheckErrors();
     }
 }
 
 void graphicsClear(BufferBit bufferBits)
 {
     glClear(bufferBitsToNative(bufferBits));
-    glCheckErrors();
 }
 
 void graphicsDispatchCompute(uint32_t workGroupCountX, uint32_t workGroupCountY, uint32_t workGroupCountZ)
@@ -828,12 +845,17 @@ void graphicsDispatchCompute(uint32_t workGroupCountX, uint32_t workGroupCountY,
     }
 
     glDispatchCompute(workGroupCountX, workGroupCountY, workGroupCountZ);
-    glCheckErrors();
 }
 
 void graphicsMemoryBarrier(MemoryBarrierBit memoryBarrierBits)
 {
     glMemoryBarrier(memoryBarrierBitsToNative(memoryBarrierBits));
-    glCheckErrors();
 }
+
+#ifndef NDEBUG
+void graphicsInsertDebugMessage(DebugSource debugSource, DebugType debugType, DebugSeverity debugSeverity, const char* message)
+{
+    glDebugMessageInsert(debugSourceToNative(debugSource), debugTypeToNative(debugType), 0, debugSeverityToNative(debugSeverity), -1, message);
+}
+#endif
 

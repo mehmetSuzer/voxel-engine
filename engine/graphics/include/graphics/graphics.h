@@ -54,3 +54,7 @@ void graphicsDispatchCompute(uint32_t workGroupCountX, uint32_t workGroupCountY,
 
 void graphicsMemoryBarrier(MemoryBarrierBit memoryBarrierBits);
 
+#ifndef NDEBUG
+void graphicsInsertDebugMessage(DebugSource debugSource, DebugType debugType, DebugSeverity debugSeverity, const char* message);
+#endif
+

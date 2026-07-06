@@ -530,3 +530,59 @@ uint32_t dataTypeToNative(DataType dataType)
     return GL_BYTE;
 }
 
+uint32_t debugSourceToNative(DebugSource debugSource)
+{
+    switch (debugSource)
+    {
+
+        case DebugSourceAPI:            return GL_DEBUG_SOURCE_API;
+        case DebugSourceWindowSystem:   return GL_DEBUG_SOURCE_WINDOW_SYSTEM;
+        case DebugSourceShaderCompiler: return GL_DEBUG_SOURCE_SHADER_COMPILER;
+        case DebugSourceThirdParty:     return GL_DEBUG_SOURCE_THIRD_PARTY;
+        case DebugSourceApplication:    return GL_DEBUG_SOURCE_APPLICATION;
+        case DebugSourceOther:          return GL_DEBUG_SOURCE_OTHER;
+    }
+
+    logError("ENUMS", "invalid debug source");
+    assert(0);
+
+    return GL_DEBUG_SOURCE_API;
+}
+
+uint32_t debugTypeToNative(DebugType debugType)
+{
+    switch (debugType)
+    {
+        case DebugTypeError:               return GL_DEBUG_TYPE_ERROR;
+        case DebugTypeDeprecatedBehaviour: return GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR;
+        case DebugTypeUndefinedBehaviour:  return GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR;
+        case DebugTypePortability:         return GL_DEBUG_TYPE_PORTABILITY;
+        case DebugTypePerformance:         return GL_DEBUG_TYPE_PERFORMANCE;
+        case DebugTypeMarker:              return GL_DEBUG_TYPE_MARKER;
+        case DebugTypePushGroup:           return GL_DEBUG_TYPE_PUSH_GROUP;
+        case DebugTypePopGroup:            return GL_DEBUG_TYPE_POP_GROUP;
+        case DebugTypeOther:               return GL_DEBUG_TYPE_OTHER;
+    }
+
+    logError("ENUMS", "invalid debug type");
+    assert(0);
+
+    return GL_DEBUG_TYPE_ERROR;
+}
+
+uint32_t debugSeverityToNative(DebugSeverity debugSeverity)
+{
+    switch (debugSeverity)
+    {
+        case DebugSeverityVerbose: return GL_DEBUG_SEVERITY_NOTIFICATION;
+        case DebugSeverityInfo:    return GL_DEBUG_SEVERITY_LOW;
+        case DebugSeverityWarning: return GL_DEBUG_SEVERITY_MEDIUM;
+        case DebugSeverityError:   return GL_DEBUG_SEVERITY_HIGH;
+    }
+
+    logError("ENUMS", "invalid debug severity");
+    assert(0);
+
+    return GL_DEBUG_SEVERITY_NOTIFICATION;
+}
+

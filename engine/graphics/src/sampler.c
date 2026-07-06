@@ -1,5 +1,4 @@
 
-#include "error.h"
 #include "sampler.h"
 #include "log/log.h"
 #include "glad/glad.h"
@@ -48,7 +47,6 @@ SamplerID samplerCreate(const SamplerCreateInfo* samplerCreateInfo)
     glSamplerParameterf(samplerID, GL_TEXTURE_MAX_ANISOTROPY, samplerCreateInfo->maxAnisotropy);
 
     glSamplerParameterfv(samplerID, GL_TEXTURE_BORDER_COLOR, samplerCreateInfo->borderColour);
-    glCheckErrors();
 
     logVerbose("SAMPLER", "created: %u", samplerID);
     return samplerID;
@@ -57,7 +55,6 @@ SamplerID samplerCreate(const SamplerCreateInfo* samplerCreateInfo)
 void samplerDestroy(SamplerID samplerID)
 {
     glDeleteSamplers(1, &samplerID);
-    glCheckErrors();
     logVerbose("SAMPLER", "destroyed: %u", samplerID);
 }
 
@@ -69,14 +66,12 @@ bool samplerIsActive(SamplerID samplerID)
 void samplerBind(SamplerID samplerID, uint32_t unit)
 {
     glBindSampler(unit, samplerID);
-    glCheckErrors();
     logVerbose("SAMPLER", "binded: %u", samplerID);
 }
 
 void samplerBindMultiple(const SamplerID* samplers, uint32_t firstUnit, uint32_t count)
 {
     glBindSamplers(firstUnit, count, samplers);
-    glCheckErrors();
     for (uint32_t i = 0; i < count; ++i)
     {
         logVerbose("SAMPLER", "binded: %u", samplers[i]);

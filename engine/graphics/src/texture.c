@@ -2,7 +2,6 @@
 #include <math.h>
 #include <stddef.h>
 #include <assert.h>
-#include "error.h"
 #include "texture.h"
 #include "log/log.h"
 #include "glad/glad.h"
@@ -44,10 +43,8 @@ TextureID textureCreate(const TextureCreateInfo* textureCreateInfo)
     glTextureParameteri(textureID, GL_TEXTURE_MAG_FILTER, textureMagFilterToNative(textureCreateInfo->magFilter));
     glTextureParameterf(textureID, GL_TEXTURE_MAX_ANISOTROPY, textureCreateInfo->maxAnisotropy);
     glTextureParameterfv(textureID, GL_TEXTURE_BORDER_COLOR, textureCreateInfo->borderColour);
-    glCheckErrors();
 
     logVerbose("TEXTURE", "created with dimensions = (%i, %i, %i)", width, height, depth);
-
     return textureID;
 }
 
@@ -81,8 +78,6 @@ void textureFill(TextureID textureID, const TextureFillInfo* textureFillInfo)
     else if (target == GL_TEXTURE_1D) { glTextureSubImage2D(textureID, level, xOffset, yOffset, width, height, externalFormat, dataType, data);                 }
     else                              { glTextureSubImage3D(textureID, level, xOffset, yOffset, zOffset, width, height, depth, externalFormat, dataType, data); }
 
-    glCheckErrors();
-
     logVerbose("TEXTURE", "filled with offsets = (%i, %i, %i) and dimensions = (%i, %i, %i)", xOffset, yOffset, zOffset, width, height, depth);
 }
 
@@ -102,7 +97,6 @@ TextureID textureCreateCubeMap(const TextureCreateCubeMapInfo* textureCreateCube
     glTextureParameteri(textureID, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTextureParameteri(textureID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTextureParameterf(textureID, GL_TEXTURE_MAX_ANISOTROPY, textureCreateCubeMapInfo->maxAnisotropy);
-    glCheckErrors();
 
     logVerbose("TEXTURE", "created cube map with size = %i", size);
 }
@@ -129,7 +123,6 @@ void textureFillCubeMap(TextureID textureID, const TextureFillCubeMapInfo* textu
             glTextureSubImage3D(textureID, 0, 0, 0, face, size, size, 1, externalFormat, dataType, faceData[face]);
         }
     }
-    glCheckErrors();
 
     logVerbose("TEXTURE", "filled cube map with size = %i", size);
 }
@@ -137,7 +130,6 @@ void textureFillCubeMap(TextureID textureID, const TextureFillCubeMapInfo* textu
 void textureDestroy(TextureID textureID)
 {
     glDeleteTextures(1, &textureID);
-    glCheckErrors();
 }
 
 bool textureIsActive(TextureID textureID)
@@ -148,7 +140,6 @@ bool textureIsActive(TextureID textureID)
 void textureGenerateMipmap(TextureID textureID)
 {
     glGenerateTextureMipmap(textureID);
-    glCheckErrors();
 }
 
 void textureGetImage(TextureID textureID, const TextureGetImageInfo* textureGetImageInfo, size_t bufferSize, void* bufferOut)
@@ -166,7 +157,6 @@ void textureGetImage(TextureID textureID, const TextureGetImageInfo* textureGetI
         externalFormatToNative(textureGetImageInfo->externalFormat),
         bufferSize,
         bufferOut);
-    glCheckErrors();
 }
 
 void textureBindSampler(TextureID textureID, uint32_t unit)
@@ -174,7 +164,6 @@ void textureBindSampler(TextureID textureID, uint32_t unit)
     assert(unit < 32);
     glBindTextureUnit(unit, textureID);
     logVerbose("TEXTURE", "sampler binded: %u", textureID);
-    glCheckErrors();
 }
 
 void textureBindImage(TextureID textureID, uint32_t unit, uint32_t level, bool layered, uint32_t layer, AccessPolicy accessPolicy, ExternalFormat externalFormat)
@@ -182,7 +171,6 @@ void textureBindImage(TextureID textureID, uint32_t unit, uint32_t level, bool l
     assert(unit < 32);
     glBindImageTexture(unit, textureID, level, layered, layer, accessPolicyToNative(accessPolicy), externalFormatToNative(externalFormat));
     logVerbose("TEXTURE", "image binded: %u", textureID);
-    glCheckErrors();
 }
 
 void textureGetDimensions(TextureID textureID, int32_t level, uint32_t* widthOut, uint32_t* heightOut, uint32_t* depthOut)

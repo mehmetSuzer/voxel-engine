@@ -1,5 +1,4 @@
 
-#include "error.h"
 #include "log/log.h"
 #include "glad/glad.h"
 #include "vertex_array.h"
@@ -8,7 +7,6 @@ VertexArrayID vertexArrayCreate(void)
 {
     GLuint vertexArrayID;
     glCreateVertexArrays(1, &vertexArrayID);
-    glCheckErrors();
     logVerbose("V_ARRAY", "created: %u", vertexArrayID);
     return vertexArrayID;
 }
@@ -16,7 +14,6 @@ VertexArrayID vertexArrayCreate(void)
 void vertexArrayDestroy(VertexArrayID vertexArrayID)
 {
     glDeleteVertexArrays(1, &vertexArrayID);
-    glCheckErrors();
     logVerbose("V_ARRAY", "destroyed: %u", vertexArrayID);
 }
 
@@ -28,21 +25,18 @@ bool vertexArrayIsActive(VertexArrayID vertexArrayID)
 void vertexArrayBind(VertexArrayID vertexArrayID)
 {
     glBindVertexArray(vertexArrayID);
-    glCheckErrors();
     logVerbose("V_ARRAY", "binded: %u", vertexArrayID);
 }
 
 void vertexArraySetVertexBuffer(VertexArrayID vertexArrayID, uint32_t bindingIndex, BufferID vertexBufferID, uint32_t offset, uint32_t stride)
 {
     glVertexArrayVertexBuffer(vertexArrayID, bindingIndex, vertexBufferID, offset, stride);
-    glCheckErrors();
     logVerbose("V_ARRAY", "set vertex buffer %u for %u", vertexBufferID, vertexArrayID);
 }
 
 void vertexArraySetElementBuffer(VertexArrayID vertexArrayID, BufferID elementBufferID)
 {
     glVertexArrayElementBuffer(vertexArrayID, elementBufferID);
-    glCheckErrors();
     logVerbose("V_ARRAY", "set element buffer %u for %u", elementBufferID, vertexArrayID);
 }
 
