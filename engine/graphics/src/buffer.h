@@ -54,8 +54,8 @@ bool bufferUnmap(BufferID bufferID);
 void bufferFlushMappedRange(BufferID bufferID, size_t offset, size_t length);
 
 bool bufferIsMapped(BufferID bufferID);
-int64_t bufferGetSize(BufferID bufferID);
-int64_t bufferGetMapOffset(BufferID bufferID);
-int64_t bufferGetMapLength(BufferID bufferID);
+size_t bufferGetSize(BufferID bufferID);
+size_t bufferGetMapOffset(BufferID bufferID);
+size_t bufferGetMapLength(BufferID bufferID);
 void* bufferGetMapPointer(BufferID bufferID);
 

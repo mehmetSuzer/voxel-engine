@@ -1,23 +1,27 @@
 
+#include <stddef.h>
+#include <assert.h>
 #include "sampler.h"
 #include "log/log.h"
 #include "glad/glad.h"
 
 void samplerGetDefaultCreateInfo(SamplerCreateInfo* samplerCreateInfoOut)
 {
+    assert(samplerCreateInfoOut != NULL);
+
     samplerCreateInfoOut->textureWrapS = TextureWrapRepeat;
     samplerCreateInfoOut->textureWrapT = TextureWrapRepeat;
     samplerCreateInfoOut->textureWrapR = TextureWrapRepeat;
 
-    samplerCreateInfoOut->textureMinFilter = TextureMinFilterNearestMipmapLinear;
+    samplerCreateInfoOut->textureMinFilter = TextureMinFilterLinearMipmapLinear;
     samplerCreateInfoOut->textureMagFilter = TextureMagFilterLinear;
 
     samplerCreateInfoOut->compareMode = CompareModeNone;
-    samplerCreateInfoOut->compareFunc = CompareFuncLessEqual;
+    samplerCreateInfoOut->compareFunction = CompareFunctionLessEqual;
 
-    samplerCreateInfoOut->minLOD = -1000.0f;
-    samplerCreateInfoOut->maxLOD =  1000.0f;
-    samplerCreateInfoOut->biasLOD = 0.0f;
+    samplerCreateInfoOut->minLevelOfDetail = -1000.0f;
+    samplerCreateInfoOut->maxLevelOfDetail = 1000.0f;
+    samplerCreateInfoOut->biasLevelOfDetail = 0.0f;
     samplerCreateInfoOut->maxAnisotropy = 1.0f;
 
     samplerCreateInfoOut->borderColour[0] = 0.0f;
@@ -28,7 +32,9 @@ void samplerGetDefaultCreateInfo(SamplerCreateInfo* samplerCreateInfoOut)
 
 SamplerID samplerCreate(const SamplerCreateInfo* samplerCreateInfo)
 { 
-    GLuint samplerID;
+    assert(samplerCreateInfo != NULL);
+    
+    GLuint samplerID = 0;
     glCreateSamplers(1, &samplerID);
 
     glSamplerParameteri(samplerID, GL_TEXTURE_WRAP_S, textureWrapToNative(samplerCreateInfo->textureWrapS));
@@ -39,11 +45,11 @@ SamplerID samplerCreate(const SamplerCreateInfo* samplerCreateInfo)
     glSamplerParameteri(samplerID, GL_TEXTURE_MAG_FILTER, textureMagFilterToNative(samplerCreateInfo->textureMagFilter));
 
     glSamplerParameteri(samplerID, GL_TEXTURE_COMPARE_MODE, compareModeToNative(samplerCreateInfo->compareMode));
-    glSamplerParameteri(samplerID, GL_TEXTURE_COMPARE_FUNC, compareFuncToNative(samplerCreateInfo->compareFunc));
+    glSamplerParameteri(samplerID, GL_TEXTURE_COMPARE_FUNC, compareFunctionToNative(samplerCreateInfo->compareFunction));
 
-    glSamplerParameterf(samplerID, GL_TEXTURE_MIN_LOD, samplerCreateInfo->minLOD);
-    glSamplerParameterf(samplerID, GL_TEXTURE_MAX_LOD, samplerCreateInfo->maxLOD);
-    glSamplerParameterf(samplerID, GL_TEXTURE_LOD_BIAS, samplerCreateInfo->biasLOD);
+    glSamplerParameterf(samplerID, GL_TEXTURE_MIN_LOD, samplerCreateInfo->minLevelOfDetail);
+    glSamplerParameterf(samplerID, GL_TEXTURE_MAX_LOD, samplerCreateInfo->maxLevelOfDetail);
+    glSamplerParameterf(samplerID, GL_TEXTURE_LOD_BIAS, samplerCreateInfo->biasLevelOfDetail);
     glSamplerParameterf(samplerID, GL_TEXTURE_MAX_ANISOTROPY, samplerCreateInfo->maxAnisotropy);
 
     glSamplerParameterfv(samplerID, GL_TEXTURE_BORDER_COLOR, samplerCreateInfo->borderColour);
@@ -66,15 +72,6 @@ bool samplerIsActive(SamplerID samplerID)
 void samplerBind(SamplerID samplerID, uint32_t unit)
 {
     glBindSampler(unit, samplerID);
-    logVerbose("SAMPLER", "binded: %u", samplerID);
-}
-
-void samplerBindMultiple(const SamplerID* samplers, uint32_t firstUnit, uint32_t count)
-{
-    glBindSamplers(firstUnit, count, samplers);
-    for (uint32_t i = 0; i < count; ++i)
-    {
-        logVerbose("SAMPLER", "binded: %u", samplers[i]);
-    }
+    logVerbose("SAMPLER", "sampler %u is bound to unit %u", samplerID, unit);
 }
 

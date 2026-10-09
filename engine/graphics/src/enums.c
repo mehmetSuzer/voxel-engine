@@ -4,30 +4,30 @@
 #include "glad/glad.h"
 #include "graphics/enums.h"
 
-uint32_t capabilityToNative(Capability capability)
+uint32_t graphicsCapabilityToNative(GraphicsCapability graphicsCapability)
 {
-    switch (capability)
+    switch (graphicsCapability)
     {
-        case CapabilityDepthTest:             return GL_DEPTH_TEST;
-        case CapabilityStencilTest:           return GL_STENCIL_TEST;
-        case CapabilityScissorTest:           return GL_SCISSOR_TEST;
-        case CapabilityBlend:                 return GL_BLEND;
-        case CapabilityCullFace:              return GL_CULL_FACE;
-        case CapabilityDither:                return GL_DITHER;
-        case CapabilityMultisample:           return GL_MULTISAMPLE;
-        case CapabilitySampleAlphaToCoverage: return GL_SAMPLE_ALPHA_TO_COVERAGE;
-        case CapabilitySampleAlphaToOne:      return GL_SAMPLE_ALPHA_TO_ONE;
-        case CapabilitySampleCoverage:        return GL_SAMPLE_COVERAGE;
-        case CapabilityDepthClamp:            return GL_DEPTH_CLAMP;
-        case CapabilityPolygonOffsetPoint:    return GL_POLYGON_OFFSET_POINT;
-        case CapabilityPolygonOffsetLine:     return GL_POLYGON_OFFSET_LINE;
-        case CapabilityPolygonOffsetFill:     return GL_POLYGON_OFFSET_FILL;
-        case CapabilityProgramPointSize:      return GL_PROGRAM_POINT_SIZE;
-        case CapabilityFramebufferSRGB:       return GL_FRAMEBUFFER_SRGB;
-        case CapabilityPrimitiveRestart:      return GL_PRIMITIVE_RESTART;
+        case GraphicsCapabilityDepthTest:             return GL_DEPTH_TEST;
+        case GraphicsCapabilityStencilTest:           return GL_STENCIL_TEST;
+        case GraphicsCapabilityScissorTest:           return GL_SCISSOR_TEST;
+        case GraphicsCapabilityBlend:                 return GL_BLEND;
+        case GraphicsCapabilityCullFace:              return GL_CULL_FACE;
+        case GraphicsCapabilityDither:                return GL_DITHER;
+        case GraphicsCapabilityMultisample:           return GL_MULTISAMPLE;
+        case GraphicsCapabilitySampleAlphaToCoverage: return GL_SAMPLE_ALPHA_TO_COVERAGE;
+        case GraphicsCapabilitySampleAlphaToOne:      return GL_SAMPLE_ALPHA_TO_ONE;
+        case GraphicsCapabilitySampleCoverage:        return GL_SAMPLE_COVERAGE;
+        case GraphicsCapabilityDepthClamp:            return GL_DEPTH_CLAMP;
+        case GraphicsCapabilityPolygonOffsetPoint:    return GL_POLYGON_OFFSET_POINT;
+        case GraphicsCapabilityPolygonOffsetLine:     return GL_POLYGON_OFFSET_LINE;
+        case GraphicsCapabilityPolygonOffsetFill:     return GL_POLYGON_OFFSET_FILL;
+        case GraphicsCapabilityProgramPointSize:      return GL_PROGRAM_POINT_SIZE;
+        case GraphicsCapabilityFramebufferSRGB:       return GL_FRAMEBUFFER_SRGB;
+        case GraphicsCapabilityPrimitiveRestart:      return GL_PRIMITIVE_RESTART;
     }
 
-    logError("ENUMS", "invalid capability");
+    logError("ENUMS", "invalid graphics capability");
     assert(0);
 
     return GL_DEPTH_TEST;
@@ -35,12 +35,13 @@ uint32_t capabilityToNative(Capability capability)
 
 uint32_t bufferBitsToNative(BufferBit bufferBits)
 {
-    uint32_t native = 0;
-    if (bufferBits & BufferBitColour  != 0) { native |= GL_COLOR_BUFFER_BIT;   }
-    if (bufferBits & BufferBitDepth   != 0) { native |= GL_DEPTH_BUFFER_BIT;   }
-    if (bufferBits & BufferBitStencil != 0) { native |= GL_STENCIL_BUFFER_BIT; }
+    uint32_t bufferBitsNative = 0;
 
-    if (native == 0)
+    if (bufferBits & BufferBitColour)  { bufferBitsNative |= GL_COLOR_BUFFER_BIT;   }
+    if (bufferBits & BufferBitDepth)   { bufferBitsNative |= GL_DEPTH_BUFFER_BIT;   }
+    if (bufferBits & BufferBitStencil) { bufferBitsNative |= GL_STENCIL_BUFFER_BIT; }
+
+    if (bufferBits != 0 && bufferBitsNative == 0)
     {
         logError("ENUMS", "invalid buffer bits");
         assert(0);
@@ -48,7 +49,7 @@ uint32_t bufferBitsToNative(BufferBit bufferBits)
         return GL_COLOR_BUFFER_BIT;
     }
     
-    return native;
+    return bufferBitsNative;
 }
 
 int32_t textureWrapToNative(TextureWrap textureWrap)
@@ -90,8 +91,8 @@ int32_t textureMagFilterToNative(TextureMagFilter textureMagFilter)
 {
     switch (textureMagFilter)
     {
-        case TextureMagFilterNearest:  return GL_NEAREST;
-        case TextureMagFilterLinear:   return GL_LINEAR;
+        case TextureMagFilterNearest: return GL_NEAREST;
+        case TextureMagFilterLinear:  return GL_LINEAR;
     }
 
     logWarning("ENUMS", "invalid texture mag filter");
@@ -114,21 +115,21 @@ int32_t compareModeToNative(CompareMode compareMode)
     return GL_NONE;
 }
 
-uint32_t compareFuncToNative(CompareFunc compareFunc)
+uint32_t compareFunctionToNative(CompareFunction compareFunction)
 {
-    switch (compareFunc)
+    switch (compareFunction)
     {
-        case CompareFuncNever:        return GL_NEVER;
-        case CompareFuncEqual:        return GL_EQUAL;
-        case CompareFuncLess:         return GL_LESS;
-        case CompareFuncLessEqual:    return GL_LEQUAL;
-        case CompareFuncGreater:      return GL_GREATER;
-        case CompareFuncGreaterEqual: return GL_GEQUAL;
-        case CompareFuncNotEqual:     return GL_NOTEQUAL;
-        case CompareFuncAlways:       return GL_ALWAYS;
+        case CompareFunctionNever:        return GL_NEVER;
+        case CompareFunctionEqual:        return GL_EQUAL;
+        case CompareFunctionLess:         return GL_LESS;
+        case CompareFunctionLessEqual:    return GL_LEQUAL;
+        case CompareFunctionGreater:      return GL_GREATER;
+        case CompareFunctionGreaterEqual: return GL_GEQUAL;
+        case CompareFunctionNotEqual:     return GL_NOTEQUAL;
+        case CompareFunctionAlways:       return GL_ALWAYS;
     }
 
-    logError("ENUMS", "invalid compare func");
+    logError("ENUMS", "invalid compare function");
     assert(0);
 
     return GL_NEVER;
@@ -263,24 +264,25 @@ uint32_t drawModeToNative(DrawMode drawMode)
 
 uint32_t memoryBarrierBitsToNative(MemoryBarrierBit memoryBarrierBits)
 {
-    uint32_t native = 0;
-    if (memoryBarrierBits & MemoryBarrierBitVertexAttributeArray != 0) { native |= GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT;  } 
-    if (memoryBarrierBits & MemoryBarrierBitElementArray         != 0) { native |= GL_ELEMENT_ARRAY_BARRIER_BIT;        }       
-    if (memoryBarrierBits & MemoryBarrierBitUniform              != 0) { native |= GL_UNIFORM_BARRIER_BIT;              }
-    if (memoryBarrierBits & MemoryBarrierBitTextureFetch         != 0) { native |= GL_TEXTURE_FETCH_BARRIER_BIT;        }
-    if (memoryBarrierBits & MemoryBarrierBitShaderImageAccess    != 0) { native |= GL_SHADER_IMAGE_ACCESS_BARRIER_BIT;  }
-    if (memoryBarrierBits & MemoryBarrierBitCommand              != 0) { native |= GL_COMMAND_BARRIER_BIT;              }
-    if (memoryBarrierBits & MemoryBarrierBitPixelBuffer          != 0) { native |= GL_PIXEL_BUFFER_BARRIER_BIT;         }
-    if (memoryBarrierBits & MemoryBarrierBitTextureUpdate        != 0) { native |= GL_TEXTURE_UPDATE_BARRIER_BIT;       }
-    if (memoryBarrierBits & MemoryBarrierBitBufferUpdate         != 0) { native |= GL_BUFFER_UPDATE_BARRIER_BIT;        }
-    if (memoryBarrierBits & MemoryBarrierBitFramebuffer          != 0) { native |= GL_FRAMEBUFFER_BARRIER_BIT;          }
-    if (memoryBarrierBits & MemoryBarrierBitTransformFeedback    != 0) { native |= GL_TRANSFORM_FEEDBACK_BARRIER_BIT;   }
-    if (memoryBarrierBits & MemoryBarrierBitAtomicCounter        != 0) { native |= GL_ATOMIC_COUNTER_BARRIER_BIT;       }
-    if (memoryBarrierBits & MemoryBarrierBitShaderStorage        != 0) { native |= GL_SHADER_STORAGE_BARRIER_BIT;       }
-    if (memoryBarrierBits & MemoryBarrierBitClientMappedBuffer   != 0) { native |= GL_CLIENT_MAPPED_BUFFER_BARRIER_BIT; }
-    if (memoryBarrierBits & MemoryBarrierBitQueryBuffer          != 0) { native |= GL_QUERY_BUFFER_BARRIER_BIT;         }
+    uint32_t memoryBarrierBitsNative = 0;
 
-    if (native == 0)
+    if (memoryBarrierBits & MemoryBarrierBitVertexAttributeArray) { memoryBarrierBitsNative |= GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT;  } 
+    if (memoryBarrierBits & MemoryBarrierBitElementArray)         { memoryBarrierBitsNative |= GL_ELEMENT_ARRAY_BARRIER_BIT;        }       
+    if (memoryBarrierBits & MemoryBarrierBitUniform)              { memoryBarrierBitsNative |= GL_UNIFORM_BARRIER_BIT;              }
+    if (memoryBarrierBits & MemoryBarrierBitTextureFetch)         { memoryBarrierBitsNative |= GL_TEXTURE_FETCH_BARRIER_BIT;        }
+    if (memoryBarrierBits & MemoryBarrierBitShaderImageAccess)    { memoryBarrierBitsNative |= GL_SHADER_IMAGE_ACCESS_BARRIER_BIT;  }
+    if (memoryBarrierBits & MemoryBarrierBitCommand)              { memoryBarrierBitsNative |= GL_COMMAND_BARRIER_BIT;              }
+    if (memoryBarrierBits & MemoryBarrierBitPixelBuffer)          { memoryBarrierBitsNative |= GL_PIXEL_BUFFER_BARRIER_BIT;         }
+    if (memoryBarrierBits & MemoryBarrierBitTextureUpdate)        { memoryBarrierBitsNative |= GL_TEXTURE_UPDATE_BARRIER_BIT;       }
+    if (memoryBarrierBits & MemoryBarrierBitBufferUpdate)         { memoryBarrierBitsNative |= GL_BUFFER_UPDATE_BARRIER_BIT;        }
+    if (memoryBarrierBits & MemoryBarrierBitFramebuffer)          { memoryBarrierBitsNative |= GL_FRAMEBUFFER_BARRIER_BIT;          }
+    if (memoryBarrierBits & MemoryBarrierBitTransformFeedback)    { memoryBarrierBitsNative |= GL_TRANSFORM_FEEDBACK_BARRIER_BIT;   }
+    if (memoryBarrierBits & MemoryBarrierBitAtomicCounter)        { memoryBarrierBitsNative |= GL_ATOMIC_COUNTER_BARRIER_BIT;       }
+    if (memoryBarrierBits & MemoryBarrierBitShaderStorage)        { memoryBarrierBitsNative |= GL_SHADER_STORAGE_BARRIER_BIT;       }
+    if (memoryBarrierBits & MemoryBarrierBitClientMappedBuffer)   { memoryBarrierBitsNative |= GL_CLIENT_MAPPED_BUFFER_BARRIER_BIT; }
+    if (memoryBarrierBits & MemoryBarrierBitQueryBuffer)          { memoryBarrierBitsNative |= GL_QUERY_BUFFER_BARRIER_BIT;         }
+
+    if (memoryBarrierBits != 0 && memoryBarrierBitsNative == 0)
     {
         logError("ENUMS", "invalid memory barrier bits");
         assert(0);
@@ -288,7 +290,7 @@ uint32_t memoryBarrierBitsToNative(MemoryBarrierBit memoryBarrierBits)
         return GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT;
     }
     
-    return native;
+    return memoryBarrierBitsNative;
 }
 
 uint32_t accessPolicyToNative(AccessPolicy accessPolicy)
@@ -329,20 +331,16 @@ uint32_t bufferUsageToNative(BufferUsage bufferUsage)
 
 uint32_t bufferStorageBitsToNative(BufferStorageBit bufferStorageBits)
 {
-    if (bufferStorageBits == 0)
-    {
-        return 0;
-    }
+    uint32_t bufferStorageBitsNative = 0;
 
-    uint32_t native = 0;
-    if (bufferStorageBits & BufferStorageBitMapRead        != 0) { native |= GL_MAP_READ_BIT;        }
-    if (bufferStorageBits & BufferStorageBitMapWrite       != 0) { native |= GL_MAP_WRITE_BIT;       }
-    if (bufferStorageBits & BufferStorageBitMapPersistent  != 0) { native |= GL_MAP_PERSISTENT_BIT;  }
-    if (bufferStorageBits & BufferStorageBitMapCoherent    != 0) { native |= GL_MAP_COHERENT_BIT;    }
-    if (bufferStorageBits & BufferStorageBitDynamicStorage != 0) { native |= GL_DYNAMIC_STORAGE_BIT; }
-    if (bufferStorageBits & BufferStorageBitClientStorage  != 0) { native |= GL_CLIENT_STORAGE_BIT;  }
+    if (bufferStorageBits & BufferStorageBitMapRead)        { bufferStorageBitsNative |= GL_MAP_READ_BIT;        }
+    if (bufferStorageBits & BufferStorageBitMapWrite)       { bufferStorageBitsNative |= GL_MAP_WRITE_BIT;       }
+    if (bufferStorageBits & BufferStorageBitMapPersistent)  { bufferStorageBitsNative |= GL_MAP_PERSISTENT_BIT;  }
+    if (bufferStorageBits & BufferStorageBitMapCoherent)    { bufferStorageBitsNative |= GL_MAP_COHERENT_BIT;    }
+    if (bufferStorageBits & BufferStorageBitDynamicStorage) { bufferStorageBitsNative |= GL_DYNAMIC_STORAGE_BIT; }
+    if (bufferStorageBits & BufferStorageBitClientStorage)  { bufferStorageBitsNative |= GL_CLIENT_STORAGE_BIT;  }
 
-    if (native == 0)
+    if (bufferStorageBits != 0 && bufferStorageBitsNative == 0)
     {
         logError("ENUMS", "invalid buffer storage bits");
         assert(0);
@@ -350,22 +348,23 @@ uint32_t bufferStorageBitsToNative(BufferStorageBit bufferStorageBits)
         return GL_MAP_READ_BIT;
     }
 
-    return native;
+    return bufferStorageBitsNative;
 }
 
 uint32_t bufferMapBitsToNative(BufferMapBit bufferMapBits)
 {
-    uint32_t native = 0;
-    if (bufferMapBits & BufferMapBitRead             != 0) { native |= GL_MAP_READ_BIT;              }
-    if (bufferMapBits & BufferMapBitWrite            != 0) { native |= GL_MAP_WRITE_BIT;             }
-    if (bufferMapBits & BufferMapBitInvalidateRange  != 0) { native |= GL_MAP_INVALIDATE_RANGE_BIT;  }
-    if (bufferMapBits & BufferMapBitInvalidateBuffer != 0) { native |= GL_MAP_INVALIDATE_BUFFER_BIT; }
-    if (bufferMapBits & BufferMapBitFlushExplicit    != 0) { native |= GL_MAP_FLUSH_EXPLICIT_BIT;    }
-    if (bufferMapBits & BufferMapBitUnsynchronised   != 0) { native |= GL_MAP_UNSYNCHRONIZED_BIT;    }
-    if (bufferMapBits & BufferMapBitPersistent       != 0) { native |= GL_MAP_PERSISTENT_BIT;        }
-    if (bufferMapBits & BufferMapBitCoherent         != 0) { native |= GL_MAP_COHERENT_BIT;          }
+    uint32_t bufferMapBitsNative = 0;
 
-    if (native == 0)
+    if (bufferMapBits & BufferMapBitRead)             { bufferMapBitsNative |= GL_MAP_READ_BIT;              }
+    if (bufferMapBits & BufferMapBitWrite)            { bufferMapBitsNative |= GL_MAP_WRITE_BIT;             }
+    if (bufferMapBits & BufferMapBitInvalidateRange)  { bufferMapBitsNative |= GL_MAP_INVALIDATE_RANGE_BIT;  }
+    if (bufferMapBits & BufferMapBitInvalidateBuffer) { bufferMapBitsNative |= GL_MAP_INVALIDATE_BUFFER_BIT; }
+    if (bufferMapBits & BufferMapBitFlushExplicit)    { bufferMapBitsNative |= GL_MAP_FLUSH_EXPLICIT_BIT;    }
+    if (bufferMapBits & BufferMapBitUnsynchronised)   { bufferMapBitsNative |= GL_MAP_UNSYNCHRONIZED_BIT;    }
+    if (bufferMapBits & BufferMapBitPersistent)       { bufferMapBitsNative |= GL_MAP_PERSISTENT_BIT;        }
+    if (bufferMapBits & BufferMapBitCoherent)         { bufferMapBitsNative |= GL_MAP_COHERENT_BIT;          }
+
+    if (bufferMapBits != 0 && bufferMapBitsNative == 0)
     {
         logError("ENUMS", "invalid buffer map bits");
         assert(0);
@@ -373,7 +372,7 @@ uint32_t bufferMapBitsToNative(BufferMapBit bufferMapBits)
         return GL_MAP_READ_BIT;
     }
 
-    return native;
+    return bufferMapBitsNative;
 }
 
 uint32_t bufferTargetToNative(BufferTarget bufferTarget)
@@ -534,7 +533,6 @@ uint32_t debugSourceToNative(DebugSource debugSource)
 {
     switch (debugSource)
     {
-
         case DebugSourceAPI:            return GL_DEBUG_SOURCE_API;
         case DebugSourceWindowSystem:   return GL_DEBUG_SOURCE_WINDOW_SYSTEM;
         case DebugSourceShaderCompiler: return GL_DEBUG_SOURCE_SHADER_COMPILER;

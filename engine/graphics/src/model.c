@@ -21,6 +21,8 @@ static ModelArray modelArray = {0};
 
 static ModelID modelArrayPush(const Model* model)
 {
+    assert(model != NULL);
+
     ModelID modelID = 0;
     while (modelID < modelArray.size && modelArray.data[modelID].active) 
     { 
@@ -51,10 +53,11 @@ static ModelID modelArrayPush(const Model* model)
 
 ModelID modelCreate(const MeshMaterialPair* meshMaterialPairs, uint32_t meshMaterialPairCount)
 {
-    Model model;
-    model.active = true;
+    assert(meshMaterialPairs != NULL && meshMaterialPairCount != 0);
+    Model model = {0};
     model.meshMaterialPairCount = meshMaterialPairCount;
     memcpy(model.meshMaterialPairs, meshMaterialPairs, meshMaterialPairCount * sizeof(MeshMaterialPair));
+    model.active = true;
 
     const ModelID modelID = modelArrayPush(&model);
     return modelID;
@@ -62,6 +65,7 @@ ModelID modelCreate(const MeshMaterialPair* meshMaterialPairs, uint32_t meshMate
 
 void modelDestroy(ModelID modelID)
 {
+    assert(modelID < modelArray.size);
     Model* model = &modelArray.data[modelID];
     *model = (Model){0};
 }
@@ -73,6 +77,7 @@ bool modelIsActive(ModelID modelID)
 
 void modelDraw(ModelID modelID)
 {
+    assert(modelID < modelArray.size);
     const Model* model = &modelArray.data[modelID];
     for (uint32_t i = 0; i < model->meshMaterialPairCount; ++i)
     {

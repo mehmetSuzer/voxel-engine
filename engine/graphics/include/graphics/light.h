@@ -7,8 +7,8 @@ typedef struct PointLight
 {
     vec3 colour;
     vec3 position;
-    float quadratic;
-    float linear;
+    float linearCoef;
+    float quadraticCoef;
 } PointLight;
 
 typedef struct DirectionalLight
@@ -23,8 +23,8 @@ typedef struct SpotLight
     vec3 colour;
     vec3 position;
     vec3 direction;
-    float quadratic;
-    float linear;
+    float linearCoef;
+    float quadraticCoef;
     float cosInnerCutOff;
     float cosOuterCutOff;
 } SpotLight;

@@ -4,7 +4,7 @@
 #include "mesh.h"
 #include "material.h"
 
-#define MODEL_MAX_MESH_MATERIAL_COUNT 4
+#define MODEL_MAX_MESH_MATERIAL_COUNT 4U
 
 typedef struct MeshMaterialPair
 {

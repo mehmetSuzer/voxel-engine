@@ -1,69 +1,70 @@
 
+#include "utils/macros.h"
 #include "log/log.h"
 #include "glad/glad.h"
 #include "graphics/graphics.h"
 
 typedef struct HardwareCapabilityState
 {
-    int32_t maxViewportCount;
-    ivec2 maxViewportDimensions;
+    GLint maxViewportCount;
+    GLint maxViewportDimensions[2];
 
-    int32_t maxVertexAttributeCount;
-    int32_t maxElementsIndexCount;
-    int32_t maxElementsVertexCount;
+    GLint maxVertexAttributeCount;
+    GLint maxElementsIndexCount;
+    GLint maxElementsVertexCount;
 
-    int32_t maxSampleCount;
-    int32_t maxDrawBufferCount;
-    int32_t maxColourAttachmentCount;
+    GLint maxMSAASampleCount;
+    GLint maxDrawBufferCount;
+    GLint maxColourAttachmentCount;
 
-    int32_t maxTextureSize;
-    int32_t max3DTextureSize;
-    int32_t maxTextureImageUnitCount;
-    int32_t maxCombinedTextureImageUnitCount;
-    float maxTextureMaxAnisotropy;
+    GLint maxTextureSize;
+    GLint max3DTextureSize;
+    GLint maxTextureImageUnitCount;
+    GLint maxCombinedTextureImageUnitCount;
+    GLfloat maxTextureMaxAnisotropy;
 
-    int32_t maxUniformBlockSize;
-    int32_t maxShaderStorageBlockSize;
+    GLint maxUniformBlockSize;
+    GLint maxShaderStorageBlockSize;
 
-    int32_t maxUniformBufferBindingCount;
-    int32_t maxShaderStorageBufferBindingCount;
+    GLint maxUniformBufferBindingCount;
+    GLint maxShaderStorageBufferBindingCount;
 
-    int32_t uniformBufferOffsetAlignment;
-    int32_t shaderStorageBufferOffsetAlignment;
+    GLint uniformBufferOffsetAlignment;
+    GLint shaderStorageBufferOffsetAlignment;
 
-    int32_t maxDebugMessageLength;
-    int32_t maxDebugLoggedMessageCount;
-    int32_t maxDebugGroupStackDepth;
+    GLint maxDebugMessageLength;
+    GLint maxDebugLoggedMessageCount;
+    GLint maxDebugGroupStackDepth;
 
-    ivec3 maxComputeWorkGroupCount;
-    ivec3 maxComputeWorkGroupSize;
-    int32_t maxComputeWorkGroupInvocationCount;
-    int32_t maxComputeSharedMemorySize;
+    GLint maxComputeWorkGroupCount[3];
+    GLint maxComputeWorkGroupSize[3];
+    GLint maxComputeWorkGroupInvocationCount;
+    GLint maxComputeSharedMemorySize;
 } HardwareCapabilityState;
 
-typedef struct Rectangle
+typedef struct ViewportState
 {
-    int32_t x;
-    int32_t y;
-    int32_t width;
-    int32_t height;
-} Rectangle;
+    GLint x;
+    GLint y;
+    GLsizei width;
+    GLsizei height;
+} ViewportState;
 
 typedef struct DepthTestState
 {
     bool enabled;
-    bool writeEnabled;
-    float near;
-    float far;
-    CompareFunc compareFunc;
+    GLboolean writeEnabled;
+    GLfloat near;
+    GLfloat far;
+    CompareFunction compareFunction;
 } DepthTestState;
 
 typedef struct StencilTestFaceState
 {
-    CompareFunc compareFunc;
-    int32_t reference;
-    uint32_t testMask;
-    uint32_t writeMask;
+    CompareFunction compareFunction;
+    GLint reference;
+    GLuint testMask;
+    GLuint writeMask;
     StencilOperation stencilFail;
     StencilOperation depthFail;
     StencilOperation depthPass;
@@ -79,7 +80,10 @@ typedef struct StencilTestState
 typedef struct ScissorTestState
 {
     bool enabled;
-    Rectangle rectangle;
+    GLint x;
+    GLint y;
+    GLsizei width;
+    GLsizei height;
 } ScissorTestState;
 
 typedef struct BlendState
@@ -91,7 +95,7 @@ typedef struct BlendState
     BlendFactor dstAlpha;
     BlendEquation equationRGB;
     BlendEquation equationAlpha;
-    vec4 colour;
+    GLfloat colour[4];
 } BlendState;
 
 typedef struct CullFaceState
@@ -109,7 +113,7 @@ typedef struct DitherState
 typedef struct MultisampleState
 {
     bool enabled;
-    int32_t samples;
+    GLint samples;
 } MultisampleState;
 
 typedef struct SampleAlphaToCoverageState
@@ -125,8 +129,8 @@ typedef struct SampleAlphaToOneState
 typedef struct SampleCoverageState
 {
     bool enabled;
-    bool invert;
-    float coverage;
+    GLboolean invert;
+    GLfloat coverage;
 } SampleCoverageState;
 
 typedef struct DepthClampState
@@ -139,14 +143,14 @@ typedef struct PolygonOffsetState
     bool pointEnabled;
     bool lineEnabled;
     bool fillEnabled;
-    float factor;
-    float units;
+    GLfloat factor;
+    GLfloat units;
 } PolygonOffsetState;
 
 typedef struct ProgramPointSizeState
 {
     bool enabled;
-    float size;
+    GLfloat size;
 } ProgramPointSizeState;
 
 typedef struct FramebufferSRGBState
@@ -157,7 +161,7 @@ typedef struct FramebufferSRGBState
 typedef struct PrimitiveRestartState
 {
     bool enabled;
-    uint32_t restartIndex;
+    GLuint restartIndex;
 } PrimitiveRestartState;
 
 typedef struct PolygonFaceState
@@ -173,15 +177,15 @@ typedef struct PolygonState
 
 typedef struct ClearState
 {
-    vec4 colour;
-    float depth;
-    int32_t stencil;
+    GLfloat colour[4];
+    GLdouble depth;
+    GLint stencil;
 } ClearState;
 
 typedef struct GraphicsState
 {
     HardwareCapabilityState hardwareCapability;
-    Rectangle viewport;
+    ViewportState viewport;
     DepthTestState depthTest;
     StencilTestState stencilTest;
     ScissorTestState scissorTest;
@@ -203,18 +207,23 @@ typedef struct GraphicsState
 
 static GraphicsState graphicsState = {
     .hardwareCapability = {0},
-    .viewport = {0, 0, 0, 0},
+    .viewport = {
+        .x = 0, 
+        .y = 0, 
+        .width = 0, 
+        .height = 0,
+    },
     .depthTest = {
         .enabled = false,
-        .writeEnabled = true,
+        .writeEnabled = GL_TRUE,
         .near = 0.0f,
         .far  = 1.0f,
-        .compareFunc = CompareFuncLess,
+        .compareFunction = CompareFunctionLess,
     },
     .stencilTest = {
         .enabled = false,
         .front = {
-            .compareFunc = CompareFuncAlways,
+            .compareFunction = CompareFunctionAlways,
             .reference = 0,
             .testMask = 0xFFFFFFFF,
             .writeMask = 0xFFFFFFFF,
@@ -223,7 +232,7 @@ static GraphicsState graphicsState = {
             .depthPass   = StencilOperationKeep,
         },
         .back = {
-            .compareFunc = CompareFuncAlways,
+            .compareFunction = CompareFunctionAlways,
             .reference = 0,
             .testMask = 0xFFFFFFFF,
             .writeMask = 0xFFFFFFFF,
@@ -234,7 +243,10 @@ static GraphicsState graphicsState = {
     },
     .scissorTest = {
         .enabled = false,
-        .rectangle = {0, 0, 0, 0},
+        .x = 0, 
+        .y = 0, 
+        .width = 0, 
+        .height = 0,
     },
     .blend = {
         .enabled = false,
@@ -266,7 +278,7 @@ static GraphicsState graphicsState = {
     },
     .sampleCoverage = {
         .enabled = false,
-        .invert = false,
+        .invert = GL_FALSE,
         .coverage = 1.0f,
     },
     .depthClamp = {
@@ -306,53 +318,42 @@ static GraphicsState graphicsState = {
     },
 };
 
-static const char* debugSourceStringFromNative(GLenum debugSource)
+static void APIENTRY debugMessageCallback(
+    GLenum debugSourceNative, 
+    GLenum debugTypeNative, 
+    unsigned int debugID, 
+    GLenum debugSeverity, 
+    GLsizei messageLength, 
+    const char* message, 
+    const void* userParameters)
 {
-    switch (debugSource)
+    UNUSED(messageLength); UNUSED(userParameters);
+
+    const char* debugSource =
+        (debugSourceNative == GL_DEBUG_SOURCE_API)             ? "API"             :
+        (debugSourceNative == GL_DEBUG_SOURCE_WINDOW_SYSTEM)   ? "window system"   :
+        (debugSourceNative == GL_DEBUG_SOURCE_SHADER_COMPILER) ? "shader compiler" :
+        (debugSourceNative == GL_DEBUG_SOURCE_THIRD_PARTY)     ? "third party"     :
+        (debugSourceNative == GL_DEBUG_SOURCE_APPLICATION)     ? "application"     :
+        (debugSourceNative == GL_DEBUG_SOURCE_OTHER)           ? "other"           : "unknown source";
+
+    const char* debugType =
+        (debugTypeNative == GL_DEBUG_TYPE_ERROR)               ? "error"                :
+        (debugTypeNative == GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR) ? "deprecated behaviour" :
+        (debugTypeNative == GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR)  ? "undefined behaviour"  :
+        (debugTypeNative == GL_DEBUG_TYPE_PORTABILITY)         ? "portability"          :
+        (debugTypeNative == GL_DEBUG_TYPE_PERFORMANCE)         ? "performance"          :
+        (debugTypeNative == GL_DEBUG_TYPE_MARKER)              ? "marker"               :
+        (debugTypeNative == GL_DEBUG_TYPE_PUSH_GROUP)          ? "push group"           :
+        (debugTypeNative == GL_DEBUG_TYPE_POP_GROUP)           ? "pop group"            :
+        (debugTypeNative == GL_DEBUG_TYPE_OTHER)               ? "other"                : "unknown type";
+
+    switch (debugSeverity)
     {
-        case GL_DEBUG_SOURCE_API:             return "API";
-        case GL_DEBUG_SOURCE_WINDOW_SYSTEM:   return "window system";
-        case GL_DEBUG_SOURCE_SHADER_COMPILER: return "shader compiler";
-        case GL_DEBUG_SOURCE_THIRD_PARTY:     return "third party";
-        case GL_DEBUG_SOURCE_APPLICATION:     return "application";
-        case GL_DEBUG_SOURCE_OTHER:           return "other";
-    }
-
-    assert(0);
-
-    return "invalid debug source";
-}
-
-static const char* debugTypeStringFromNative(GLenum debugType)
-{
-    switch (debugType)
-    {
-        case GL_DEBUG_TYPE_ERROR:               return "error";
-        case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: return "deprecated behaviour";
-        case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:  return "undefined behaviour";
-        case GL_DEBUG_TYPE_PORTABILITY:         return "portability";
-        case GL_DEBUG_TYPE_PERFORMANCE:         return "performance";
-        case GL_DEBUG_TYPE_MARKER:              return "marker";
-        case GL_DEBUG_TYPE_PUSH_GROUP:          return "push group";
-        case GL_DEBUG_TYPE_POP_GROUP:           return "pop group";
-        case GL_DEBUG_TYPE_OTHER:               return "other";
-    }
-
-    assert(0);
-
-    return "invalid debug type";
-}
-
-static void APIENTRY debugMessageCallback(GLenum source, GLenum type, unsigned int id, GLenum severity, GLsizei length, const char* message, const void* userParam)
-{
-    const char* debugSource = debugSourceStringFromNative(source);
-    const char* debugType = debugTypeStringFromNative(type);
-    switch (severity)
-    {
-        case GL_DEBUG_SEVERITY_NOTIFICATION: logVerbose("OPENGL", "source: %s | type: %s | %s (%u)", debugSource, debugType, message, id); break;
-        case GL_DEBUG_SEVERITY_LOW:          logInfo("OPENGL", "source: %s | type: %s | %s (%u)", debugSource, debugType, message, id);    break;
-        case GL_DEBUG_SEVERITY_MEDIUM:       logWarning("OPENGL", "source: %s | type: %s | %s (%u)", debugSource, debugType, message, id); break;
-        case GL_DEBUG_SEVERITY_HIGH:         logError("OPENGL", "source: %s | type: %s | %s (%u)", debugSource, debugType, message, id);   break;
+        case GL_DEBUG_SEVERITY_NOTIFICATION: logVerbose("OPENGL", "%s | %s | %s (%u)", debugSource, debugType, message, debugID); break;
+        case GL_DEBUG_SEVERITY_LOW:          logInfo("OPENGL", "%s | %s | %s (%u)", debugSource, debugType, message, debugID);    break;
+        case GL_DEBUG_SEVERITY_MEDIUM:       logWarning("OPENGL", "%s | %s | %s (%u)", debugSource, debugType, message, debugID); break;
+        case GL_DEBUG_SEVERITY_HIGH:         logError("OPENGL", "%s | %s | %s (%u)", debugSource, debugType, message, debugID);   break;
     }
 }
 
@@ -375,8 +376,8 @@ static void getHardwareCapabilities(void)
     glGetIntegerv(GL_MAX_ELEMENTS_VERTICES, &graphicsState.hardwareCapability.maxElementsVertexCount);
     logInfo("GRAPHICS", "max elements vertex count: %i", graphicsState.hardwareCapability.maxElementsVertexCount);
 
-    glGetIntegerv(GL_MAX_SAMPLES, &graphicsState.hardwareCapability.maxSampleCount);
-    logInfo("GRAPHICS", "max MSAA sample count: %i", graphicsState.hardwareCapability.maxSampleCount);
+    glGetIntegerv(GL_MAX_SAMPLES, &graphicsState.hardwareCapability.maxMSAASampleCount);
+    logInfo("GRAPHICS", "max MSAA sample count: %i", graphicsState.hardwareCapability.maxMSAASampleCount);
 
     glGetIntegerv(GL_MAX_DRAW_BUFFERS, &graphicsState.hardwareCapability.maxDrawBufferCount);
     logInfo("GRAPHICS", "max draw buffer count: %i", graphicsState.hardwareCapability.maxDrawBufferCount);
@@ -449,30 +450,30 @@ static void getHardwareCapabilities(void)
     logInfo("GRAPHICS", "max compute shared memory size: %i", graphicsState.hardwareCapability.maxComputeSharedMemorySize);
 }
 
-static bool* getCapabilityStatePointer(Capability capability)
+static bool* getCapabilityStatePointer(GraphicsCapability graphicsCapability)
 {
-    switch (capability)
+    switch (graphicsCapability)
     {
-        case CapabilityDepthTest:             return &graphicsState.depthTest.enabled;
-        case CapabilityStencilTest:           return &graphicsState.stencilTest.enabled;
-        case CapabilityScissorTest:           return &graphicsState.scissorTest.enabled;
-        case CapabilityBlend:                 return &graphicsState.blend.enabled;
-        case CapabilityCullFace:              return &graphicsState.cullFace.enabled;
-        case CapabilityDither:                return &graphicsState.dither.enabled;
-        case CapabilityMultisample:           return &graphicsState.multisample.enabled;
-        case CapabilitySampleAlphaToCoverage: return &graphicsState.sampleAlphaToCoverage.enabled;
-        case CapabilitySampleAlphaToOne:      return &graphicsState.sampleAlphaToOne.enabled;
-        case CapabilitySampleCoverage:        return &graphicsState.sampleCoverage.enabled;
-        case CapabilityDepthClamp:            return &graphicsState.depthClamp.enabled;
-        case CapabilityPolygonOffsetPoint:    return &graphicsState.polygonOffset.pointEnabled;
-        case CapabilityPolygonOffsetLine:     return &graphicsState.polygonOffset.lineEnabled;
-        case CapabilityPolygonOffsetFill:     return &graphicsState.polygonOffset.fillEnabled;
-        case CapabilityProgramPointSize:      return &graphicsState.programPointSize.enabled;
-        case CapabilityFramebufferSRGB:       return &graphicsState.framebufferSRGB.enabled;
-        case CapabilityPrimitiveRestart:      return &graphicsState.primitiveRestart.enabled;
+        case GraphicsCapabilityDepthTest:             return &graphicsState.depthTest.enabled;
+        case GraphicsCapabilityStencilTest:           return &graphicsState.stencilTest.enabled;
+        case GraphicsCapabilityScissorTest:           return &graphicsState.scissorTest.enabled;
+        case GraphicsCapabilityBlend:                 return &graphicsState.blend.enabled;
+        case GraphicsCapabilityCullFace:              return &graphicsState.cullFace.enabled;
+        case GraphicsCapabilityDither:                return &graphicsState.dither.enabled;
+        case GraphicsCapabilityMultisample:           return &graphicsState.multisample.enabled;
+        case GraphicsCapabilitySampleAlphaToCoverage: return &graphicsState.sampleAlphaToCoverage.enabled;
+        case GraphicsCapabilitySampleAlphaToOne:      return &graphicsState.sampleAlphaToOne.enabled;
+        case GraphicsCapabilitySampleCoverage:        return &graphicsState.sampleCoverage.enabled;
+        case GraphicsCapabilityDepthClamp:            return &graphicsState.depthClamp.enabled;
+        case GraphicsCapabilityPolygonOffsetPoint:    return &graphicsState.polygonOffset.pointEnabled;
+        case GraphicsCapabilityPolygonOffsetLine:     return &graphicsState.polygonOffset.lineEnabled;
+        case GraphicsCapabilityPolygonOffsetFill:     return &graphicsState.polygonOffset.fillEnabled;
+        case GraphicsCapabilityProgramPointSize:      return &graphicsState.programPointSize.enabled;
+        case GraphicsCapabilityFramebufferSRGB:       return &graphicsState.framebufferSRGB.enabled;
+        case GraphicsCapabilityPrimitiveRestart:      return &graphicsState.primitiveRestart.enabled;
     }
 
-    logError("GRAPHICS", "invalid capability");
+    logError("GRAPHICS", "invalid graphics capability");
     assert(0);
 
     return NULL;
@@ -491,48 +492,48 @@ bool graphicsInit(GraphicsFunctionLoader graphicsFunctionLoader)
     logInfo("GRAPHICS", "renderer version: %s", (const char*)glGetString(GL_VERSION));
     logInfo("GRAPHICS", "GLSL version: %s", (const char*)glGetString(GL_SHADING_LANGUAGE_VERSION));
 
-    GLint contextFlags = 0;
-    glGetIntegerv(GL_CONTEXT_FLAGS, &contextFlags);
-    if (contextFlags & GL_CONTEXT_FLAG_FORWARD_COMPATIBLE_BIT) { logInfo("GRAPHICS", "enabled context forward compatible"); }
-    if (contextFlags & GL_CONTEXT_FLAG_ROBUST_ACCESS_BIT)      { logInfo("GRAPHICS", "enabled context robust access");      }
-    if (contextFlags & GL_CONTEXT_FLAG_NO_ERROR_BIT)           { logInfo("GRAPHICS", "enabled context no error");           }
+    GLint contextFlagBits = 0;
+    glGetIntegerv(GL_CONTEXT_FLAGS, &contextFlagBits);
+    if (contextFlagBits & GL_CONTEXT_FLAG_FORWARD_COMPATIBLE_BIT) { logInfo("GRAPHICS", "forward compatibility is enabled");   }
+    if (contextFlagBits & GL_CONTEXT_FLAG_ROBUST_ACCESS_BIT)      { logInfo("GRAPHICS", "robust access is enabled");           }
+    if (contextFlagBits & GL_CONTEXT_FLAG_NO_ERROR_BIT)           { logInfo("GRAPHICS", "internal error checks are disabled"); }
 
-    if (contextFlags & GL_CONTEXT_FLAG_DEBUG_BIT)
+    if (contextFlagBits & GL_CONTEXT_FLAG_DEBUG_BIT)
     {
         glEnable(GL_DEBUG_OUTPUT);
         glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
         glDebugMessageCallback(debugMessageCallback, NULL);
         glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_TRUE);
-        logInfo("GRAPHICS", "enabled context debug output");
+        logInfo("GRAPHICS", "debug output is enabled");
     }
 
     glGetIntegerv(GL_SAMPLES, &graphicsState.multisample.samples);
     logInfo("GRAPHICS", "active MSAA sample count: %i", graphicsState.multisample.samples);
-    
+
     getHardwareCapabilities();
 
     return true;
 }
 
-void graphicsEnable(Capability capability)
+void graphicsEnable(GraphicsCapability graphicsCapability)
 {
-    bool* capabilityStatePointer = getCapabilityStatePointer(capability);
+    bool* capabilityStatePointer = getCapabilityStatePointer(graphicsCapability);
     bool capabilityIsEnabled = *capabilityStatePointer;
     if (!capabilityIsEnabled)
     {
         *capabilityStatePointer = true;
-        glEnable(capabilityToNative(capability));
+        glEnable(graphicsCapabilityToNative(graphicsCapability));
     }
 }
 
-void graphicsDisable(Capability capability)
+void graphicsDisable(GraphicsCapability graphicsCapability)
 {
-    bool* capabilityStatePointer = getCapabilityStatePointer(capability);
+    bool* capabilityStatePointer = getCapabilityStatePointer(graphicsCapability);
     bool capabilityIsEnabled = *capabilityStatePointer;
     if (capabilityIsEnabled)
     {
         *capabilityStatePointer = false;
-        glDisable(capabilityToNative(capability));
+        glDisable(graphicsCapabilityToNative(graphicsCapability));
     }
 }
 
@@ -551,12 +552,12 @@ void graphicsViewport(int32_t x, int32_t y, int32_t width, int32_t height)
     }
 }
 
-void graphicsDepthFunc(CompareFunc compareFunc)
+void graphicsDepthFunction(CompareFunction compareFunction)
 {
-    if (graphicsState.depthTest.compareFunc != compareFunc)
+    if (graphicsState.depthTest.compareFunction != compareFunction)
     {
-        graphicsState.depthTest.compareFunc = compareFunc;
-        glDepthFunc(compareFuncToNative(compareFunc));
+        graphicsState.depthTest.compareFunction = compareFunction;
+        glDepthFunc(compareFunctionToNative(compareFunction));
     }
 }
 
@@ -580,30 +581,30 @@ void graphicsDepthRange(float near, float far)
     }
 }
 
-void graphicsStencilFunc(Face face, CompareFunc compareFunc, int32_t reference, uint32_t testMask)
+void graphicsStencilFunction(Face face, CompareFunction compareFunction, int32_t reference, uint32_t testMask)
 {
     bool dirty = false;
     StencilTestFaceState* front = &graphicsState.stencilTest.front;
     StencilTestFaceState* back  = &graphicsState.stencilTest.back;
 
-    if ((face == FaceFront || face == FaceBoth) && (front->compareFunc != compareFunc || front->reference != reference || front->testMask != testMask))
+    if ((face == FaceFront || face == FaceBoth) && (front->compareFunction != compareFunction || front->reference != reference || front->testMask != testMask))
     {
-        front->compareFunc = compareFunc;
-        front->reference   = reference;
-        front->testMask    = testMask;
+        front->compareFunction = compareFunction;
+        front->reference       = reference;
+        front->testMask        = testMask;
         dirty = true;
     }
-    if ((face == FaceBack || face == FaceBoth) && (back->compareFunc != compareFunc || back->reference != reference || back->testMask != testMask))
+    if ((face == FaceBack || face == FaceBoth) && (back->compareFunction != compareFunction || back->reference != reference || back->testMask != testMask))
     {
-        back->compareFunc = compareFunc;
-        back->reference   = reference;
-        back->testMask    = testMask;
+        back->compareFunction = compareFunction;
+        back->reference       = reference;
+        back->testMask        = testMask;
         dirty = true;
     }
 
     if (dirty)
     {
-        glStencilFuncSeparate(faceToNative(face), compareFuncToNative(compareFunc), reference, testMask);
+        glStencilFuncSeparate(faceToNative(face), compareFunctionToNative(compareFunction), reference, testMask);
     }
 }
 
@@ -654,21 +655,25 @@ void graphicsStencilOperation(Face face, StencilOperation stencilFail, StencilOp
 
     if (dirty)
     {
-        glStencilOpSeparate(faceToNative(face), stencilOperationToNative(stencilFail), stencilOperationToNative(depthFail), stencilOperationToNative(depthPass));
+        glStencilOpSeparate(
+            faceToNative(face), 
+            stencilOperationToNative(stencilFail), 
+            stencilOperationToNative(depthFail), 
+            stencilOperationToNative(depthPass));
     }
 }
 
 void graphicsScissor(int32_t x, int32_t y, int32_t width, int32_t height)
 {
-    if (graphicsState.scissorTest.rectangle.x      != x     ||
-        graphicsState.scissorTest.rectangle.y      != y     ||
-        graphicsState.scissorTest.rectangle.width  != width ||
-        graphicsState.scissorTest.rectangle.height != height)
+    if (graphicsState.scissorTest.x      != x     ||
+        graphicsState.scissorTest.y      != y     ||
+        graphicsState.scissorTest.width  != width ||
+        graphicsState.scissorTest.height != height)
     {
-        graphicsState.scissorTest.rectangle.x      = x;
-        graphicsState.scissorTest.rectangle.y      = y;
-        graphicsState.scissorTest.rectangle.width  = width;
-        graphicsState.scissorTest.rectangle.height = height;
+        graphicsState.scissorTest.x      = x;
+        graphicsState.scissorTest.y      = y;
+        graphicsState.scissorTest.width  = width;
+        graphicsState.scissorTest.height = height;
         glScissor(x, y, width, height);
     }
 }
@@ -746,7 +751,7 @@ void graphicsSampleCoverage(float coverage, bool invert)
 void graphicsPolygonOffset(float factor, float units)
 {
     if (graphicsState.polygonOffset.factor != factor ||
-        graphicsState.polygonOffset.units != units)
+        graphicsState.polygonOffset.units  != units)
     {
         graphicsState.polygonOffset.factor = factor;
         graphicsState.polygonOffset.units  = units;
@@ -807,7 +812,7 @@ void graphicsClearColour(vec4 colour)
     }
 }
 
-void graphicsClearDepth(float depth)
+void graphicsClearDepth(double depth)
 {
     if (graphicsState.clear.depth != depth)
     {
@@ -853,9 +858,9 @@ void graphicsMemoryBarrier(MemoryBarrierBit memoryBarrierBits)
 }
 
 #ifndef NDEBUG
-void graphicsInsertDebugMessage(DebugSource debugSource, DebugType debugType, DebugSeverity debugSeverity, const char* message)
+void graphicsInsertDebugMessage(DebugSource debugSource, DebugType debugType, DebugSeverity debugSeverity, const char* debugMessage)
 {
-    glDebugMessageInsert(debugSourceToNative(debugSource), debugTypeToNative(debugType), 0, debugSeverityToNative(debugSeverity), -1, message);
+    glDebugMessageInsert(debugSourceToNative(debugSource), debugTypeToNative(debugType), 0, debugSeverityToNative(debugSeverity), -1, debugMessage);
 }
 #endif
 

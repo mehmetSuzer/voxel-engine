@@ -5,8 +5,8 @@
 #include "sampler.h"
 #include "shader_program.h"
 
-#define MATERIAL_MAX_TEXTURE_COUNT 4
-#define MATERIAL_MAX_SAMPLER_COUNT 4
+#define MATERIAL_MAX_TEXTURE_COUNT 4U
+#define MATERIAL_MAX_SAMPLER_COUNT 4U
 
 typedef uint32_t MaterialID;
 

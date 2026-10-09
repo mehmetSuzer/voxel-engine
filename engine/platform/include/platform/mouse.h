@@ -1,6 +1,8 @@
 
 #pragma once
 
+#include <stdint.h>
+
 typedef enum MouseButton
 {
     MouseButton1 = 0,
@@ -11,6 +13,7 @@ typedef enum MouseButton
     MouseButton6 = 5,
     MouseButton7 = 6,
     MouseButton8 = 7,
+    
     MouseButtonCount,
 
     MouseButtonLeft   = MouseButton1, // Same as MouseButton1

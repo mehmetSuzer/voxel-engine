@@ -7,7 +7,7 @@
 
 BufferID bufferCreate(size_t size, const void* data, BufferStorageBit bufferStorageBits)
 {
-    GLuint bufferID;
+    GLuint bufferID = 0;
     glCreateBuffers(1, &bufferID);
     glNamedBufferStorage(bufferID, (GLsizeiptr)size, data, bufferStorageBitsToNative(bufferStorageBits));
 
@@ -28,7 +28,8 @@ bool bufferIsActive(BufferID bufferID)
 
 void bufferWrite(BufferID bufferID, const void* data)
 {
-    glNamedBufferSubData(bufferID, 0, (GLsizeiptr)bufferGetSize(bufferID), data);
+    const GLsizeiptr size = (GLsizeiptr)bufferGetSize(bufferID);
+    glNamedBufferSubData(bufferID, 0, size, data);
 }
 
 void bufferWriteRange(BufferID bufferID, size_t offset, size_t size, const void* data)
@@ -38,7 +39,8 @@ void bufferWriteRange(BufferID bufferID, size_t offset, size_t size, const void*
 
 void bufferRead(BufferID bufferID, void* dataOut)
 {
-    glGetNamedBufferSubData(bufferID, 0, bufferGetSize(bufferID), dataOut);
+    const GLsizeiptr size = (GLsizeiptr)bufferGetSize(bufferID);
+    glGetNamedBufferSubData(bufferID, 0, size, dataOut);
 }
 
 void bufferReadRange(BufferID bufferID, size_t offset, size_t size, void* dataOut)
@@ -59,7 +61,8 @@ void bufferClearRange(BufferID bufferID, InternalFormat internalFormat, External
 
 void bufferCopy(BufferID readBufferID, BufferID writeBufferID)
 {
-    glCopyNamedBufferSubData(readBufferID, writeBufferID, 0, 0, bufferGetSize(readBufferID));
+    const GLsizeiptr size = (GLsizeiptr)bufferGetSize(readBufferID);
+    glCopyNamedBufferSubData(readBufferID, writeBufferID, 0, 0, size);
 }
 
 void bufferCopyRange(BufferID readBufferID, BufferID writeBufferID, size_t readOffset, size_t writeOffset, size_t size)
@@ -104,25 +107,25 @@ bool bufferIsMapped(BufferID bufferID)
     return (mapped == GL_TRUE);
 }
 
-int64_t bufferGetSize(BufferID bufferID)
+size_t bufferGetSize(BufferID bufferID)
 {
     GLint64 size = 0;
     glGetNamedBufferParameteri64v(bufferID, GL_BUFFER_SIZE, &size);
-    return size;
+    return (size_t)size;
 }
 
-int64_t bufferGetMapOffset(BufferID bufferID)
+size_t bufferGetMapOffset(BufferID bufferID)
 {
     GLint64 offset = 0;
     glGetNamedBufferParameteri64v(bufferID, GL_BUFFER_MAP_OFFSET, &offset);
-    return offset;
+    return (size_t)offset;
 }
 
-int64_t bufferGetMapLength(BufferID bufferID)
+size_t bufferGetMapLength(BufferID bufferID)
 {
     GLint64 length = 0;
     glGetNamedBufferParameteri64v(bufferID, GL_BUFFER_MAP_LENGTH, &length);
-    return length;
+    return (size_t)length;
 }
 
 void* bufferGetMapPointer(BufferID bufferID)

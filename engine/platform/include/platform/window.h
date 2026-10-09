@@ -4,27 +4,8 @@
 #include "key.h"
 #include "mouse.h"
 
-typedef enum WindowFlag
-{
-    WindowFlagResizable        = 0, // Allows the user to manually adjust the window's dimensions by dragging its borders or corners.
-    WindowFlagDecorated        = 1, // Enables standard window borders, title bars, and close/minimize/maximize buttons provided by the operating system.
-    WindowFlagAlwaysOnTop      = 2, // Forces the window to stay floating above all other standard application windows even when it loses focus.
-    WindowFlagAutoIconified    = 3, // Automatically minimizes the window to the taskbar if a full-screen window on the same monitor loses input focus.
-    WindowFlagFocusedOnShow    = 4, // Automatically steals input focus and brings the window to the foreground the moment it transitions to being visible.
-    WindowFlagMousePassThrough = 5, // Disables mouse cursor tracking over the window, allowing click events to pass directly to applications beneath it.
-    WindowFlagCount,
-} WindowFlag;
-
-typedef enum WindowState
-{
-    WindowStateFocused                   = 0, // Indicates whether the window currently has active keyboard input focus and is receiving user keystrokes.
-    WindowStateIconified                 = 1, // Indicates whether the window is currently minimized down to the operating system's taskbar or dock.
-    WindowStateMaximised                 = 2, // Indicates whether the window has been expanded to fill the entire usable screen area of the monitor.
-    WindowStateVisible                   = 3, // Indicates whether the window is currently unhidden and drawn on screen, regardless of whether it is obscured by other windows.
-    WindowStateHovered                   = 4, // Indicates whether the mouse cursor is currently positioned anywhere within the window's client area.
-    WindowStateHasTransparentFramebuffer = 5, // Indicates whether the window's underlying pixel buffer supports alpha transparency, allowing the desktop background to show through.
-    WindowStateCount,
-} WindowState;
+#define WINDOW_MAX_WIDTH  3840U
+#define WINDOW_MAX_HEIGHT 2160U
 
 typedef enum CursorMode
 {
@@ -32,13 +13,14 @@ typedef enum CursorMode
     CursorModeHidden      = 1, // Hides the mouse cursor from view while still allowing it to move freely and leave the window boundaries.
     CursorModeLocked      = 2, // Hides the cursor and locks it to the center of the window, providing infinite relative movement data for first-person camera controls.
     CursorModeCaptured    = 3, // Keeps the cursor visible but confines its movement strictly inside the window borders, ideal for RTS or top-down strategy games.
-    CursorModeUnavailable = 4, // Represents an uninitialized or unsupported cursor state, used solely as a read-only error token when querying input configurations.
+    CursorModeUnavailable = 4, // Represents an uninitialised or unsupported cursor state, used solely as a read-only error token when querying input configurations.
+    
     CursorModeCount,
 } CursorMode;
 
 typedef struct Window Window;
 
-Window* windowCreate(int32_t width, int32_t height, const char* title);
+Window* windowCreate(uint32_t width, uint32_t height, const char* title);
 
 void windowDestroy(Window* window);
 
@@ -53,20 +35,15 @@ void windowRestore(Window* window);
 
 void windowSetTitle(Window* window, const char* title);
 
-int windowGetFlag(Window* window, WindowFlag windowFlag);
-void windowSetFlag(Window* window, WindowFlag windowFlag, bool enabled);
+void windowGetWindowSize(Window* window, uint32_t* widthOut, uint32_t* heightOut);
+void windowSetWindowSize(Window* window, uint32_t width, uint32_t height);
 
-int windowGetState(Window* window, WindowState windowState);
-
-void windowGetWindowSize(Window* window, int32_t* widthOut, int32_t* heightOut);
-void windowSetWindowSize(Window* window, int32_t width, int32_t height);
-
-void windowGetFramebufferSize(Window* window, int32_t* widthOut, int32_t* heightOut);
+void windowGetFramebufferSize(Window* window, uint32_t* widthOut, uint32_t* heightOut);
 
 void windowGetWindowPosition(Window* window, int32_t* xOut, int32_t* yOut);
 void windowSetWindowPosition(Window* window, int32_t x, int32_t y);
 
-void windowGetContentScale(Window* window, float* xOut, float* yOut);
+void windowGetContentScale(Window* window, float* xScaleOut, float* yScaleOut);
 bool windowHasNonNativeScale(Window* window);
 
 bool windowIsFullScreen(Window* window);
@@ -88,23 +65,64 @@ CursorMode windowGetCursorMode(Window* window);
 void windowSetCursorMode(Window* window, CursorMode cursorMode);
 
 bool windowIsStickyKeysEnabled(Window* window);
-void windowEnableStickyKeys(Window* window, bool enabled);
+void windowSetStickyKeys(Window* window, bool enabled);
 
 bool windowIsStickyMouseButtonsEnabled(Window* window);
-void windowEnableStickyMouseButtons(Window* window, bool enabled);
+void windowSetStickyMouseButtons(Window* window, bool enabled);
 
 bool windowIsLockKeyModsEnabled(Window* window);
-void windowEnableLockKeyMods(Window* window, bool enabled);
+void windowSetLockKeyMods(Window* window, bool enabled);
     
 bool windowIsRawMouseMotionEnabled(Window* window);
-void windowEnableRawMouseMotion(Window* window, bool enabled);
+void windowSetRawMouseMotion(Window* window, bool enabled);
 
-// ------------------ OPENGL SPECIFIC ------------------ //
+// ----------------------------------- WINDOW FRAME & LAYOUT ATTRIBUTES ----------------------------------- //
+
+// Returns whether the user is allowed to manually adjust the window's dimensions by dragging its borders or corners.
+bool windowIsResizable(Window* window);
+void windowSetResizable(Window* window, bool enabled);
+
+// Returns whether the standard window borders, title bars, and close/minimise/maximise buttons provided by the operating system are enabled.
+bool windowIsDecorated(Window* window);
+void windowSetDecorated(Window* window, bool enabled);
+
+// Returns whether the window is forced to stay floating above all other standard application windows even when it loses focus.
+bool windowIsAlwaysOnTop(Window* window);
+void windowSetAlwaysOnTop(Window* window, bool enabled);
+
+// Returns whether the window is automatically minimised to the taskbar if a full-screen window on the same monitor loses input focus.
+bool windowIsAutoIconified(Window* window);
+void windowSetAutoIconified(Window* window, bool enabled);
+
+// Returns whether the window will automatically acquire focus when shown via windowShow.
+bool windowIsFocusedOnShow(Window* window);
+void windowSetFocusedOnShow(Window* window, bool enabled);
+
+// Returns whether the window lets mouse inputs pass through to underneath windows/desktop.
+bool windowIsMousePassThrough(Window* window);
+void windowSetMousePassThrough(Window* window, bool enabled);
+
+// ------------------------------------- WINDOW STATE ATTRIBUTES ----------------------------------------- //
+
+// Returns whether the window currently has active keyboard input focus and is receiving user keystrokes.
+bool windowIsFocused(Window* window);
+// Returns whether the window is currently minimised down to the operating system's taskbar or dock.
+bool windowIsIconified(Window* window);
+// Returns whether the window has been expanded to fill the entire usable screen area of the monitor.
+bool windowIsMaximised(Window* window);
+// Returns whether the window is currently unhidden and drawn on screen, regardless of whether it is obscured by other windows.
+bool windowIsVisible(Window* window);
+// Returns whether the mouse cursor is currently positioned anywhere within the window's client area.
+bool windowIsHovered(Window* window);
+// Returns whether the window's underlying pixel buffer supports alpha transparency, allowing the desktop background to show through.
+bool windowHasTransparentFramebuffer(Window* window);
+
+// ------------------------------------------- OPENGL SPECIFIC ------------------------------------------- //
 
 void windowMakeContextCurrent(Window* window);
 bool windowIsVSyncEnabled(Window* window);
 void windowSetVSync(Window* window, bool enabled);
 void windowSwapBuffers(Window* window);
 
-// ----------------------------------------------------- //
+// ------------------------------------------------------------------------------------------------------- //
 

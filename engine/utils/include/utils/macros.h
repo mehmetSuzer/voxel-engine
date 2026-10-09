@@ -20,8 +20,6 @@
 #define SMALLER(x, y)   (((x) < (y)) ? (x) : (y))
 #define GREATER(x, y)   (((x) > (y)) ? (x) : (y))
 
-#define WRAP(x, max)    (((x) % (max) + (max)) % (max))
-
 #define CLAMP(x, min, max)  (((x) < (min)) ? (min) : ((x) > (max)) ? (max) : (x))
 
 #define LERP(a, b, t)   ((a) + (typeof(a))(t) * ((b) - (a)))

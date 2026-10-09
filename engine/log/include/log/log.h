@@ -1,8 +1,7 @@
 
 #pragma once
 
-#define LOG_MAX_LENGTH          256
-#define LOG_FILENAME_MAX_LENGTH 128
+#define LOG_MAX_LENGTH 256U
 
 typedef enum LogSeverity
 {
@@ -10,10 +9,11 @@ typedef enum LogSeverity
     LogSeverityInfo    = 1,
     LogSeverityWarning = 2,
     LogSeverityError   = 3,
+
     LogSeverityCount,
 } LogSeverity;
 
-void logSetMinSeverity(LogSeverity severity);
+void logSetMinSeverity(LogSeverity minSeverity);
 void logSetLogFile(const char* filename);
 
 void __logImplementation(LogSeverity severity, const char* __restrict__ category, const char* __restrict__ format, ...);

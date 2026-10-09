@@ -5,7 +5,7 @@
 
 VertexArrayID vertexArrayCreate(void)
 {
-    GLuint vertexArrayID;
+    GLuint vertexArrayID = 0;
     glCreateVertexArrays(1, &vertexArrayID);
     logVerbose("V_ARRAY", "created: %u", vertexArrayID);
     return vertexArrayID;
@@ -30,7 +30,7 @@ void vertexArrayBind(VertexArrayID vertexArrayID)
 
 void vertexArraySetVertexBuffer(VertexArrayID vertexArrayID, uint32_t bindingIndex, BufferID vertexBufferID, uint32_t offset, uint32_t stride)
 {
-    glVertexArrayVertexBuffer(vertexArrayID, bindingIndex, vertexBufferID, offset, stride);
+    glVertexArrayVertexBuffer(vertexArrayID, bindingIndex, vertexBufferID, (GLintptr)offset, stride);
     logVerbose("V_ARRAY", "set vertex buffer %u for %u", vertexBufferID, vertexArrayID);
 }
 

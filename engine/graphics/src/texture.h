@@ -25,8 +25,8 @@ typedef struct TextureCreateInfo
 
 typedef struct TextureFillInfo
 {
-    const uint8_t* data;
-    uint32_t level;
+    const void* data;
+    uint32_t mipmapLevel;
     uint32_t width;
     uint32_t height;
     uint32_t depth;
@@ -46,12 +46,12 @@ typedef struct TextureCreateCubeMapInfo
 
 typedef struct TextureFillCubeMapInfo
 {
-    const uint8_t* rightData;
-    const uint8_t* leftData;
-    const uint8_t* topData;
-    const uint8_t* bottomData;
-    const uint8_t* backData;
-    const uint8_t* frontData;
+    const void* rightData;
+    const void* leftData;
+    const void* topData;
+    const void* bottomData;
+    const void* backData;
+    const void* frontData;
     uint32_t size;
     DataType dataType;
     ExternalFormat externalFormat;
@@ -59,7 +59,7 @@ typedef struct TextureFillCubeMapInfo
 
 typedef struct TextureGetImageInfo
 {
-    uint32_t level;
+    uint32_t mipmapLevel;
     uint32_t width;
     uint32_t height;
     uint32_t depth;
@@ -95,7 +95,7 @@ void textureBindSampler(TextureID textureID, uint32_t unit);
 // A Slice of 3D Textures: layered = GL_FALSE | layer = sliceIndex
 // Full Cube Maps:         layered = GL_TRUE  | layer = 0
 // A Face of Cube Maps:    layered = GL_FALSE | layer = faceIndex (0 to 5)
-void textureBindImage(TextureID textureID, uint32_t unit, uint32_t level, bool layered, uint32_t layer, AccessPolicy accessPolicy, ExternalFormat externalFormat);
+void textureBindImage(TextureID textureID, uint32_t unit, uint32_t mipmapLevel, bool layered, uint32_t layer, AccessPolicy accessPolicy, ExternalFormat externalFormat);
 
-void textureGetDimensions(TextureID textureID, int32_t level, uint32_t* widthOut, uint32_t* heightOut, uint32_t* depthOut);
+void textureGetDimensions(TextureID textureID, uint32_t mipmapLevel, uint32_t* widthOut, uint32_t* heightOut, uint32_t* depthOut);
 

@@ -7,7 +7,8 @@
 
 typedef uint32_t MeshID;
 
-MeshID meshCreatePBR(const VertexPBR* vertices, uint32_t vertexCount, const uint32_t* indices, uint32_t indexCount, DrawMode drawMode);
+MeshID meshCreateStatic(const VertexStatic* vertices, uint32_t vertexCount, const uint32_t* indices, uint32_t indexCount, DrawMode drawMode);
+MeshID meshCreateStaticPacked(const VertexStaticPacked* vertices, uint32_t vertexCount, const uint32_t* indices, uint32_t indexCount, DrawMode drawMode);
 MeshID meshCreateVoxel(const VertexVoxel* vertices, uint32_t vertexCount, const uint32_t* indices, uint32_t indexCount, DrawMode drawMode);
 
 void meshDestroy(MeshID meshID);

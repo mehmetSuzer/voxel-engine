@@ -11,6 +11,7 @@ typedef struct Mesh
     VertexArrayID VAO;
     BufferID VBO;
     BufferID EBO;
+    uint32_t vertexCount;
     uint32_t indexCount;
     GLenum drawMode;
     bool active;
@@ -27,6 +28,8 @@ static MeshArray meshArray = {0};
 
 static MeshID meshArrayPush(const Mesh* mesh)
 {
+    assert(mesh != NULL);
+
     MeshID meshID = 0;
     while (meshID < meshArray.size && meshArray.data[meshID].active) 
     { 
@@ -55,22 +58,53 @@ static MeshID meshArrayPush(const Mesh* mesh)
     return meshID;
 }
 
-MeshID meshCreatePBR(const VertexPBR* vertices, uint32_t vertexCount, const uint32_t* indices, uint32_t indexCount, DrawMode drawMode)
+MeshID meshCreateStatic(const VertexStatic* vertices, uint32_t vertexCount, const uint32_t* indices, uint32_t indexCount, DrawMode drawMode)
 {
-    Mesh mesh;
-    mesh.VAO = vertexArrayCreate();
-    mesh.VBO = bufferCreate(vertexCount * sizeof(VertexPBR), vertices, (BufferStorageBit)0);
-    mesh.EBO = bufferCreate(indexCount * sizeof(uint32_t), indices, (BufferStorageBit)0);
+    assert(vertices != NULL && vertexCount != 0);
+    assert(indices != NULL && indexCount != 0);
 
-    vertexArraySetVertexBuffer(mesh.VAO, 0, mesh.VBO, 0, sizeof(VertexPBR));
+    Mesh mesh = {0};
+    mesh.VAO = vertexArrayCreate();
+    mesh.VBO = bufferCreate(vertexCount * sizeof(VertexStatic), vertices, BufferStorageBitNone);
+    mesh.EBO = bufferCreate(indexCount * sizeof(uint32_t), indices, BufferStorageBitNone);
+
+    vertexArraySetVertexBuffer(mesh.VAO, 0, mesh.VBO, 0, sizeof(VertexStatic));
     vertexArraySetElementBuffer(mesh.VAO, mesh.EBO);
 
-    vertexArrayLinkAttributeFloat(mesh.VAO, 0, 0, 3, offsetof(VertexPBR, position));
-    vertexArrayLinkAttributeFloat(mesh.VAO, 0, 1, 3, offsetof(VertexPBR, normal));
-    vertexArrayLinkAttributeFloat(mesh.VAO, 0, 2, 3, offsetof(VertexPBR, tangent));
-    vertexArrayLinkAttributeFloat(mesh.VAO, 0, 3, 2, offsetof(VertexPBR, texCoord));
+    vertexArrayLinkAttributeFloat(mesh.VAO, 0, 0, 3, offsetof(VertexStatic, position));
+    vertexArrayLinkAttributeFloat(mesh.VAO, 0, 1, 3, offsetof(VertexStatic, normal));
+    vertexArrayLinkAttributeFloat(mesh.VAO, 0, 2, 3, offsetof(VertexStatic, tangent));
+    vertexArrayLinkAttributeFloat(mesh.VAO, 0, 3, 2, offsetof(VertexStatic, texture));
 
     mesh.drawMode = drawModeToNative(drawMode);
+    mesh.vertexCount = vertexCount;
+    mesh.indexCount = indexCount;
+    mesh.active = true;
+
+    const MeshID meshID = meshArrayPush(&mesh);
+    return meshID;
+}
+
+MeshID meshCreateStaticPacked(const VertexStaticPacked* vertices, uint32_t vertexCount, const uint32_t* indices, uint32_t indexCount, DrawMode drawMode)
+{
+    assert(vertices != NULL && vertexCount != 0);
+    assert(indices != NULL && indexCount != 0);
+
+    Mesh mesh = {0};
+    mesh.VAO = vertexArrayCreate();
+    mesh.VBO = bufferCreate(vertexCount * sizeof(VertexStaticPacked), vertices, BufferStorageBitNone);
+    mesh.EBO = bufferCreate(indexCount * sizeof(uint32_t), indices, BufferStorageBitNone);
+
+    vertexArraySetVertexBuffer(mesh.VAO, 0, mesh.VBO, 0, sizeof(VertexStaticPacked));
+    vertexArraySetElementBuffer(mesh.VAO, mesh.EBO);
+
+    vertexArrayLinkAttributeFloat(mesh.VAO, 0, 0, 3, offsetof(VertexStaticPacked, positionXYZ));
+    vertexArrayLinkAttributeFloat(mesh.VAO, 0, 1, 2, offsetof(VertexStaticPacked, normalXY));
+    vertexArrayLinkAttributeFloat(mesh.VAO, 0, 2, 2, offsetof(VertexStaticPacked, tangentXY));
+    vertexArrayLinkAttributeFloat(mesh.VAO, 0, 3, 2, offsetof(VertexStaticPacked, textureUV));
+
+    mesh.drawMode = drawModeToNative(drawMode);
+    mesh.vertexCount = vertexCount;
     mesh.indexCount = indexCount;
     mesh.active = true;
 
@@ -80,10 +114,13 @@ MeshID meshCreatePBR(const VertexPBR* vertices, uint32_t vertexCount, const uint
 
 MeshID meshCreateVoxel(const VertexVoxel* vertices, uint32_t vertexCount, const uint32_t* indices, uint32_t indexCount, DrawMode drawMode)
 {
-    Mesh mesh;
+    assert(vertices != NULL && vertexCount != 0);
+    assert(indices != NULL && indexCount != 0);
+
+    Mesh mesh = {0};
     mesh.VAO = vertexArrayCreate();
-    mesh.VBO = bufferCreate(vertexCount * sizeof(VertexVoxel), vertices, (BufferStorageBit)0);
-    mesh.EBO = bufferCreate(indexCount * sizeof(uint32_t), indices, (BufferStorageBit)0);
+    mesh.VBO = bufferCreate(vertexCount * sizeof(VertexVoxel), vertices, BufferStorageBitNone);
+    mesh.EBO = bufferCreate(indexCount * sizeof(uint32_t), indices, BufferStorageBitNone);
 
     vertexArraySetVertexBuffer(mesh.VAO, 0, mesh.VBO, 0, sizeof(VertexVoxel));
     vertexArraySetElementBuffer(mesh.VBO, mesh.EBO);
@@ -91,6 +128,7 @@ MeshID meshCreateVoxel(const VertexVoxel* vertices, uint32_t vertexCount, const 
     vertexArrayLinkAttributeUint(mesh.VAO, 0, 0, 1, 0);
 
     mesh.drawMode = drawModeToNative(drawMode);
+    mesh.vertexCount = vertexCount;
     mesh.indexCount = indexCount;
     mesh.active = true;
 
@@ -100,11 +138,15 @@ MeshID meshCreateVoxel(const VertexVoxel* vertices, uint32_t vertexCount, const 
 
 void meshDestroy(MeshID meshID)
 {
+    assert(meshID < meshArray.size);
     Mesh* mesh = &meshArray.data[meshID];
-    vertexArrayDestroy(mesh->VAO);
-    bufferDestroy(mesh->VBO);
-    bufferDestroy(mesh->EBO);
-    *mesh = (Mesh){0};
+    if (mesh->active)
+    {
+        vertexArrayDestroy(mesh->VAO);
+        bufferDestroy(mesh->VBO);
+        bufferDestroy(mesh->EBO);
+        *mesh = (Mesh){0};
+    }
 }
 
 void meshDestroyAll()
@@ -132,6 +174,7 @@ bool meshIsActive(MeshID meshID)
 
 void meshDraw(MeshID meshID)
 {
+    assert(meshID < meshArray.size);
     const Mesh* mesh = &meshArray.data[meshID];
     vertexArrayBind(mesh->VAO);
     glDrawElements(mesh->drawMode, mesh->indexCount, GL_UNSIGNED_INT, NULL);

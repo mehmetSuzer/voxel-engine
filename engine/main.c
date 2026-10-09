@@ -9,7 +9,7 @@
 
 #define WINDOW_WIDTH  1200
 #define WINDOW_HEIGHT 1000
-#define WINDOW_ASPECT_RATIO  ((float)WINDOW_WIDTH/(float)WINDOW_HEIGHT)
+#define WINDOW_ASPECT_RATIO ((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT)
 
 int main(void)
 {
@@ -26,7 +26,7 @@ int main(void)
     }
     windowMakeContextCurrent(window);
 
-    if (!graphicsInit((GraphicsFunctionLoader)platformGetGLFunctionLoader()))
+    if (!graphicsInit((GraphicsFunctionLoader)platformGetOpenGLFunctionLoader()))
     {
         windowDestroy(window);
         platformTerminate();
@@ -35,12 +35,12 @@ int main(void)
 
     graphicsViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
     
-    graphicsEnable(CapabilityDepthTest);
+    graphicsEnable(GraphicsCapabilityDepthTest);
     graphicsDepthWriteEnable(true);
-    graphicsDepthFunc(CompareFuncLess);
+    graphicsDepthFunction(CompareFunctionLess);
     graphicsDepthRange(0.0f, 1.0f);
 
-    graphicsEnable(CapabilityCullFace);
+    graphicsEnable(GraphicsCapabilityCullFace);
     graphicsCullFace(FaceBack);
     graphicsFrontFace(FrontFaceCCW);
 
@@ -60,8 +60,8 @@ int main(void)
     PointLight light = {
         .colour = {1.0f, 1.0f, 1.0f},
         .position = {16.0f, 40.0f, 16.0f},
-        .quadratic = 0.005f,
-        .linear = 0.001f,
+        .linearCoef = 0.001f,
+        .quadraticCoef = 0.005f,
     };
     UNUSED(light);
 
@@ -73,12 +73,12 @@ int main(void)
         }
 
         const float cameraSpeed = 0.1f;
-        if (windowIsKeyPressed(window, KeyA          )) { cameraTranslate(&camera, (vec3){-cameraSpeed, 0.0f, 0.0f}); }
-        if (windowIsKeyPressed(window, KeyD          )) { cameraTranslate(&camera, (vec3){ cameraSpeed, 0.0f, 0.0f}); }
-        if (windowIsKeyPressed(window, KeyS          )) { cameraTranslate(&camera, (vec3){0.0f, 0.0f,  cameraSpeed}); }
-        if (windowIsKeyPressed(window, KeyW          )) { cameraTranslate(&camera, (vec3){0.0f, 0.0f, -cameraSpeed}); }
-        if (windowIsKeyPressed(window, KeySpace      )) { cameraTranslate(&camera, (vec3){0.0f,  cameraSpeed, 0.0f}); }
-        if (windowIsKeyPressed(window, KeyControlLeft)) { cameraTranslate(&camera, (vec3){0.0f, -cameraSpeed, 0.0f}); }
+        if (windowIsKeyPressed(window, KeyA))           { cameraTranslate(&camera, (vec3){-cameraSpeed, 0.0f, 0.0f}); }
+        if (windowIsKeyPressed(window, KeyD))           { cameraTranslate(&camera, (vec3){ cameraSpeed, 0.0f, 0.0f}); }
+        if (windowIsKeyPressed(window, KeyS))           { cameraTranslate(&camera, (vec3){0.0f, 0.0f,  cameraSpeed}); }
+        if (windowIsKeyPressed(window, KeyW))           { cameraTranslate(&camera, (vec3){0.0f, 0.0f, -cameraSpeed}); }
+        if (windowIsKeyPressed(window, KeySpace))       { cameraTranslate(&camera, (vec3){0.0f,  cameraSpeed, 0.0f}); }
+        if (windowIsKeyPressed(window, KeyLeftControl)) { cameraTranslate(&camera, (vec3){0.0f, -cameraSpeed, 0.0f}); }
 
         graphicsClear(BufferBitColour | BufferBitDepth);
 

@@ -4,24 +4,24 @@
 #include <cglm/cglm.h>
 #include "enums.h"
 
-#define DEPTH_NEAREST  0.0f
-#define DEPTH_FURTHEST 1.0f
+#define DEPTH_NEAREST  0.0
+#define DEPTH_FURTHEST 1.0
 
 typedef void*(*GraphicsFunctionLoader)(const char*);
 
 bool graphicsInit(GraphicsFunctionLoader graphicsFunctionLoader);
 
-void graphicsEnable(Capability capability);
-void graphicsDisable(Capability capability);
+void graphicsEnable(GraphicsCapability graphicsCapability);
+void graphicsDisable(GraphicsCapability graphicsCapability);
 
 void graphicsViewport(int32_t x, int32_t y, int32_t width, int32_t height);
 
-void graphicsDepthFunc(CompareFunc compareFunc);
+void graphicsDepthFunction(CompareFunction compareFunction);
 void graphicsDepthWriteEnable(bool writeEnabled);
 void graphicsDepthRange(float near, float far);
 
-// (reference & testMask)  compareFunc  (stencil & testMask)
-void graphicsStencilFunc(Face face, CompareFunc compareFunc, int32_t reference, uint32_t testMask);
+// (reference & testMask)  compareFunction  (stencil & testMask)
+void graphicsStencilFunction(Face face, CompareFunction compareFunction, int32_t reference, uint32_t testMask);
 // newStencil = (writtenValue & writeMask) | (oldStencil & ~writeMask)
 void graphicsStencilWriteMask(Face face, uint32_t writeMask);
 void graphicsStencilOperation(Face face, StencilOperation stencilFail, StencilOperation depthFail, StencilOperation depthPass);
@@ -46,7 +46,7 @@ void graphicsPrimitiveRestartIndex(uint32_t restartIndex);
 void graphicsPolygonMode(Face face, PolygonMode polygonMode);
 
 void graphicsClearColour(vec4 colour);
-void graphicsClearDepth(float depth);
+void graphicsClearDepth(double depth);
 void graphicsClearStencil(int32_t stencil);
 void graphicsClear(BufferBit bufferBits);
 
@@ -55,6 +55,6 @@ void graphicsDispatchCompute(uint32_t workGroupCountX, uint32_t workGroupCountY,
 void graphicsMemoryBarrier(MemoryBarrierBit memoryBarrierBits);
 
 #ifndef NDEBUG
-void graphicsInsertDebugMessage(DebugSource debugSource, DebugType debugType, DebugSeverity debugSeverity, const char* message);
+void graphicsInsertDebugMessage(DebugSource debugSource, DebugType debugType, DebugSeverity debugSeverity, const char* debugMessage);
 #endif
 

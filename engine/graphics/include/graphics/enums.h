@@ -3,35 +3,38 @@
 
 #include <stdint.h>
 
-typedef enum Capability
+typedef enum GraphicsCapability
 {
-    CapabilityDepthTest             =  0, // Compares the depth of incoming fragments with the depth buffer to discard hidden pixels.
-    CapabilityStencilTest           =  1, // Discards fragments based on a custom bitmask test, useful for masking, mirrors, or shadows.
-    CapabilityScissorTest           =  2, // Restricts all rendering to a strict rectangular portion of the screen, discarding fragments outside it.
-    CapabilityBlend                 =  3, // Combines the incoming colour with the existing colour in the framebuffer based on transparency or alpha values.
-    CapabilityCullFace              =  4, // Automatically discards geometry that faces away from the camera to boost rendering performance.
-    CapabilityDither                =  5, // Mixes adjacent pixel colours slightly to prevent colour banding on low bit-depth displays.
-    CapabilityMultisample           =  6, // Activates multi-sample anti-aliasing (MSAA) to smooth out jagged geometric edges.
-    CapabilitySampleAlphaToCoverage =  7, // Uses the alpha value of a fragment to determine MSAA coverage masks, perfect for dense foliage.
-    CapabilitySampleAlphaToOne      =  8, // Forces the alpha component of a fragment to 1.0 after utilising it for alpha-to-coverage.
-    CapabilitySampleCoverage        =  9, // Modifies the final fragment coverage values by applying an additional logical mask or inversion.
-    CapabilityDepthClamp            = 10, // Clamps fragments that fall outside the near or far clipping planes instead of discarding them.
-    CapabilityPolygonOffsetPoint    = 11, // Adds a small depth offset when rendering polygons in point/vertex mode to prevent z-fighting.
-    CapabilityPolygonOffsetLine     = 12, // Adds a small depth offset when rendering polygons in wireframe/line mode to cleanly overlay outlines.
-    CapabilityPolygonOffsetFill     = 13, // Adds a small depth offset when rendering solid polygons to prevent z-fighting with layered surfaces.
-    CapabilityProgramPointSize      = 14, // Allows vertex shaders to dynamically set custom pixel sizes for points.
-    CapabilityFramebufferSRGB       = 15, // Automatically applies gamma correction (sRGB encoding) when writing colours to the framebuffer.
-    CapabilityPrimitiveRestart      = 16, // Uses a special index value (like 0xFFFF) to break up and start new primitive strips or fans in a single draw call.
-    CapabilityCount,
-} Capability;
+    GraphicsCapabilityDepthTest             =  0, // Compares the depth of incoming fragments with the depth buffer to discard hidden pixels.
+    GraphicsCapabilityStencilTest           =  1, // Discards fragments based on a custom bitmask test, useful for masking, mirrors, or shadows.
+    GraphicsCapabilityScissorTest           =  2, // Restricts all rendering to a strict rectangular portion of the screen, discarding fragments outside it.
+    GraphicsCapabilityBlend                 =  3, // Combines the incoming colour with the existing colour in the framebuffer based on transparency or alpha values.
+    GraphicsCapabilityCullFace              =  4, // Automatically discards geometry that faces away from the camera to boost rendering performance.
+    GraphicsCapabilityDither                =  5, // Mixes adjacent pixel colours slightly to prevent colour banding on low bit-depth displays.
+    GraphicsCapabilityMultisample           =  6, // Activates multi-sample anti-aliasing (MSAA) to smooth out jagged geometric edges.
+    GraphicsCapabilitySampleAlphaToCoverage =  7, // Uses the alpha value of a fragment to determine MSAA coverage masks, perfect for dense foliage.
+    GraphicsCapabilitySampleAlphaToOne      =  8, // Forces the alpha component of a fragment to 1.0 after utilising it for alpha-to-coverage.
+    GraphicsCapabilitySampleCoverage        =  9, // Modifies the final fragment coverage values by applying an additional logical mask or inversion.
+    GraphicsCapabilityDepthClamp            = 10, // Clamps fragments that fall outside the near or far clipping planes instead of discarding them.
+    GraphicsCapabilityPolygonOffsetPoint    = 11, // Adds a small depth offset when rendering polygons in point/vertex mode to prevent z-fighting.
+    GraphicsCapabilityPolygonOffsetLine     = 12, // Adds a small depth offset when rendering polygons in wireframe/line mode to cleanly overlay outlines.
+    GraphicsCapabilityPolygonOffsetFill     = 13, // Adds a small depth offset when rendering solid polygons to prevent z-fighting with layered surfaces.
+    GraphicsCapabilityProgramPointSize      = 14, // Allows vertex shaders to dynamically set custom pixel sizes for points.
+    GraphicsCapabilityFramebufferSRGB       = 15, // Automatically applies gamma correction (sRGB encoding) when writing colours to the framebuffer.
+    GraphicsCapabilityPrimitiveRestart      = 16, // Uses a special index value (like 0xFFFF) to break up and start new primitive strips or fans in a single draw call.
+    
+    GraphicsCapabilityCount,
+} GraphicsCapability;
 
-uint32_t capabilityToNative(Capability capability);
+uint32_t graphicsCapabilityToNative(GraphicsCapability graphicsCapability);
 
 typedef enum BufferBit
 {
+    BufferBitNone    = 0x00000000,
     BufferBitColour  = 0x00000001, // Represents the colour buffer, which stores the final RGBA pixel colours intended for display on the screen.
     BufferBitDepth   = 0x00000002, // Represents the depth buffer (Z-buffer), which stores distance values for each pixel to handle 3D occlusion and hidden-surface removal.
     BufferBitStencil = 0x00000004, // Represents the stencil buffer, which stores integer masks used to restrict or allow rendering on a per-pixel basis.
+    BufferBitAll     = BufferBitColour | BufferBitDepth | BufferBitStencil,
 } BufferBit;
 
 uint32_t bufferBitsToNative(BufferBit bufferBits);
@@ -43,6 +46,7 @@ typedef enum TextureWrap
     TextureWrapClampToEdge       = 2, // Clamps out-of-bounds coordinates to the edge pixels, stretching the final border pixels infinitely.
     TextureWrapClampToBorder     = 3, // Fills any coordinates outside the [0, 1] range with a user-specified, solid background border colour. Check sampler.borderColour.
     TextureWrapMirrorClampToEdge = 4, // Mirrors the texture once across zero, then clamps any coordinates beyond that directly to the outermost edge pixels.
+    
     TextureWrapCount,
 } TextureWrap;
 
@@ -56,6 +60,7 @@ typedef enum TextureMinFilter
     TextureMinFilterLinearMipmapNearest  = 3, // Chooses the closest matching mipmap level and performs a smooth bilinear blend of its neighboring pixels.
     TextureMinFilterNearestMipmapLinear  = 4, // Linearly blends between the two closest mipmap levels, sampling the single nearest pixel from each.
     TextureMinFilterLinearMipmapLinear   = 5, // Linearly blends between the two closest mipmap levels using bilinearly filtered samples from both (trilinear filtering).
+    
     TextureMinFilterCount,
 } TextureMinFilter;
 
@@ -65,6 +70,7 @@ typedef enum TextureMagFilter
 {
     TextureMagFilterNearest = 0, // Selects the single closest pixel (texel) to the coordinates, preserving exact pixel boundaries for a crisp, retro blocky look.
     TextureMagFilterLinear  = 1, // Blends the four closest pixels together (bilinear filtering), smoothing out sharp edges to prevent visible pixelation.
+    
     TextureMagFilterCount,
 } TextureMagFilter;
 
@@ -74,25 +80,27 @@ typedef enum CompareMode
 {
     CompareModeNone               = 0, // Disables depth comparison, allowing the shader to sample the raw depth/shadow map values directly as regular grayscale texture data.
     CompareModeReferenceToTexture = 1, // Compares an incoming depth reference value against the sampled depth value, returning a 0.0 or 1.0 mask for shadow calculations.
+    
     CompareModeCount,
 } CompareMode;
 
 int32_t compareModeToNative(CompareMode compareMode);
 
-typedef enum CompareFunc
+typedef enum CompareFunction
 {
-    CompareFuncNever        = 0, // Automatically fails the comparison, preventing any incoming fragments from passing the test.
-    CompareFuncEqual        = 1, // Passes the test only when the incoming value is exactly equal to the existing reference or buffer value.
-    CompareFuncLess         = 2, // Passes the test when the incoming value is less than the existing reference or buffer value.
-    CompareFuncLessEqual    = 3, // Passes the test when the incoming value is less than or equal to the existing reference or buffer value.
-    CompareFuncGreater      = 4, // Passes the test when the incoming value is greater than the existing reference or buffer value.
-    CompareFuncGreaterEqual = 5, // Passes the test when the incoming value is greater than or equal to the existing reference or buffer value.
-    CompareFuncNotEqual     = 6, // Passes the test whenever the incoming value does not equal the existing reference or buffer value.
-    CompareFuncAlways       = 7, // Automatically passes the comparison, allowing all incoming fragments to clear the test condition.
-    CompareFuncCount,
-} CompareFunc;
+    CompareFunctionNever        = 0, // Automatically fails the comparison, preventing any incoming fragments from passing the test.
+    CompareFunctionEqual        = 1, // Passes the test only when the incoming value is exactly equal to the existing reference or buffer value.
+    CompareFunctionLess         = 2, // Passes the test when the incoming value is less than the existing reference or buffer value.
+    CompareFunctionLessEqual    = 3, // Passes the test when the incoming value is less than or equal to the existing reference or buffer value.
+    CompareFunctionGreater      = 4, // Passes the test when the incoming value is greater than the existing reference or buffer value.
+    CompareFunctionGreaterEqual = 5, // Passes the test when the incoming value is greater than or equal to the existing reference or buffer value.
+    CompareFunctionNotEqual     = 6, // Passes the test whenever the incoming value does not equal the existing reference or buffer value.
+    CompareFunctionAlways       = 7, // Automatically passes the comparison, allowing all incoming fragments to clear the test condition.
+    
+    CompareFunctionCount,
+} CompareFunction;
 
-uint32_t compareFuncToNative(CompareFunc compareFunc);
+uint32_t compareFunctionToNative(CompareFunction compareFunction);
 
 typedef enum StencilOperation
 {
@@ -104,6 +112,7 @@ typedef enum StencilOperation
     StencilOperationDecrement     = 5, // Decreases the current stencil value by one, clamping it to zero if it underflows.
     StencilOperationDecrementWrap = 6, // Decreases the current stencil value by one, wrapping it around to the maximum possible value if it underflows below zero.
     StencilOperationInvert        = 7, // Performs a bitwise NOT operation, flipping all the bits of the current stencil value.
+    
     StencilOperationCount,
 } StencilOperation;
 
@@ -114,6 +123,7 @@ typedef enum Face
     FaceFront = 0, // Targets only the front-facing polygons, which are typically defined by vertices ordered in a counter-clockwise direction.
     FaceBack  = 1, // Targets only the back-facing polygons, which represent the hidden, inward surfaces of closed 3D meshes.
     FaceBoth  = 2, // Targets both the front-facing and back-facing surfaces simultaneously to apply operations uniformly across all geometry.
+    
     FaceCount,
 } Face;
 
@@ -123,6 +133,7 @@ typedef enum FrontFace
 {
     FrontFaceCW  = 0, // Defines a polygon as front-facing when its vertices are ordered in a clockwise direction on screen.
     FrontFaceCCW = 1, // Defines a polygon as front-facing when its vertices are ordered in a counter-clockwise direction on screen.
+    
     FrontFaceCount,
 } FrontFace;
 
@@ -145,6 +156,7 @@ typedef enum BlendFactor
     BlendFactorConstantAlpha          = 12, // Multiplies the colour components by the fixed alpha value of a user-defined colour vector.
     BlendFactorOneMinusConstantAlpha  = 13, // Multiplies the colour components by the inverted fixed alpha value of a user-defined colour vector.
     BlendFactorSrcAlphaSaturate       = 14, // Multiplies RGB components by the minimum value between source alpha and inverted destination alpha, forcing the final combined alpha to clip at 1.0.
+    
     BlendFactorCount,
 } BlendFactor;
 
@@ -157,6 +169,7 @@ typedef enum BlendEquation
     BlendEquationReverseSubtract = 2, // Subtracts the scaled source colour from the scaled destination colour (D - S), useful for casting shadows or creating inverted colour variations.
     BlendEquationMin             = 3, // Compares the source and destination components and selects the smaller value for each colour channel (min(S, D)), ignoring the blend factors.
     BlendEquationMax             = 4, // Compares the source and destination components and selects the larger value for each colour channel (max(S, D)), ignoring the blend factors.
+    
     BlendEquationCount,
 } BlendEquation;
 
@@ -167,6 +180,7 @@ typedef enum PolygonMode
     PolygonModePoint = 0, // Draws only a single pixel point at each vertex, skipping the lines and filled areas entirely.
     PolygonModeLine  = 1, /// Draws only the outlines connecting the vertices, displaying the geometry as a classic wireframe mesh.
     PolygonModeFill  = 2, // Draws the entire polygon as a solid, filled surface, which is the standard mode for rendering 3D objects.
+    
     PolygonModeCount,
 } PolygonMode;
 
@@ -181,6 +195,7 @@ typedef enum DrawMode
     DrawModeTriangles     = 4, // Groups every triplet of vertices into separate, independent triangles.
     DrawModeTriangleStrip = 5, // Creates a connected ribbon of triangles where each new triangle shares its first two vertices with the preceding one.
     DrawModeTriangleFan   = 6, // Creates a fan-like structure of connected triangles where all triangles share a single, central starting vertex.
+    
     DrawModeCount,
 } DrawMode;
 
@@ -188,6 +203,7 @@ uint32_t drawModeToNative(DrawMode drawMode);
 
 typedef enum MemoryBarrierBit
 {
+    MemoryBarrierBitNone                 = 0x00000000,
     MemoryBarrierBitVertexAttributeArray = 0x00000001, // Ensures updates to vertex buffer objects (VBOs) are visible when the data is consumed by vertex attributes.
     MemoryBarrierBitElementArray         = 0x00000002, // Ensures updates to element buffer objects (EBOs) are visible before the next indexed drawing command.
     MemoryBarrierBitUniform              = 0x00000004, // Ensures updates to uniform buffer objects (UBOs) or standard uniforms are visible to subsequent shader reads.
@@ -203,6 +219,7 @@ typedef enum MemoryBarrierBit
     MemoryBarrierBitShaderStorage        = 0x00001000, // Ensures accesses to shader storage buffer objects (SSBOs) will reflect previous writes.
     MemoryBarrierBitClientMappedBuffer   = 0x00002000, // Ensures that writes made by the host CPU into a persistently mapped buffer (created without GL_MAP_COHERENT_BIT) are flushed and made visible to the GPU server.
     MemoryBarrierBitQueryBuffer          = 0x00004000, // Ensures writes to query result buffers are visible before the results are read back.
+    MemoryBarrierBitAll                  = 0x7FFFFFFF,
 } MemoryBarrierBit;
 
 uint32_t memoryBarrierBitsToNative(MemoryBarrierBit memoryBarrierBits);
@@ -212,6 +229,7 @@ typedef enum AccessPolicy
     AccessPolicyReadOnly  = 0, // Indicates that the mapped buffer or the texture image can only be read.
     AccessPolicyWriteOnly = 1, // Indicates that the mapped buffer or the texture image can only be written.
     AccessPolicyReadWrite = 2, // Indicates that the mapped buffer or the texture image can be both read and written.
+    
     AccessPolicyCount,
 } AccessPolicy;
 
@@ -228,6 +246,7 @@ typedef enum BufferUsage
     BufferUsageStaticCopy  = 6, // Reserved for persistent data populated by the GPU to be used exclusively as input for other GPU pipelines without CPU involvement.
     BufferUsageDynamicCopy = 7, // Adjusted for internal GPU-to-GPU data transfers that are modified occasionally by rendering side-effects (e.g., transform feedback loops).
     BufferUsageStreamCopy  = 8, // Tuned for high-frequency, internal GPU-to-GPU memory copies executed on almost every frame (e.g., physics computations fed right into render passes).
+    
     BufferUsageCount,
 } BufferUsage;
 
@@ -235,6 +254,7 @@ uint32_t bufferUsageToNative(BufferUsage bufferUsage);
 
 typedef enum BufferStorageBit
 {
+    BufferStorageBitNone           = 0x00000000,
     BufferStorageBitMapRead        = 0x00000001, // Allows the CPU to map this buffer for reading using glMapNamedBuffer or glMapNamedBufferRange.
     BufferStorageBitMapWrite       = 0x00000002, // Allows the CPU to map this buffer for writing using glNamedBufferSubData.
     BufferStorageBitMapPersistent  = 0x00000004, // Allows the buffer pointer to remain mapped permanently, even during GPU execution. Otherwise, glUnmapBuffer must be called before a draw call.
@@ -247,6 +267,7 @@ uint32_t bufferStorageBitsToNative(BufferStorageBit bufferStorageBits);
 
 typedef enum BufferMapBit
 {
+    BufferMapBitNone             = 0x00000000,
     BufferMapBitRead             = 0x00000001, // Allows the CPU to read from the returned pointer. Mutually exclusive with InvalidateBuffer/InvalidateRange unless Write is also set.
     BufferMapBitWrite            = 0x00000002, // Allows the CPU to write to the returned pointer to update buffer contents.
     BufferMapBitInvalidateRange  = 0x00000004, // Similar to InvalidateBuffer, but only discards the specific byte range being mapped. Leaves the rest of the buffer's data intact.
@@ -275,6 +296,7 @@ typedef enum BufferTarget
     BufferTargetQuery             = 11, // Destination target where asynchronous query results (like occlusion tests or timer benchmarks) are directly written.
     BufferTargetCopyRead          = 12, // A generic staging target used as the source when copying data from one buffer to another without breaking existing bindings.
     BufferTargetCopyWrite         = 13, // A generic staging target used as the destination when copying data between buffers.
+    
     BufferTargetCount,
 } BufferTarget;
 
@@ -282,7 +304,7 @@ uint32_t bufferTargetToNative(BufferTarget bufferTarget);
 
 typedef enum ExternalFormat
 {
-    // Standard Floating/Normalised Layouts
+    // Standard floating/normalised layouts
 
     ExternalFormatRed   = 0, // 1 channel,             later normalised to [0.0, 1.0] for GPU, sampled via samplerND -> vec4(  R, 0.0, 0.0, 1.0)
     ExternalFormatRG    = 1, // 2 channels,            later normalised to [0.0, 1.0] for GPU, sampled via samplerND -> vec4(  R,   G, 0.0, 1.0)
@@ -291,7 +313,7 @@ typedef enum ExternalFormat
     ExternalFormatBGR   = 4, // 3 channels (reversed), later normalised to [0.0, 1.0] for GPU, sampled via samplerND -> vec4(  R,   G,   B, 1.0)
     ExternalFormatBGRA  = 5, // 4 channels (reversed), later normalised to [0.0, 1.0] for GPU, sampled via samplerND -> vec4(  R,   G,   B,   A)
 
-    // Pure Integer Layouts
+    // Pure integer layouts
 
     ExternalFormatRedInteger   =  6, // 1 channel,             remains as integer, sampled via isamplerND -> ivec4(  R, 0.0, 0.0, 1.0)
     ExternalFormatRGInteger    =  7, // 2 channels,            remains as integer, sampled via isamplerND -> ivec4(  R,   G, 0.0, 1.0)
@@ -300,7 +322,7 @@ typedef enum ExternalFormat
     ExternalFormatBGRInteger   = 10, // 3 channels (reversed), remains as integer, sampled via isamplerND -> ivec4(  R,   G,   B, 1.0)
     ExternalFormatBGRAInteger  = 11, // 4 channels (reversed), remains as integer, sampled via isamplerND -> ivec4(  R,   G,   B,   A)
 
-    // Depth & Stencil Layouts
+    // Depth & stencil layouts
 
     ExternalFormatDepth        = 12, // 1 channel,  normalised depth,                   sampled via  samplerND ->  vec4(  D, 0.0, 0.0, 1.0) or sampler2DShadow -> float
     ExternalFormatStencil      = 13, // 1 channel,  remains as integer stencil,         sampled via usamplerND -> uvec4(  S, 0.0, 0.0, 1.0)
@@ -313,21 +335,21 @@ uint32_t externalFormatToNative(ExternalFormat externalFormat);
 
 typedef enum InternalFormat
 {
-    // 8-bit Normalised Formats (Standard Images / LDR)
+    // 8-bit normalised formats (standard images / LDR)
 
     InternalFormatR8    = 0,  // 1 channel,  8 bits per channel, normalised to [0.0, 1.0] on sample, sampled via samplerND -> vec4(  R, 0.0, 0.0, 1.0)
     InternalFormatRG8   = 1,  // 2 channels, 8 bits per channel, normalised to [0.0, 1.0] on sample, sampled via samplerND -> vec4(  R,   G, 0.0, 1.0)
     InternalFormatRGB8  = 2,  // 3 channels, 8 bits per channel, normalised to [0.0, 1.0] on sample, sampled via samplerND -> vec4(  R,   G,   B, 1.0)
     InternalFormatRGBA8 = 3,  // 4 channels, 8 bits per channel, normalised to [0.0, 1.0] on sample, sampled via samplerND -> vec4(  R,   G,   B,   A)
     
-    // Signed Normalised Formats (Values mapped from [-1.0, 1.0])
+    // Signed normalised formats (values mapped from [-1.0, 1.0])
     
     InternalFormatR8SignedNormalised    = 4,  // 1 channel,  8 bits per channel, normalised to [-1.0, 1.0] on sample, sampled via samplerND -> vec4(  R, 0.0, 0.0, 1.0)
     InternalFormatRG8SignedNormalised   = 5,  // 2 channels, 8 bits per channel, normalised to [-1.0, 1.0] on sample, sampled via samplerND -> vec4(  R,   G, 0.0, 1.0)
     InternalFormatRGB8SignedNormalised  = 6,  // 3 channels, 8 bits per channel, normalised to [-1.0, 1.0] on sample, sampled via samplerND -> vec4(  R,   G,   B, 1.0)
     InternalFormatRGBA8SignedNormalised = 7,  // 4 channels, 8 bits per channel, normalised to [-1.0, 1.0] on sample, sampled via samplerND -> vec4(  R,   G,   B,   A)
 
-    // 16-bit Normalised Formats (High-Precision LDR / UI / Heightmaps)
+    // 16-bit normalised formats (high-precision LDR / UI / heightmaps)
     
     InternalFormatR16    = 8,   // 1 channel,  16 bits per channel, normalised to [0.0, 1.0] on sample, sampled via samplerND -> vec4(  R, 0.0, 0.0, 1.0)
     InternalFormatRG16   = 9,   // 2 channels, 16 bits per channel, normalised to [0.0, 1.0] on sample, sampled via samplerND -> vec4(  R,   G, 0.0, 1.0)
@@ -339,21 +361,21 @@ typedef enum InternalFormat
     InternalFormatRGB16SignedNormalised  = 14, // 3 channels, 16 bits per channel, normalised to [-1.0, 1.0] on sample, sampled via samplerND -> vec4(  R,   G,   B, 1.0)
     InternalFormatRGBA16SignedNormalised = 15, // 4 channels, 16 bits per channel, normalised to [-1.0, 1.0] on sample, sampled via samplerND -> vec4(  R,   G,   B,   A)
 
-    // 16-bit Floating Point Formats (HDR / Mid-Precision / Post-Processing)
+    // 16-bit floating point formats (HDR / mid-precision / post-processing)
     
     InternalFormatR16F    = 16, // 1 channel,  passes raw half-floats directly to GPU, sampled via samplerND -> vec4(  R, 0.0, 0.0, 1.0)
     InternalFormatRG16F   = 17, // 2 channels, passes raw half-floats directly to GPU, sampled via samplerND -> vec4(  R,   G, 0.0, 1.0)
     InternalFormatRGB16F  = 18, // 3 channels, passes raw half-floats directly to GPU, sampled via samplerND -> vec4(  R,   G,   B, 1.0)
     InternalFormatRGBA16F = 19, // 4 channels, passes raw half-floats directly to GPU, sampled via samplerND -> vec4(  R,   G,   B,   A)
 
-    // 32-bit Floating Point Formats (Extreme Precision / Compute / G-Buffer)
+    // 32-bit floating point formats (extreme precision / compute / G-buffer)
     
     InternalFormatR32F    = 20, // 1 channel,  passes raw single-floats directly to GPU, sampled via samplerND -> vec4(  R, 0.0, 0.0, 1.0)
     InternalFormatRG32F   = 21, // 2 channels, passes raw single-floats directly to GPU, sampled via samplerND -> vec4(  R,   G, 0.0, 1.0)
     InternalFormatRGB32F  = 22, // 3 channels, passes raw single-floats directly to GPU, sampled via samplerND -> vec4(  R,   G,   B, 1.0)
     InternalFormatRGBA32F = 23, // 4 channels, passes raw single-floats directly to GPU, sampled via samplerND -> vec4(  R,   G,   B,   A)
 
-    // Pure Unsigned Integer Formats (IDs / Masks / Bitfields)
+    // Pure unsigned integer formats (IDs / masks / bitfields)
     
     InternalFormatR8UI    = 24, // 1 channel,  remains as unsigned 8-bit integer [0, 255], sampled via usamplerND -> uvec4(R, 0, 0, 1)
     InternalFormatRG8UI   = 25, // 2 channels, remains as unsigned 8-bit integer [0, 255], sampled via usamplerND -> uvec4(R, G, 0, 1)
@@ -370,7 +392,7 @@ typedef enum InternalFormat
     InternalFormatRGB32UI  = 34, // 3 channels, remains as unsigned 32-bit integer [0, 4294967295], sampled via usamplerND -> uvec4(R, G, B, 1)
     InternalFormatRGBA32UI = 35, // 4 channels, remains as unsigned 32-bit integer [0, 4294967295], sampled via usamplerND -> uvec4(R, G, B, A)
 
-    // Pure Signed Integer Formats (Custom Math / Data Grids)
+    // Pure signed integer formats (custom math / data grids)
     
     InternalFormatR8I    = 36, // 1 channel,  remains as signed 8-bit integer [-128, 127], sampled via isamplerND -> ivec4(R, 0, 0, 1)
     InternalFormatRG8I   = 37, // 2 channels, remains as signed 8-bit integer [-128, 127], sampled via isamplerND -> ivec4(R, G, 0, 1)
@@ -387,7 +409,7 @@ typedef enum InternalFormat
     InternalFormatRGB32I  = 46, // 3 channels, remains as signed 32-bit integer [-2147483648, 2147483647], sampled via isamplerND -> ivec4(R, G, B, 1)
     InternalFormatRGBA32I = 47, // 4 channels, remains as signed 32-bit integer [-2147483648, 2147483647], sampled via isamplerND -> ivec4(R, G, B, A)
 
-    // sRGB Formats (Gamma Corrected Colour Textures)
+    // sRGB formats (gamma corrected colour textures)
     
     InternalFormatSRGB8       = 48, // 3 channels, automatically linearised via pow(C, 2.2) on sample -> vec4(  R,   G,   B, 1.0)
     InternalFormatSRGB8Alpha8 = 49, // 4 channels, automatically linearises RGB channels    on sample -> vec4(  R,   G,   B,   A)
@@ -407,7 +429,7 @@ uint32_t internalFormatToNative(InternalFormat internalFormat);
 
 typedef enum DataType
 {
-    // Standard Component Types
+    // Standard component types
 
     DataTypeByte    = 0, // Signed 8-bit integer
     DataTypeUByte   = 1, // Unsigned 8-bit integer, the standard for basic PNG/JPG images
@@ -418,12 +440,12 @@ typedef enum DataType
     DataTypeFloat16 = 6, // 16-bit floating-point number, common for medium-precision HDR buffers
     DataTypeFloat32 = 7, // Standard 32-bit float, used for high-precision vector fields, physics, and HDR calculations
 
-    // 8-Bit Packed Types
+    // 8-Bit packed types
 
     DataTypeR3G3B2 = 8, // [MSB] 3-bit R, 3-bit G, 2-bit B [LSB]
     DataTypeB2G3R3 = 9, // [MSB] 2-bit B, 3-bit G, 3-bit R [LSB]
 
-    // 16-Bit Packed Types
+    // 16-Bit packed types
 
     DataTypeR5G6B5   = 10, // [MSB] 5-bit R, 6-bit G, 5-bit B [LSB]
     DataTypeB5G6R5   = 11, // [MSB] 5-bit B, 6-bit G, 5-bit R [LSB]
@@ -432,14 +454,14 @@ typedef enum DataType
     DataTypeR5G5B5A1 = 14, // [MSB] 5-bit R, 5-bit G, 5-bit B, 1-bit A [LSB]
     DataTypeA1B5G5R5 = 15, // [MSB] 1-bit A, 5-bit B, 5-bit G, 5-bit R [LSB]
 
-    // 32-Bit Packed Types
+    // 32-Bit packed types
 
     DataTypeR8G8B8A8    = 16, // [MSB]  8-bit R,  8-bit G,  8-bit B,  8-bit A [LSB]
     DataTypeA8B8G8R8    = 17, // [MSB]  8-bit A,  8-bit B,  8-bit G,  8-bit R [LSB]
     DataTypeR10G10B10A2 = 18, // [MSB] 10-bit R, 10-bit G, 10-bit B,  2-bit A [LSB]
     DataTypeA2B10G10R10 = 19, // [MSB]  2-bit A, 10-bit B, 10-bit G, 10-bit R [LSB]
 
-    // Special Depth/Stencil Packed Types
+    // Special depth/stencil packed types
 
     DataTypeDepth24Stencil8  = 20, // [MSB] 24-bit Depth, 8-bit Stencil [LSB]
     DataTypeDepth32FStencil8 = 21, // [MSB] 24-bit Padding, 8-bit Stencil, 32-bit Float Depth [LSB]
@@ -457,6 +479,7 @@ typedef enum DebugSource
     DebugSourceThirdParty     = 3, // Messages generated by third-party libraries or middleware utilizing the graphics API.
     DebugSourceApplication    = 4, // Custom messages explicitly injected by your own application code.
     DebugSourceOther          = 5, // Messages from sources that do not fit into any other category.
+    
     DebugSourceCount,
 } DebugSource;
 
@@ -473,6 +496,7 @@ typedef enum DebugType
     DebugTypePushGroup           = 6, // Events indicating the push/entry into a nested debug group scope.
     DebugTypePopGroup            = 7, // Events indicating the pop/exit from the current nested debug group scope.
     DebugTypeOther               = 8, // Messages representing events that do not fall under any standard type category.
+    
     DebugTypeCount,
 } DebugType;
 
@@ -484,6 +508,7 @@ typedef enum DebugSeverity
     DebugSeverityInfo    = 1, // Used for minor, non-critical issues like compilation log details or small, non-urgent performance recommendations.
     DebugSeverityWarning = 2, // Used for moderate issues such as severe performance bottlenecks, usage of deprecated behaviors, or platform-dependent portability warnings.
     DebugSeverityError   = 3, // Used for critical errors, API abuses, or undefined behaviors that will likely result in rendering corruption or application crashes.
+    
     DebugSeverityCount,
 } DebugSeverity;
 

@@ -13,7 +13,7 @@ typedef struct Camera
     float far;
 } Camera;
 
-void cameraTranslate(Camera* camera, vec3 localDelta);
+void cameraTranslate(Camera* camera, const vec3 localDelta);
 void cameraRotate(Camera* camera, float dx, float dy, float sensitivity);
 void cameraZoom(Camera* camera, float scroll, float sensitivity);
 

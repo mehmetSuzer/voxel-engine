@@ -4,32 +4,22 @@
 #include "log/log.h"
 #include "glad/glad.h"
 
-static const char* errorStringFromNative(GLenum error)
+void __glCheckErrorsImplementation(const char* file, int line)
 {
-    switch (error)
+    GLenum errorNative = GL_NO_ERROR;
+    while ((errorNative = glGetError()) != GL_NO_ERROR)
     {
-        case GL_INVALID_ENUM:                  return "invalid enum";
-        case GL_INVALID_VALUE:                 return "invalid value";
-        case GL_INVALID_OPERATION:             return "invalid operation";
-        case GL_STACK_OVERFLOW:                return "stack overflow";
-        case GL_STACK_UNDERFLOW:               return "stack underflow";
-        case GL_OUT_OF_MEMORY:                 return "out of memory";
-        case GL_INVALID_FRAMEBUFFER_OPERATION: return "invalid framebuffer operation";
-        case GL_CONTEXT_LOST:                  return "context lost";
-    }
+        const char* error =
+            (errorNative == GL_INVALID_ENUM)                  ? "invalid enum"                  :
+            (errorNative == GL_INVALID_VALUE)                 ? "invalid value"                 :
+            (errorNative == GL_INVALID_OPERATION)             ? "invalid operation"             :
+            (errorNative == GL_STACK_OVERFLOW)                ? "stack overflow"                :
+            (errorNative == GL_STACK_UNDERFLOW)               ? "stack underflow"               :
+            (errorNative == GL_OUT_OF_MEMORY)                 ? "out of memory"                 :
+            (errorNative == GL_INVALID_FRAMEBUFFER_OPERATION) ? "invalid framebuffer operation" :
+            (errorNative == GL_CONTEXT_LOST)                  ? "context lost"                  : "unknown error";
 
-    assert(0);
-
-    return "invalid error";
-}
-
-void __glCheckErrorsImplementation(const char* file, uint32_t line)
-{
-    GLenum error = GL_NO_ERROR;
-    while ((error = glGetError()) != GL_NO_ERROR)
-    {
-        const char* errorString = errorStringFromNative(error);
-        logError("OPENGL", "%s | %s (%u)", errorString, file, line);
+        logError("OPENGL", "%s | %s (%i)", error, file, line);
     }
 }
 
