@@ -16,9 +16,9 @@ void platformPostEmptyEvent(void);
 
 // --------------------- OPENGL SPECIFIC --------------------- //
 
-typedef void*(*OpenGLFunctionLoader)(const char*);
+typedef void*(*OpenGLLoadFunction)(const char*);
 
-OpenGLFunctionLoader platformGetOpenGLFunctionLoader(void);
+OpenGLLoadFunction platformGetOpenGLLoadFunction(void);
 bool platformIsExtensionSupported(const char* extension);
 
 // ----------------------------------------------------------- //

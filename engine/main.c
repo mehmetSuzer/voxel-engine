@@ -1,5 +1,4 @@
 
-#include "log/log.h"
 #include "utils/macros.h"
 #include "platform/platform.h"
 #include "platform/window.h"
@@ -26,7 +25,7 @@ int main(void)
     }
     windowMakeContextCurrent(window);
 
-    if (!graphicsInit((GraphicsFunctionLoader)platformGetOpenGLFunctionLoader()))
+    if (!graphicsInit((GraphicsAPILoadFunction)platformGetOpenGLLoadFunction()))
     {
         windowDestroy(window);
         platformTerminate();

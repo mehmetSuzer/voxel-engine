@@ -529,6 +529,7 @@ uint32_t dataTypeToNative(DataType dataType)
     return GL_BYTE;
 }
 
+#ifndef NDEBUG
 uint32_t debugSourceToNative(DebugSource debugSource)
 {
     switch (debugSource)
@@ -583,4 +584,5 @@ uint32_t debugSeverityToNative(DebugSeverity debugSeverity)
 
     return GL_DEBUG_SEVERITY_NOTIFICATION;
 }
+#endif
 

@@ -13,8 +13,6 @@ typedef enum MouseButton
     MouseButton6 = 5,
     MouseButton7 = 6,
     MouseButton8 = 7,
-    
-    MouseButtonCount,
 
     MouseButtonLeft   = MouseButton1, // Same as MouseButton1
     MouseButtonRight  = MouseButton2, // Same as MouseButton2

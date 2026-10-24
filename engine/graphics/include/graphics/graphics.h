@@ -7,9 +7,9 @@
 #define DEPTH_NEAREST  0.0
 #define DEPTH_FURTHEST 1.0
 
-typedef void*(*GraphicsFunctionLoader)(const char*);
+typedef void*(*GraphicsAPILoadFunction)(const char*);
 
-bool graphicsInit(GraphicsFunctionLoader graphicsFunctionLoader);
+bool graphicsInit(GraphicsAPILoadFunction graphicsAPILoadFunction);
 
 void graphicsEnable(GraphicsCapability graphicsCapability);
 void graphicsDisable(GraphicsCapability graphicsCapability);
@@ -56,5 +56,6 @@ void graphicsMemoryBarrier(MemoryBarrierBit memoryBarrierBits);
 
 #ifndef NDEBUG
 void graphicsInsertDebugMessage(DebugSource debugSource, DebugType debugType, DebugSeverity debugSeverity, const char* debugMessage);
+int32_t graphicsGetMaxDebugLabelLength(void); // Includes the null-terminating character.
 #endif
 

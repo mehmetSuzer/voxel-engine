@@ -5,8 +5,6 @@
 
 typedef enum Key
 {
-    KeyUnknown = -1,
-
     // Letter keys
 
     KeyA =  0,
@@ -147,8 +145,6 @@ typedef enum Key
     KeyLeftSuper    = 117,
     KeyRightSuper   = 118,
     KeyMenu         = 119,
-
-    KeyCount,
 } Key;
 
 int32_t keyToNative(Key key);

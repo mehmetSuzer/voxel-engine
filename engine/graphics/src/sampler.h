@@ -10,6 +10,9 @@ typedef uint32_t SamplerID;
 
 typedef struct SamplerCreateInfo
 {
+#ifndef NDEBUG
+    const char* label;
+#endif
     TextureWrap textureWrapS;
     TextureWrap textureWrapT;
     TextureWrap textureWrapR;

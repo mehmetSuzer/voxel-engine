@@ -1,13 +1,19 @@
 
-#include <stddef.h>
+#include <string.h>
 #include <assert.h>
 #include "sampler.h"
 #include "log/log.h"
 #include "glad/glad.h"
+#include "utils/macros.h"
+#include "graphics/graphics.h"
 
 void samplerGetDefaultCreateInfo(SamplerCreateInfo* samplerCreateInfoOut)
 {
     assert(samplerCreateInfoOut != NULL);
+
+#ifndef NDEBUG
+    samplerCreateInfoOut->label = NULL;
+#endif
 
     samplerCreateInfoOut->textureWrapS = TextureWrapRepeat;
     samplerCreateInfoOut->textureWrapT = TextureWrapRepeat;
@@ -53,6 +59,15 @@ SamplerID samplerCreate(const SamplerCreateInfo* samplerCreateInfo)
     glSamplerParameterf(samplerID, GL_TEXTURE_MAX_ANISOTROPY, samplerCreateInfo->maxAnisotropy);
 
     glSamplerParameterfv(samplerID, GL_TEXTURE_BORDER_COLOR, samplerCreateInfo->borderColour);
+
+#ifndef NDEBUG
+    if (samplerCreateInfo->label != NULL)
+    {
+        const GLsizei maxDebugLabelLength = graphicsGetMaxDebugLabelLength();
+        const GLsizei labelLength = SMALLER((GLsizei)strlen(samplerCreateInfo->label), maxDebugLabelLength-1);
+        glObjectLabel(GL_SAMPLER, samplerID, labelLength, samplerCreateInfo->label);
+    }
+#endif
 
     logVerbose("SAMPLER", "created: %u", samplerID);
     return samplerID;

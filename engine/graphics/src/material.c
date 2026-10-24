@@ -1,6 +1,5 @@
 
 #include <string.h>
-#include "error.h"
 #include "material.h"
 #include "log/log.h"
 

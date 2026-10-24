@@ -8,21 +8,22 @@
 
 #define STATIC_ASSERT(condition, message) _Static_assert(condition, message)
 
-#define COUNT_OF(array)      (sizeof(array) / sizeof((array)[0]))
+#define COUNT_OF(array) (sizeof(array) / sizeof((array)[0]))
+
 #define LAST_ELEMENT(array) ((array)[COUNT_OF(array) - 1])
 
 #define OFFSET_OF(type, member) ((size_t)&(((type*)0)->member))
 
 #define CONTAINER_OF(ptr, type, member) ((type*)((uint8_t*)(ptr) - OFFSET_OF(type, member)))
 
-#define ABS(x)  (((x) > (typeof(x))0) ? (x) : -(x))
+#define ABS(x) (((x) > (typeof(x))0) ? (x) : -(x))
 
-#define SMALLER(x, y)   (((x) < (y)) ? (x) : (y))
-#define GREATER(x, y)   (((x) > (y)) ? (x) : (y))
+#define SMALLER(x, y) (((x) < (y)) ? (x) : (y))
+#define GREATER(x, y) (((x) > (y)) ? (x) : (y))
 
-#define CLAMP(x, min, max)  (((x) < (min)) ? (min) : ((x) > (max)) ? (max) : (x))
+#define CLAMP(x, min, max) (((x) < (min)) ? (min) : ((x) > (max)) ? (max) : (x))
 
-#define LERP(a, b, t)   ((a) + (typeof(a))(t) * ((b) - (a)))
+#define LERP(a, b, t) ((a) + (typeof(a))(t) * ((b) - (a)))
 
 #define SWAP(a, b)              \
     do {                        \

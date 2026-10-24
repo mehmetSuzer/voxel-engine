@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include <stdbool.h>
 #include "key.h"
 #include "mouse.h"
 
@@ -9,13 +10,11 @@
 
 typedef enum CursorMode
 {
-    CursorModeNormal      = 0, // Keeps the cursor fully visible and allows it to move freely across the screen and interact with other applications.
+    CursorModeNormal      = 0, // Keeps the cursor fully visible and allows it to move freely across the screen.
     CursorModeHidden      = 1, // Hides the mouse cursor from view while still allowing it to move freely and leave the window boundaries.
-    CursorModeLocked      = 2, // Hides the cursor and locks it to the center of the window, providing infinite relative movement data for first-person camera controls.
-    CursorModeCaptured    = 3, // Keeps the cursor visible but confines its movement strictly inside the window borders, ideal for RTS or top-down strategy games.
-    CursorModeUnavailable = 4, // Represents an uninitialised or unsupported cursor state, used solely as a read-only error token when querying input configurations.
-    
-    CursorModeCount,
+    CursorModeLocked      = 2, // Hides the cursor and locks it to the center of the window, providing infinite relative movement data.
+    CursorModeCaptured    = 3, // Keeps the cursor visible but confines its movement strictly inside the window borders.
+    CursorModeUnavailable = 4, // Represents an uninitialised or unsupported cursor state, used solely as a read-only error token.
 } CursorMode;
 
 typedef struct Window Window;

@@ -9,10 +9,8 @@ project (voxel-engine
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-# --------------------------------------
-# Executable
-# --------------------------------------
 add_executable(${PROJECT_NAME}
     engine/main.c
 )

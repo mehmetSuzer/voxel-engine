@@ -1,10 +1,12 @@
 
+#include <assert.h>
 #include <string.h>
+#include <stdlib.h>
 #include "mesh.h"
 #include "buffer.h"
 #include "log/log.h"
 #include "glad/glad.h"
-#include "vertex_array.h"
+#include "graphics/graphics.h"
 
 typedef struct Mesh
 {
@@ -58,81 +60,78 @@ static MeshID meshArrayPush(const Mesh* mesh)
     return meshID;
 }
 
-MeshID meshCreateStatic(const VertexStatic* vertices, uint32_t vertexCount, const uint32_t* indices, uint32_t indexCount, DrawMode drawMode)
+MeshID meshCreate(const MeshCreateInfo* meshCreateInfo)
 {
-    assert(vertices != NULL && vertexCount != 0);
-    assert(indices != NULL && indexCount != 0);
+    assert(meshCreateInfo->vertexLinkAttributeFunction != NULL);
+    assert(meshCreateInfo->vertices != NULL);
+    assert(meshCreateInfo->indices != NULL);
+    assert(meshCreateInfo->vertexCount != 0);
+    assert(meshCreateInfo->indexCount != 0);
+    assert(meshCreateInfo->vertexSize != 0);
+    
+#ifndef NDEBUG
+    char* vaoLabel = NULL;
+    char* vboLabel = NULL;
+    char* eboLabel = NULL;
+
+    if (meshCreateInfo->label != NULL)
+    {
+        const size_t maxDebugLabelLength = (size_t)graphicsGetMaxDebugLabelLength();
+    
+        vaoLabel = (char*)malloc(maxDebugLabelLength * sizeof(char));
+        snprintf(vaoLabel, maxDebugLabelLength, "%s VAO", meshCreateInfo->label);
+ 
+        vboLabel = (char*)malloc(maxDebugLabelLength * sizeof(char));
+        snprintf(vboLabel, maxDebugLabelLength, "%s VBO", meshCreateInfo->label);
+
+        eboLabel = (char*)malloc(maxDebugLabelLength * sizeof(char));
+        snprintf(eboLabel, maxDebugLabelLength, "%s EBO", meshCreateInfo->label);
+    }
+#endif
+
+    BufferCreateInfo vboCreateInfo = {0};
+#ifndef NDEBUG
+    vboCreateInfo.label = vboLabel;
+#endif
+    vboCreateInfo.data = meshCreateInfo->vertices;
+    vboCreateInfo.size = meshCreateInfo->vertexCount * meshCreateInfo->vertexSize;
+    vboCreateInfo.bufferStorageBits = BufferStorageBitNone;
+
+    BufferCreateInfo eboCreateInfo = {0};
+#ifndef NDEBUG
+    eboCreateInfo.label = eboLabel;
+#endif
+    eboCreateInfo.data = meshCreateInfo->indices;
+    eboCreateInfo.size = meshCreateInfo->indexCount * sizeof(uint32_t);
+    eboCreateInfo.bufferStorageBits = BufferStorageBitNone;
 
     Mesh mesh = {0};
+#ifndef NDEBUG
+    mesh.VAO = vertexArrayCreate(vaoLabel);
+#else
     mesh.VAO = vertexArrayCreate();
-    mesh.VBO = bufferCreate(vertexCount * sizeof(VertexStatic), vertices, BufferStorageBitNone);
-    mesh.EBO = bufferCreate(indexCount * sizeof(uint32_t), indices, BufferStorageBitNone);
+#endif
+    mesh.VBO = bufferCreate(&vboCreateInfo);
+    mesh.EBO = bufferCreate(&eboCreateInfo);
 
-    vertexArraySetVertexBuffer(mesh.VAO, 0, mesh.VBO, 0, sizeof(VertexStatic));
+#ifndef NDEBUG
+    free(vaoLabel);
+    free(vboLabel);
+    free(eboLabel);
+#endif
+
+    vertexArraySetVertexBuffer(mesh.VAO, 0, mesh.VBO, 0, meshCreateInfo->vertexSize);
     vertexArraySetElementBuffer(mesh.VAO, mesh.EBO);
+    meshCreateInfo->vertexLinkAttributeFunction(mesh.VAO);
 
-    vertexArrayLinkAttributeFloat(mesh.VAO, 0, 0, 3, offsetof(VertexStatic, position));
-    vertexArrayLinkAttributeFloat(mesh.VAO, 0, 1, 3, offsetof(VertexStatic, normal));
-    vertexArrayLinkAttributeFloat(mesh.VAO, 0, 2, 3, offsetof(VertexStatic, tangent));
-    vertexArrayLinkAttributeFloat(mesh.VAO, 0, 3, 2, offsetof(VertexStatic, texture));
-
-    mesh.drawMode = drawModeToNative(drawMode);
-    mesh.vertexCount = vertexCount;
-    mesh.indexCount = indexCount;
+    mesh.drawMode = drawModeToNative(meshCreateInfo->drawMode);
+    mesh.vertexCount = meshCreateInfo->vertexCount;
+    mesh.indexCount = meshCreateInfo->indexCount;
     mesh.active = true;
 
     const MeshID meshID = meshArrayPush(&mesh);
-    return meshID;
-}
+    logVerbose("MESH", "created: %i", meshID);
 
-MeshID meshCreateStaticPacked(const VertexStaticPacked* vertices, uint32_t vertexCount, const uint32_t* indices, uint32_t indexCount, DrawMode drawMode)
-{
-    assert(vertices != NULL && vertexCount != 0);
-    assert(indices != NULL && indexCount != 0);
-
-    Mesh mesh = {0};
-    mesh.VAO = vertexArrayCreate();
-    mesh.VBO = bufferCreate(vertexCount * sizeof(VertexStaticPacked), vertices, BufferStorageBitNone);
-    mesh.EBO = bufferCreate(indexCount * sizeof(uint32_t), indices, BufferStorageBitNone);
-
-    vertexArraySetVertexBuffer(mesh.VAO, 0, mesh.VBO, 0, sizeof(VertexStaticPacked));
-    vertexArraySetElementBuffer(mesh.VAO, mesh.EBO);
-
-    vertexArrayLinkAttributeFloat(mesh.VAO, 0, 0, 3, offsetof(VertexStaticPacked, positionXYZ));
-    vertexArrayLinkAttributeFloat(mesh.VAO, 0, 1, 2, offsetof(VertexStaticPacked, normalXY));
-    vertexArrayLinkAttributeFloat(mesh.VAO, 0, 2, 2, offsetof(VertexStaticPacked, tangentXY));
-    vertexArrayLinkAttributeFloat(mesh.VAO, 0, 3, 2, offsetof(VertexStaticPacked, textureUV));
-
-    mesh.drawMode = drawModeToNative(drawMode);
-    mesh.vertexCount = vertexCount;
-    mesh.indexCount = indexCount;
-    mesh.active = true;
-
-    const MeshID meshID = meshArrayPush(&mesh);
-    return meshID;
-}
-
-MeshID meshCreateVoxel(const VertexVoxel* vertices, uint32_t vertexCount, const uint32_t* indices, uint32_t indexCount, DrawMode drawMode)
-{
-    assert(vertices != NULL && vertexCount != 0);
-    assert(indices != NULL && indexCount != 0);
-
-    Mesh mesh = {0};
-    mesh.VAO = vertexArrayCreate();
-    mesh.VBO = bufferCreate(vertexCount * sizeof(VertexVoxel), vertices, BufferStorageBitNone);
-    mesh.EBO = bufferCreate(indexCount * sizeof(uint32_t), indices, BufferStorageBitNone);
-
-    vertexArraySetVertexBuffer(mesh.VAO, 0, mesh.VBO, 0, sizeof(VertexVoxel));
-    vertexArraySetElementBuffer(mesh.VBO, mesh.EBO);
-
-    vertexArrayLinkAttributeUint(mesh.VAO, 0, 0, 1, 0);
-
-    mesh.drawMode = drawModeToNative(drawMode);
-    mesh.vertexCount = vertexCount;
-    mesh.indexCount = indexCount;
-    mesh.active = true;
-
-    const MeshID meshID = meshArrayPush(&mesh);
     return meshID;
 }
 
@@ -178,6 +177,5 @@ void meshDraw(MeshID meshID)
     const Mesh* mesh = &meshArray.data[meshID];
     vertexArrayBind(mesh->VAO);
     glDrawElements(mesh->drawMode, mesh->indexCount, GL_UNSIGNED_INT, NULL);
-    logVerbose("MESH", "drawn: %u", meshID);
 }
 

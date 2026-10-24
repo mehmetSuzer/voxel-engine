@@ -1,15 +1,30 @@
 
-#include <stddef.h>
+#include <assert.h>
 #include <string.h>
 #include "buffer.h"
 #include "log/log.h"
 #include "glad/glad.h"
+#include "utils/macros.h"
+#include "graphics/graphics.h"
 
-BufferID bufferCreate(size_t size, const void* data, BufferStorageBit bufferStorageBits)
+BufferID bufferCreate(const BufferCreateInfo* bufferCreateInfo)
 {
     GLuint bufferID = 0;
     glCreateBuffers(1, &bufferID);
-    glNamedBufferStorage(bufferID, (GLsizeiptr)size, data, bufferStorageBitsToNative(bufferStorageBits));
+    glNamedBufferStorage(
+        bufferID, 
+        (GLsizeiptr)bufferCreateInfo->size, 
+        bufferCreateInfo->data, 
+        bufferStorageBitsToNative(bufferCreateInfo->bufferStorageBits));
+
+#ifndef NDEBUG
+    if (bufferCreateInfo->label != NULL)
+    {
+        const GLsizei maxDebugLabelLength = graphicsGetMaxDebugLabelLength();
+        const GLsizei labelLength = SMALLER((GLsizei)strlen(bufferCreateInfo->label), maxDebugLabelLength-1);
+        glObjectLabel(GL_BUFFER, bufferID, labelLength, bufferCreateInfo->label);
+    }
+#endif
 
     logVerbose("BUFFER", "created: %u", bufferID);
     return bufferID;
@@ -50,13 +65,31 @@ void bufferReadRange(BufferID bufferID, size_t offset, size_t size, void* dataOu
 
 void bufferClear(BufferID bufferID, InternalFormat internalFormat, ExternalFormat externalFormat, DataType dataType, const void* data)
 {
-    glClearNamedBufferData(bufferID, internalFormatToNative(internalFormat), externalFormatToNative(externalFormat), dataTypeToNative(dataType), data);
+    glClearNamedBufferData(
+        bufferID, 
+        internalFormatToNative(internalFormat), 
+        externalFormatToNative(externalFormat), 
+        dataTypeToNative(dataType), 
+        data);
 }
 
-void bufferClearRange(BufferID bufferID, InternalFormat internalFormat, ExternalFormat externalFormat, DataType dataType, size_t offset, size_t size, const void* data)
+void bufferClearRange(
+    BufferID bufferID, 
+    InternalFormat internalFormat, 
+    ExternalFormat externalFormat, 
+    DataType dataType, 
+    size_t offset, 
+    size_t size, 
+    const void* data)
 {
-    glClearNamedBufferSubData(bufferID, internalFormatToNative(internalFormat), (GLintptr)offset, 
-        (GLsizeiptr)size, externalFormatToNative(externalFormat), dataTypeToNative(dataType), data);
+    glClearNamedBufferSubData(
+        bufferID, 
+        internalFormatToNative(internalFormat), 
+        (GLintptr)offset, 
+        (GLsizeiptr)size, 
+        externalFormatToNative(externalFormat), 
+        dataTypeToNative(dataType), 
+        data);
 }
 
 void bufferCopy(BufferID readBufferID, BufferID writeBufferID)

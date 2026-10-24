@@ -9,7 +9,17 @@ typedef uint32_t BufferID;
 
 #define BUFFER_NULL ((BufferID)0)
 
-BufferID bufferCreate(size_t size, const void* data, BufferStorageBit bufferStorageBits);
+typedef struct BufferCreateInfo
+{
+#ifndef NDEBUG
+    const char* label;
+#endif
+    const void* data;
+    size_t size;
+    BufferStorageBit bufferStorageBits;
+} BufferCreateInfo;
+
+BufferID bufferCreate(const BufferCreateInfo* bufferCreateInfo);
 
 void bufferDestroy(BufferID bufferID);
 
@@ -49,8 +59,10 @@ void* bufferMapRange(BufferID bufferID, size_t offset, size_t length, BufferMapB
 // Tells that the pointer obtained while mapping is no longer needed and invalidates the pointer.
 bool bufferUnmap(BufferID bufferID);
 
-// Tells the graphics driver exactly which region of the mapped buffer is modified so that it can uplad only that specific range to the GPU, saving bandwidth.
-// Can be used only if the buffer is mapped with BufferMapBitFlushExplicit. Otherwise, it is assumed that the entire buffer is modified.
+// Tells the graphics driver exactly which region of the mapped buffer is modified 
+// so that it can uplad only that specific range to the GPU, saving bandwidth.
+// Can be used only if the buffer is mapped with BufferMapBitFlushExplicit. 
+// Otherwise, it is assumed that the entire buffer is modified.
 void bufferFlushMappedRange(BufferID bufferID, size_t offset, size_t length);
 
 bool bufferIsMapped(BufferID bufferID);

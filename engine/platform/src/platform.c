@@ -53,14 +53,14 @@ bool platformInit(void)
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
 #endif
 
-    const int MSAASampleCount = 4;
+    const int sampleCount = 4;
     glfwWindowHint(GLFW_RED_BITS, 8);
     glfwWindowHint(GLFW_GREEN_BITS, 8);
     glfwWindowHint(GLFW_BLUE_BITS, 8);
     glfwWindowHint(GLFW_ALPHA_BITS, 8);
     glfwWindowHint(GLFW_DEPTH_BITS, 24);
     glfwWindowHint(GLFW_STENCIL_BITS, 8);
-    glfwWindowHint(GLFW_SAMPLES, MSAASampleCount);
+    glfwWindowHint(GLFW_SAMPLES, sampleCount);
     glfwWindowHint(GLFW_DOUBLEBUFFER, GLFW_TRUE);
     glfwWindowHint(GLFW_SRGB_CAPABLE, GLFW_TRUE);
 
@@ -113,7 +113,6 @@ bool platformInit(void)
     logInfo("PLATFORM", "initialised");
     return true;
 }
-
 void platformTerminate(void)
 {
     glfwTerminate();
@@ -151,9 +150,9 @@ void platformPostEmptyEvent(void)
     glfwPostEmptyEvent();
 }
 
-OpenGLFunctionLoader platformGetOpenGLFunctionLoader(void)
+OpenGLLoadFunction platformGetOpenGLLoadFunction(void)
 {
-    return (OpenGLFunctionLoader)glfwGetProcAddress;
+    return (OpenGLLoadFunction)glfwGetProcAddress;
 }
 
 bool platformIsExtensionSupported(const char* extension)

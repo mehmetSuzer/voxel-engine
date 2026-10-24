@@ -1,13 +1,30 @@
 
+#include <string.h>
 #include "log/log.h"
+#include "utils/macros.h"
+#include "graphics/graphics.h"
 #include "glad/glad.h"
 #include "vertex_array.h"
 
+#ifdef NDEBUG
 VertexArrayID vertexArrayCreate(void)
+#else
+VertexArrayID vertexArrayCreate(const char* label)
+#endif
 {
     GLuint vertexArrayID = 0;
     glCreateVertexArrays(1, &vertexArrayID);
     logVerbose("V_ARRAY", "created: %u", vertexArrayID);
+
+#ifndef NDEBUG
+    if (label != NULL)
+    {
+        const GLsizei maxDebugLabelLength = graphicsGetMaxDebugLabelLength();
+        const GLsizei labelLength = SMALLER((GLsizei)strlen(label), maxDebugLabelLength-1);
+        glObjectLabel(GL_VERTEX_ARRAY, vertexArrayID, labelLength, label);
+    }
+#endif
+
     return vertexArrayID;
 }
 
@@ -28,7 +45,12 @@ void vertexArrayBind(VertexArrayID vertexArrayID)
     logVerbose("V_ARRAY", "binded: %u", vertexArrayID);
 }
 
-void vertexArraySetVertexBuffer(VertexArrayID vertexArrayID, uint32_t bindingIndex, BufferID vertexBufferID, uint32_t offset, uint32_t stride)
+void vertexArraySetVertexBuffer(
+    VertexArrayID vertexArrayID, 
+    uint32_t bindingIndex, 
+    BufferID vertexBufferID, 
+    uint32_t offset, 
+    uint32_t stride)
 {
     glVertexArrayVertexBuffer(vertexArrayID, bindingIndex, vertexBufferID, (GLintptr)offset, stride);
     logVerbose("V_ARRAY", "set vertex buffer %u for %u", vertexBufferID, vertexArrayID);
@@ -40,28 +62,48 @@ void vertexArraySetElementBuffer(VertexArrayID vertexArrayID, BufferID elementBu
     logVerbose("V_ARRAY", "set element buffer %u for %u", elementBufferID, vertexArrayID);
 }
 
-void vertexArrayLinkAttributeFloat(VertexArrayID vertexArrayID, uint32_t bindingIndex, uint32_t attributeIndex, uint32_t floatCount, uint32_t relativeOffset)
+void vertexArrayLinkAttributeFloat(
+    VertexArrayID vertexArrayID, 
+    uint32_t bindingIndex, 
+    uint32_t attributeIndex, 
+    uint32_t floatCount, 
+    uint32_t relativeOffset)
 {
     glEnableVertexArrayAttrib(vertexArrayID, attributeIndex);
     glVertexArrayAttribFormat(vertexArrayID, attributeIndex, floatCount, GL_FLOAT, GL_FALSE, relativeOffset);
     glVertexArrayAttribBinding(vertexArrayID, attributeIndex, bindingIndex);
 }
 
-void vertexArrayLinkAttributeInt(VertexArrayID vertexArrayID, uint32_t bindingIndex, uint32_t attributeIndex, uint32_t intCount, uint32_t relativeOffset)
+void vertexArrayLinkAttributeInt(
+    VertexArrayID vertexArrayID, 
+    uint32_t bindingIndex, 
+    uint32_t attributeIndex, 
+    uint32_t intCount, 
+    uint32_t relativeOffset)
 {
     glEnableVertexArrayAttrib(vertexArrayID, attributeIndex);
     glVertexArrayAttribIFormat(vertexArrayID, attributeIndex, intCount, GL_INT, relativeOffset);
     glVertexArrayAttribBinding(vertexArrayID, attributeIndex, bindingIndex);
 }
 
-void vertexArrayLinkAttributeUint(VertexArrayID vertexArrayID, uint32_t bindingIndex, uint32_t attributeIndex, uint32_t uintCount, uint32_t relativeOffset)
+void vertexArrayLinkAttributeUint(
+    VertexArrayID vertexArrayID, 
+    uint32_t bindingIndex, 
+    uint32_t attributeIndex, 
+    uint32_t uintCount, 
+    uint32_t relativeOffset)
 {
     glEnableVertexArrayAttrib(vertexArrayID, attributeIndex);
     glVertexArrayAttribIFormat(vertexArrayID, attributeIndex, uintCount, GL_UNSIGNED_INT, relativeOffset);
     glVertexArrayAttribBinding(vertexArrayID, attributeIndex, bindingIndex);
 }
 
-void vertexArrayLinkAttributeDouble(VertexArrayID vertexArrayID, uint32_t bindingIndex, uint32_t attributeIndex, uint32_t doubleCount, uint32_t relativeOffset)
+void vertexArrayLinkAttributeDouble(
+    VertexArrayID vertexArrayID, 
+    uint32_t bindingIndex, 
+    uint32_t attributeIndex, 
+    uint32_t doubleCount, 
+    uint32_t relativeOffset)
 {
     glEnableVertexArrayAttrib(vertexArrayID, attributeIndex);
     glVertexArrayAttribLFormat(vertexArrayID, attributeIndex, doubleCount, GL_DOUBLE, relativeOffset);

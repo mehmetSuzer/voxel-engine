@@ -348,7 +348,13 @@ void windowSetFullScreen(Window* window, bool enabled)
     }
     else
     {
-        glfwSetWindowMonitor(window->handle, NULL, window->windowedPositionX, window->windowedPositionY, window->windowedWidth, window->windowedHeight, GLFW_DONT_CARE);
+        glfwSetWindowMonitor(
+            window->handle, NULL, 
+            window->windowedPositionX, 
+            window->windowedPositionY, 
+            window->windowedWidth, 
+            window->windowedHeight, 
+            GLFW_DONT_CARE);
     }
     window->isFullScreen = enabled;
     logVerbose("WINDOW", "full screen is %s", (enabled) ? "enabled" : "disabled");

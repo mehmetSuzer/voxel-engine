@@ -7,9 +7,21 @@
 
 typedef uint32_t MeshID;
 
-MeshID meshCreateStatic(const VertexStatic* vertices, uint32_t vertexCount, const uint32_t* indices, uint32_t indexCount, DrawMode drawMode);
-MeshID meshCreateStaticPacked(const VertexStaticPacked* vertices, uint32_t vertexCount, const uint32_t* indices, uint32_t indexCount, DrawMode drawMode);
-MeshID meshCreateVoxel(const VertexVoxel* vertices, uint32_t vertexCount, const uint32_t* indices, uint32_t indexCount, DrawMode drawMode);
+typedef struct MeshCreateInfo
+{
+#ifndef NDEBUG
+    const char* label;
+#endif
+    VertexLinkAttributesFunction vertexLinkAttributeFunction;
+    const void* vertices;
+    const uint32_t* indices;
+    uint32_t vertexCount;
+    uint32_t indexCount;
+    uint32_t vertexSize;
+    DrawMode drawMode;
+} MeshCreateInfo;
+
+MeshID meshCreate(const MeshCreateInfo* meshCreateInfo);
 
 void meshDestroy(MeshID meshID);
 void meshDestroyAll();

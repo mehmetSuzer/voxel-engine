@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include <stddef.h>
 #include <stdbool.h>
 #include "graphics/enums.h"
 
@@ -10,6 +11,9 @@ typedef uint32_t TextureID;
 
 typedef struct TextureCreateInfo
 {
+#ifndef NDEBUG
+    const char* label;
+#endif
     uint32_t width;
     uint32_t height;
     uint32_t depth;
@@ -39,6 +43,9 @@ typedef struct TextureFillInfo
 
 typedef struct TextureCreateCubeMapInfo
 {
+#ifndef NDEBUG
+    const char* label;
+#endif
     uint32_t size;
     InternalFormat internalFormat;
     float maxAnisotropy;
@@ -95,7 +102,14 @@ void textureBindSampler(TextureID textureID, uint32_t unit);
 // A Slice of 3D Textures: layered = GL_FALSE | layer = sliceIndex
 // Full Cube Maps:         layered = GL_TRUE  | layer = 0
 // A Face of Cube Maps:    layered = GL_FALSE | layer = faceIndex (0 to 5)
-void textureBindImage(TextureID textureID, uint32_t unit, uint32_t mipmapLevel, bool layered, uint32_t layer, AccessPolicy accessPolicy, ExternalFormat externalFormat);
+void textureBindImage(
+    TextureID textureID, 
+    uint32_t unit, 
+    uint32_t mipmapLevel, 
+    bool layered, 
+    uint32_t layer, 
+    AccessPolicy accessPolicy, 
+    ExternalFormat externalFormat);
 
 void textureGetDimensions(TextureID textureID, uint32_t mipmapLevel, uint32_t* widthOut, uint32_t* heightOut, uint32_t* depthOut);
 

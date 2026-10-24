@@ -1,11 +1,12 @@
 
 #include <math.h>
-#include <stddef.h>
+#include <string.h>
 #include <assert.h>
 #include "texture.h"
 #include "log/log.h"
 #include "glad/glad.h"
 #include "utils/macros.h"
+#include "graphics/graphics.h"
 
 TextureID textureCreate(const TextureCreateInfo* textureCreateInfo)
 {
@@ -16,7 +17,7 @@ TextureID textureCreate(const TextureCreateInfo* textureCreateInfo)
     const GLsizei depth  = textureCreateInfo->depth;
 
     const GLenum target = 
-        (depth > 1  && height >  1 && width > 1) ? GL_TEXTURE_3D :
+        (depth >  1 && height >  1 && width > 1) ? GL_TEXTURE_3D :
         (depth == 1 && height >  1 && width > 1) ? GL_TEXTURE_2D :
         (depth == 1 && height == 1 && width > 1) ? GL_TEXTURE_1D : GL_NONE;
 
@@ -29,7 +30,9 @@ TextureID textureCreate(const TextureCreateInfo* textureCreateInfo)
     GLuint textureID = 0;
     glCreateTextures(target, 1, &textureID);
 
-    const bool generateMipmap = textureCreateInfo->minFilter != TextureMinFilterNearest && textureCreateInfo->minFilter != TextureMinFilterLinear;
+    const bool generateMipmap = textureCreateInfo->minFilter != TextureMinFilterNearest && 
+                                textureCreateInfo->minFilter != TextureMinFilterLinear;
+
     const GLsizei mipmapLevelCount = (generateMipmap) ? (GLsizei)floorf(log2f((float)GREATER(GREATER(width, height), depth))) + 1 : 1;
     const GLenum internalFormat = internalFormatToNative(textureCreateInfo->internalFormat);
 
@@ -44,6 +47,15 @@ TextureID textureCreate(const TextureCreateInfo* textureCreateInfo)
     glTextureParameteri(textureID, GL_TEXTURE_MAG_FILTER, textureMagFilterToNative(textureCreateInfo->magFilter));
     glTextureParameterf(textureID, GL_TEXTURE_MAX_ANISOTROPY, textureCreateInfo->maxAnisotropy);
     glTextureParameterfv(textureID, GL_TEXTURE_BORDER_COLOR, textureCreateInfo->borderColour);
+
+#ifndef NDEBUG
+    if (textureCreateInfo->label != NULL)
+    {
+        const GLsizei maxDebugLabelLength = graphicsGetMaxDebugLabelLength();
+        const GLsizei labelLength = SMALLER((GLsizei)strlen(textureCreateInfo->label), maxDebugLabelLength-1);
+        glObjectLabel(GL_TEXTURE, textureID, labelLength, textureCreateInfo->label);
+    }
+#endif
 
     logVerbose("TEXTURE", "texture %u is created with dimensions (%i, %i, %i)", textureID, width, height, depth);
     return textureID;
@@ -77,11 +89,21 @@ void textureFill(TextureID textureID, const TextureFillInfo* textureFillInfo)
     const GLenum dataType = dataTypeToNative(textureFillInfo->dataType);
     const GLenum externalFormat = externalFormatToNative(textureFillInfo->externalFormat);
 
-    if      (target == GL_TEXTURE_1D) { glTextureSubImage1D(textureID, mipmapLevel, xOffset, width, externalFormat, dataType, data);                                  }
-    else if (target == GL_TEXTURE_2D) { glTextureSubImage2D(textureID, mipmapLevel, xOffset, yOffset, width, height, externalFormat, dataType, data);                 }
-    else                              { glTextureSubImage3D(textureID, mipmapLevel, xOffset, yOffset, zOffset, width, height, depth, externalFormat, dataType, data); }
+    if (target == GL_TEXTURE_1D) 
+    { 
+        glTextureSubImage1D(textureID, mipmapLevel, xOffset, width, externalFormat, dataType, data);
+    }
+    else if (target == GL_TEXTURE_2D) 
+    { 
+        glTextureSubImage2D(textureID, mipmapLevel, xOffset, yOffset, width, height, externalFormat, dataType, data);
+    }
+    else 
+    { 
+        glTextureSubImage3D(textureID, mipmapLevel, xOffset, yOffset, zOffset, width, height, depth, externalFormat, dataType, data); 
+    }
 
-    logVerbose("TEXTURE", "texture %u is filled with offsets (%i, %i, %i) and dimensions (%i, %i, %i)", textureID, xOffset, yOffset, zOffset, width, height, depth);
+    logVerbose("TEXTURE", "texture %u is filled with offsets (%i, %i, %i) and dimensions (%i, %i, %i)", 
+        textureID, xOffset, yOffset, zOffset, width, height, depth);
 }
 
 TextureID textureCreateCubeMap(const TextureCreateCubeMapInfo* textureCreateCubeMapInfo)
@@ -93,8 +115,9 @@ TextureID textureCreateCubeMap(const TextureCreateCubeMapInfo* textureCreateCube
 
     const GLsizei size = textureCreateCubeMapInfo->size;
     const GLsizei mipmapLevelCount = (GLsizei)floorf(log2f((float)size)) + 1;
+    const GLenum internalFormatNative = internalFormatToNative(textureCreateCubeMapInfo->internalFormat);
 
-    glTextureStorage2D(textureID, mipmapLevelCount, internalFormatToNative(textureCreateCubeMapInfo->internalFormat), size, size);
+    glTextureStorage2D(textureID, mipmapLevelCount, internalFormatNative, size, size);
 
     glTextureParameteri(textureID, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTextureParameteri(textureID, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -102,6 +125,15 @@ TextureID textureCreateCubeMap(const TextureCreateCubeMapInfo* textureCreateCube
     glTextureParameteri(textureID, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTextureParameteri(textureID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTextureParameterf(textureID, GL_TEXTURE_MAX_ANISOTROPY, textureCreateCubeMapInfo->maxAnisotropy);
+
+#ifndef NDEBUG
+    if (textureCreateCubeMapInfo->label != NULL)
+    {
+        const GLsizei maxDebugLabelLength = graphicsGetMaxDebugLabelLength();
+        const GLsizei labelLength = SMALLER((GLsizei)strlen(textureCreateCubeMapInfo->label), maxDebugLabelLength-1);
+        glObjectLabel(GL_TEXTURE, textureID, labelLength, textureCreateCubeMapInfo->label);
+    }
+#endif
 
     logVerbose("TEXTURE", "cube map %u is created with size %i", textureID, size);
     return textureID;
@@ -177,10 +209,19 @@ void textureBindSampler(TextureID textureID, uint32_t unit)
     logVerbose("TEXTURE", "texture %u is bound to %u", textureID, unit);
 }
 
-void textureBindImage(TextureID textureID, uint32_t unit, uint32_t mipmapLevel, bool layered, uint32_t layer, AccessPolicy accessPolicy, ExternalFormat externalFormat)
+void textureBindImage(
+    TextureID textureID, 
+    uint32_t unit, 
+    uint32_t mipmapLevel, 
+    bool layered, 
+    uint32_t layer, 
+    AccessPolicy accessPolicy, 
+    ExternalFormat externalFormat)
 {
     assert(unit < 32);
-    glBindImageTexture(unit, textureID, mipmapLevel, layered, layer, accessPolicyToNative(accessPolicy), externalFormatToNative(externalFormat));
+    const GLenum accessPolicyNative = accessPolicyToNative(accessPolicy);
+    const GLenum externalFormatNative = externalFormatToNative(externalFormat);
+    glBindImageTexture(unit, textureID, mipmapLevel, layered, layer, accessPolicyNative, externalFormatNative);
     logVerbose("TEXTURE", "image binded: %u", textureID);
 }
 
