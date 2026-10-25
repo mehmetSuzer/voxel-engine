@@ -11,9 +11,6 @@ typedef uint32_t TextureID;
 
 typedef struct TextureCreateInfo
 {
-#ifndef NDEBUG
-    const char* label;
-#endif
     uint32_t width;
     uint32_t height;
     uint32_t depth;
@@ -43,9 +40,6 @@ typedef struct TextureFillInfo
 
 typedef struct TextureCreateCubeMapInfo
 {
-#ifndef NDEBUG
-    const char* label;
-#endif
     uint32_t size;
     InternalFormat internalFormat;
     float maxAnisotropy;
@@ -84,6 +78,11 @@ TextureID textureCreateCubeMap(const TextureCreateCubeMapInfo* textureCreateCube
 void textureFillCubeMap(TextureID textureID, const TextureFillCubeMapInfo* textureFillCubeMapInfo);
 
 void textureDestroy(TextureID textureID);
+
+#ifndef NDEBUG
+void textureSetLabel(TextureID textureID, const char* label);
+void textureGetLabel(TextureID textureID, int32_t maxLabelLength, int32_t* labelLengthOut, char* labelOut);
+#endif
 
 bool textureIsActive(TextureID textureID);
 

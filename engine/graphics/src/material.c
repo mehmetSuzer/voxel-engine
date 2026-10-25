@@ -1,4 +1,5 @@
 
+#include <assert.h>
 #include <string.h>
 #include "material.h"
 #include "log/log.h"

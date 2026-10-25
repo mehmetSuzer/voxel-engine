@@ -9,19 +9,14 @@ typedef uint32_t BufferID;
 
 #define BUFFER_NULL ((BufferID)0)
 
-typedef struct BufferCreateInfo
-{
-#ifndef NDEBUG
-    const char* label;
-#endif
-    const void* data;
-    size_t size;
-    BufferStorageBit bufferStorageBits;
-} BufferCreateInfo;
-
-BufferID bufferCreate(const BufferCreateInfo* bufferCreateInfo);
+BufferID bufferCreate(size_t size, const void* data, BufferStorageBit bufferStorageBits);
 
 void bufferDestroy(BufferID bufferID);
+
+#ifndef NDEBUG
+void bufferSetLabel(BufferID bufferID, const char* label);
+void bufferGetLabel(BufferID bufferID, int32_t maxLabelLength, int32_t* labelLengthOut, char* labelOut);
+#endif
 
 bool bufferIsActive(BufferID bufferID);
 

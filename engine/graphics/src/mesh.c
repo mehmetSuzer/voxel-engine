@@ -6,7 +6,6 @@
 #include "buffer.h"
 #include "log/log.h"
 #include "glad/glad.h"
-#include "graphics/graphics.h"
 
 typedef struct Mesh
 {
@@ -69,56 +68,10 @@ MeshID meshCreate(const MeshCreateInfo* meshCreateInfo)
     assert(meshCreateInfo->indexCount != 0);
     assert(meshCreateInfo->vertexSize != 0);
     
-#ifndef NDEBUG
-    char* vaoLabel = NULL;
-    char* vboLabel = NULL;
-    char* eboLabel = NULL;
-
-    if (meshCreateInfo->label != NULL)
-    {
-        const size_t maxDebugLabelLength = (size_t)graphicsGetMaxDebugLabelLength();
-    
-        vaoLabel = (char*)malloc(maxDebugLabelLength * sizeof(char));
-        snprintf(vaoLabel, maxDebugLabelLength, "%s VAO", meshCreateInfo->label);
- 
-        vboLabel = (char*)malloc(maxDebugLabelLength * sizeof(char));
-        snprintf(vboLabel, maxDebugLabelLength, "%s VBO", meshCreateInfo->label);
-
-        eboLabel = (char*)malloc(maxDebugLabelLength * sizeof(char));
-        snprintf(eboLabel, maxDebugLabelLength, "%s EBO", meshCreateInfo->label);
-    }
-#endif
-
-    BufferCreateInfo vboCreateInfo = {0};
-#ifndef NDEBUG
-    vboCreateInfo.label = vboLabel;
-#endif
-    vboCreateInfo.data = meshCreateInfo->vertices;
-    vboCreateInfo.size = meshCreateInfo->vertexCount * meshCreateInfo->vertexSize;
-    vboCreateInfo.bufferStorageBits = BufferStorageBitNone;
-
-    BufferCreateInfo eboCreateInfo = {0};
-#ifndef NDEBUG
-    eboCreateInfo.label = eboLabel;
-#endif
-    eboCreateInfo.data = meshCreateInfo->indices;
-    eboCreateInfo.size = meshCreateInfo->indexCount * sizeof(uint32_t);
-    eboCreateInfo.bufferStorageBits = BufferStorageBitNone;
-
     Mesh mesh = {0};
-#ifndef NDEBUG
-    mesh.VAO = vertexArrayCreate(vaoLabel);
-#else
     mesh.VAO = vertexArrayCreate();
-#endif
-    mesh.VBO = bufferCreate(&vboCreateInfo);
-    mesh.EBO = bufferCreate(&eboCreateInfo);
-
-#ifndef NDEBUG
-    free(vaoLabel);
-    free(vboLabel);
-    free(eboLabel);
-#endif
+    mesh.VBO = bufferCreate(meshCreateInfo->vertexCount * meshCreateInfo->vertexSize, meshCreateInfo->vertices, BufferStorageBitNone);
+    mesh.EBO = bufferCreate(meshCreateInfo->indexCount * sizeof(uint32_t), meshCreateInfo->indices, BufferStorageBitNone);
 
     vertexArraySetVertexBuffer(mesh.VAO, 0, mesh.VBO, 0, meshCreateInfo->vertexSize);
     vertexArraySetElementBuffer(mesh.VAO, mesh.EBO);
@@ -165,6 +118,40 @@ void meshDestroyAll()
     meshArray.size = 0;
     meshArray.capacity = 0;
 }
+
+#ifndef NDEBUG
+void meshSetLabel(MeshID meshID, const char* label)
+{
+    const Mesh* mesh = &meshArray.data[meshID];
+   
+    char* vaoLabel = NULL;
+    char* vboLabel = NULL;
+    char* eboLabel = NULL;
+ 
+    if (label != NULL)
+    {
+        const size_t maxLabelLength = 256;
+
+        vaoLabel = (char*)malloc(maxLabelLength * sizeof(char));
+        snprintf(vaoLabel, maxLabelLength, "%s VAO", label);
+        vboLabel = (char*)malloc(maxLabelLength * sizeof(char));
+        snprintf(vboLabel, maxLabelLength, "%s VBO", label);
+        eboLabel = (char*)malloc(maxLabelLength * sizeof(char));
+        snprintf(eboLabel, maxLabelLength, "%s EBO", label);    
+    }
+
+    vertexArraySetLabel(mesh->VAO, vaoLabel);
+    bufferSetLabel(mesh->VBO, vboLabel);
+    bufferSetLabel(mesh->EBO, eboLabel);
+
+    if (label != NULL)
+    {
+        free(vaoLabel);
+        free(vboLabel);
+        free(eboLabel);
+    }
+}
+#endif
 
 bool meshIsActive(MeshID meshID)
 {

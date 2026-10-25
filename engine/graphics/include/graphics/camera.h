@@ -2,7 +2,6 @@
 #pragma once
 
 #include <cglm/cglm.h>
-#include <cglm/call.h>
 
 typedef struct Camera
 {

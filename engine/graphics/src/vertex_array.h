@@ -5,13 +5,14 @@
 
 typedef uint32_t VertexArrayID;
 
-#ifdef NDEBUG
 VertexArrayID vertexArrayCreate(void);
-#else
-VertexArrayID vertexArrayCreate(const char* label);
-#endif
 
 void vertexArrayDestroy(VertexArrayID vertexArrayID);
+
+#ifndef NDEBUG
+void vertexArraySetLabel(VertexArrayID vertexArrayID, const char* label);
+void vertexArrayGetLabel(VertexArrayID vertexArrayID, int32_t maxLabelLength, int32_t* labelLengthOut, char* labelOut);
+#endif
 
 bool vertexArrayIsActive(VertexArrayID vertexArrayID);
 

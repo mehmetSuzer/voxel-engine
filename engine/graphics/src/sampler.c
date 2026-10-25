@@ -1,19 +1,13 @@
 
-#include <string.h>
+#include <stddef.h>
 #include <assert.h>
 #include "sampler.h"
 #include "log/log.h"
 #include "glad/glad.h"
-#include "utils/macros.h"
-#include "graphics/graphics.h"
 
 void samplerGetDefaultCreateInfo(SamplerCreateInfo* samplerCreateInfoOut)
 {
     assert(samplerCreateInfoOut != NULL);
-
-#ifndef NDEBUG
-    samplerCreateInfoOut->label = NULL;
-#endif
 
     samplerCreateInfoOut->textureWrapS = TextureWrapRepeat;
     samplerCreateInfoOut->textureWrapT = TextureWrapRepeat;
@@ -60,15 +54,6 @@ SamplerID samplerCreate(const SamplerCreateInfo* samplerCreateInfo)
 
     glSamplerParameterfv(samplerID, GL_TEXTURE_BORDER_COLOR, samplerCreateInfo->borderColour);
 
-#ifndef NDEBUG
-    if (samplerCreateInfo->label != NULL)
-    {
-        const GLsizei maxDebugLabelLength = graphicsGetMaxDebugLabelLength();
-        const GLsizei labelLength = SMALLER((GLsizei)strlen(samplerCreateInfo->label), maxDebugLabelLength-1);
-        glObjectLabel(GL_SAMPLER, samplerID, labelLength, samplerCreateInfo->label);
-    }
-#endif
-
     logVerbose("SAMPLER", "created: %u", samplerID);
     return samplerID;
 }
@@ -78,6 +63,18 @@ void samplerDestroy(SamplerID samplerID)
     glDeleteSamplers(1, &samplerID);
     logVerbose("SAMPLER", "destroyed: %u", samplerID);
 }
+
+#ifndef NDEBUG
+void samplerSetLabel(SamplerID samplerID, const char* label)
+{
+    glObjectLabel(GL_SAMPLER, samplerID, (label == NULL) ? 0 : -1, label);
+}
+
+void samplerGetLabel(SamplerID samplerID, int32_t maxLabelLength, int32_t* labelLengthOut, char* labelOut)
+{
+    glGetObjectLabel(GL_SAMPLER, samplerID, maxLabelLength, labelLengthOut, labelOut);
+}
+#endif
 
 bool samplerIsActive(SamplerID samplerID)
 {

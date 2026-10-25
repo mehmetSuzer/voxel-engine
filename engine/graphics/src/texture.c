@@ -5,8 +5,6 @@
 #include "texture.h"
 #include "log/log.h"
 #include "glad/glad.h"
-#include "utils/macros.h"
-#include "graphics/graphics.h"
 
 TextureID textureCreate(const TextureCreateInfo* textureCreateInfo)
 {
@@ -33,7 +31,8 @@ TextureID textureCreate(const TextureCreateInfo* textureCreateInfo)
     const bool generateMipmap = textureCreateInfo->minFilter != TextureMinFilterNearest && 
                                 textureCreateInfo->minFilter != TextureMinFilterLinear;
 
-    const GLsizei mipmapLevelCount = (generateMipmap) ? (GLsizei)floorf(log2f((float)GREATER(GREATER(width, height), depth))) + 1 : 1;
+    const GLsizei greatestDimension = (width > height) ? ((width > depth) ? width : depth) : ((height > depth) ? height : depth);
+    const GLsizei mipmapLevelCount = (generateMipmap) ? (GLsizei)floorf(log2f((float)greatestDimension)) + 1 : 1;
     const GLenum internalFormat = internalFormatToNative(textureCreateInfo->internalFormat);
 
     if      (target == GL_TEXTURE_1D) { glTextureStorage1D(textureID, mipmapLevelCount, internalFormat, width);                }
@@ -47,15 +46,6 @@ TextureID textureCreate(const TextureCreateInfo* textureCreateInfo)
     glTextureParameteri(textureID, GL_TEXTURE_MAG_FILTER, textureMagFilterToNative(textureCreateInfo->magFilter));
     glTextureParameterf(textureID, GL_TEXTURE_MAX_ANISOTROPY, textureCreateInfo->maxAnisotropy);
     glTextureParameterfv(textureID, GL_TEXTURE_BORDER_COLOR, textureCreateInfo->borderColour);
-
-#ifndef NDEBUG
-    if (textureCreateInfo->label != NULL)
-    {
-        const GLsizei maxDebugLabelLength = graphicsGetMaxDebugLabelLength();
-        const GLsizei labelLength = SMALLER((GLsizei)strlen(textureCreateInfo->label), maxDebugLabelLength-1);
-        glObjectLabel(GL_TEXTURE, textureID, labelLength, textureCreateInfo->label);
-    }
-#endif
 
     logVerbose("TEXTURE", "texture %u is created with dimensions (%i, %i, %i)", textureID, width, height, depth);
     return textureID;
@@ -126,15 +116,6 @@ TextureID textureCreateCubeMap(const TextureCreateCubeMapInfo* textureCreateCube
     glTextureParameteri(textureID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTextureParameterf(textureID, GL_TEXTURE_MAX_ANISOTROPY, textureCreateCubeMapInfo->maxAnisotropy);
 
-#ifndef NDEBUG
-    if (textureCreateCubeMapInfo->label != NULL)
-    {
-        const GLsizei maxDebugLabelLength = graphicsGetMaxDebugLabelLength();
-        const GLsizei labelLength = SMALLER((GLsizei)strlen(textureCreateCubeMapInfo->label), maxDebugLabelLength-1);
-        glObjectLabel(GL_TEXTURE, textureID, labelLength, textureCreateCubeMapInfo->label);
-    }
-#endif
-
     logVerbose("TEXTURE", "cube map %u is created with size %i", textureID, size);
     return textureID;
 }
@@ -155,8 +136,9 @@ void textureFillCubeMap(TextureID textureID, const TextureFillCubeMapInfo* textu
         textureFillCubeMapInfo->backData,   // +Z
         textureFillCubeMapInfo->frontData,  // -Z
     };
+    const GLint faceCount = (GLint)(sizeof(faceData) / sizeof(faceData[0]));
 
-    for (GLint face = 0; face < COUNT_OF(faceData); ++face)
+    for (GLint face = 0; face < faceCount; ++face)
     {
         if (faceData[face] != NULL)
         {
@@ -172,6 +154,18 @@ void textureDestroy(TextureID textureID)
     glDeleteTextures(1, &textureID);
     logVerbose("TEXTURE", "destroyed: %u", textureID);
 }
+
+#ifndef NDEBUG
+void textureSetLabel(TextureID textureID, const char* label)
+{
+    glObjectLabel(GL_TEXTURE, textureID, (label == NULL) ? 0 : -1, label);
+}
+
+void textureGetLabel(TextureID textureID, int32_t maxLabelLength, int32_t* labelLengthOut, char* labelOut)
+{
+    glGetObjectLabel(GL_TEXTURE, textureID, maxLabelLength, labelLengthOut, labelOut);
+}
+#endif
 
 bool textureIsActive(TextureID textureID)
 {

@@ -1,13 +1,11 @@
 
-#include <stdio.h>
 #include <assert.h>
-#include "shader_program.h"
 #include "log/log.h"
 #include "glad/glad.h"
+#include "shader_program.h"
 
-#define SHADER_NULL ((GLuint)0)
-
-static char* readFile(const char* filePath, size_t* sizeOut)
+/*
+static char* readFile("const char* filePath, size_t* sizeOut)
 {
     FILE* file = fopen(filePath, "rb");
     if (file == NULL)
@@ -29,24 +27,27 @@ static char* readFile(const char* filePath, size_t* sizeOut)
     if (sizeOut != NULL) { *sizeOut = size; }
     return buffer;
 }
+*/
 
-static GLuint createShader(const char* shaderPath, GLenum type)
+static GLuint createShader(const char* shaderSource, GLenum shaderType)
 {
-    char* shaderCode = readFile(shaderPath, NULL);
-    if (shaderCode == NULL)
-    {
-        return SHADER_NULL;
-    }
+    if (shaderSource == NULL) { return 0; }
 
-    const GLuint shader = glCreateShader(type);
-    const GLchar* source = shaderCode;
-    glShaderSource(shader, 1, &source, NULL);
+    const char* shaderName = 
+        (shaderType == GL_VERTEX_SHADER)          ? "vertex"          :
+        (shaderType == GL_TESS_CONTROL_SHADER)    ? "tess control"    :
+        (shaderType == GL_TESS_EVALUATION_SHADER) ? "tess evaluation" :
+        (shaderType == GL_GEOMETRY_SHADER)        ? "geometry"        :
+        (shaderType == GL_FRAGMENT_SHADER)        ? "fragment"        :
+        (shaderType == GL_COMPUTE_SHADER)         ? "compute"         : "unknown";
+
+    const GLuint shader = glCreateShader(shaderType);
+    glShaderSource(shader, 1, &shaderSource, NULL);
     glCompileShader(shader);
-    free(shaderCode);
 
     GLint success = GL_FALSE;
     glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
-
+    
     if (success != GL_TRUE)
     {
         GLsizei infoLogLength = 0;
@@ -56,33 +57,18 @@ static GLuint createShader(const char* shaderPath, GLenum type)
         glGetShaderInfoLog(shader, infoLogLength, NULL, infoLog);
         infoLog[infoLogLength] = '\0';
 
-        logError("PROGRAM", "failed to compile %s:\n%s", shaderPath, infoLog);
+        logError("PROGRAM", "failed to compile %s shader:\n%s", shaderName, infoLog);
         free(infoLog);
 
         glDeleteShader(shader);
-        return shader;
+        return 0;
     }
 
-    logVerbose("PROGRAM", "%s is compiled", shaderPath);
+    logVerbose("PROGRAM", "compiled %s shader", shaderName);
     return shader;
 }
 
-static void destroyShader(GLuint shader)
-{
-    glDeleteShader(shader);
-}
-
-static void attachShader(ShaderProgramID shaderProgramID, GLuint shader)
-{
-    glAttachShader(shaderProgramID, shader);
-}
-
-static void detachShader(ShaderProgramID shaderProgramID, GLuint shader)
-{
-    glDetachShader(shaderProgramID, shader);
-}
-
-static GLint linkShaderProgram(ShaderProgramID shaderProgramID)
+static GLint linkShaderProgram(GLuint shaderProgramID)
 {
     glLinkProgram(shaderProgramID);
     
@@ -100,14 +86,15 @@ static GLint linkShaderProgram(ShaderProgramID shaderProgramID)
 
         logError("PROGRAM", "failed to link\n%s", infoLog);
         free(infoLog);
-        return success;
+
+        return GL_FALSE;
     }
 
     logVerbose("PROGRAM", "linked: %u", shaderProgramID);
-    return success;
+    return GL_TRUE;
 }
 
-static GLint validateShaderProgram(ShaderProgramID shaderProgramID)
+static GLint validateShaderProgram(GLuint shaderProgramID)
 {
     glValidateProgram(shaderProgramID);
     
@@ -125,358 +112,133 @@ static GLint validateShaderProgram(ShaderProgramID shaderProgramID)
 
         logError("PROGRAM", "failed to validate\n%s", infoLog);
         free(infoLog);
-        return success;
+
+        return GL_FALSE;
     }
     
     logVerbose("PROGRAM", "validated: %u", shaderProgramID);
-    return success;
+    return GL_TRUE;
 }
 
-static GLint getUniformLocation(ShaderProgramID shaderProgramID, const char* uniform)
+static GLint getUniformLocation(GLuint shaderProgramID, const char* uniform)
 {
     const GLint location = glGetUniformLocation(shaderProgramID, uniform);
     assert(location != -1);
     return location;
 }
 
-ShaderProgramID shaderProgramCreateC(const char* computeShaderPath)
+ShaderProgramID shaderProgramCreateGraphics(
+    const char* vertexShaderSource,
+    const char* tessControlShaderSource,
+    const char* tessEvaluationShaderSource,
+    const char* geometryShaderSource,
+    const char* fragmentShaderSource)
 {
-    GLuint computeShader = SHADER_NULL;
-    ShaderProgramID shaderProgramID = SHADER_PROGRAM_NULL;
+    if (vertexShaderSource == NULL)
+    {
+        logError("PROGRAM", "vertex shader is missing");
+        return SHADER_PROGRAM_NULL;
+    }
+    if (tessControlShaderSource != NULL && tessEvaluationShaderSource == NULL)
+    {
+        logError("PROGRAM", "tess control shader is given, but not tess evaluation shader");
+        return SHADER_PROGRAM_NULL;
+    }
+    if (tessControlShaderSource == NULL && tessEvaluationShaderSource != NULL)
+    {
+        logError("PROGRAM", "tess evaluation shader is given, but not tess control shader");
+        return SHADER_PROGRAM_NULL;
+    }
 
-    computeShader = createShader(computeShaderPath, GL_COMPUTE_SHADER);
-    if (computeShader == SHADER_NULL) { goto cleanup; }
+    const GLuint shaderProgramID = glCreateProgram();
+    if (shaderProgramID == 0)
+    {
+        logError("PROGRAM", "failed to create shader program object");
+        return SHADER_PROGRAM_NULL;
+    }
 
-    shaderProgramID = glCreateProgram();
-    attachShader(shaderProgramID, computeShader);
+    const GLuint vertShader = createShader(vertexShaderSource, GL_VERTEX_SHADER);
+    const GLuint tescShader = createShader(tessControlShaderSource, GL_TESS_CONTROL_SHADER);
+    const GLuint teseShader = createShader(tessEvaluationShaderSource, GL_TESS_EVALUATION_SHADER);
+    const GLuint geomShader = createShader(geometryShaderSource, GL_GEOMETRY_SHADER);
+    const GLuint fragShader = createShader(fragmentShaderSource, GL_FRAGMENT_SHADER);
+
+    if (vertexShaderSource         != NULL && vertShader == 0) { goto cleanup; }
+    if (tessControlShaderSource    != NULL && tescShader == 0) { goto cleanup; }
+    if (tessEvaluationShaderSource != NULL && teseShader == 0) { goto cleanup; }
+    if (geometryShaderSource       != NULL && geomShader == 0) { goto cleanup; }
+    if (fragmentShaderSource       != NULL && fragShader == 0) { goto cleanup; }
+
+    if (vertShader != 0) { glAttachShader(shaderProgramID, vertShader); }
+    if (tescShader != 0) { glAttachShader(shaderProgramID, tescShader); }
+    if (teseShader != 0) { glAttachShader(shaderProgramID, teseShader); }
+    if (geomShader != 0) { glAttachShader(shaderProgramID, geomShader); }
+    if (fragShader != 0) { glAttachShader(shaderProgramID, fragShader); }
 
     if (linkShaderProgram(shaderProgramID)     != GL_TRUE) { goto cleanup; }
     if (validateShaderProgram(shaderProgramID) != GL_TRUE) { goto cleanup; }
 
-    detachShader(shaderProgramID, computeShader);
-    destroyShader(computeShader);
+    if (vertShader != 0) { glDetachShader(shaderProgramID, vertShader); glDeleteShader(vertShader); }
+    if (tescShader != 0) { glDetachShader(shaderProgramID, tescShader); glDeleteShader(tescShader); }
+    if (teseShader != 0) { glDetachShader(shaderProgramID, teseShader); glDeleteShader(teseShader); }
+    if (geomShader != 0) { glDetachShader(shaderProgramID, geomShader); glDeleteShader(geomShader); }
+    if (fragShader != 0) { glDetachShader(shaderProgramID, fragShader); glDeleteShader(fragShader); }
 
     logVerbose("PROGRAM", "created: %u", shaderProgramID);
+
     return shaderProgramID;
 
 cleanup:
-    if (computeShader != SHADER_NULL)
-    {
-        detachShader(shaderProgramID, computeShader);
-        destroyShader(computeShader);
-    }
-    if (shaderProgramID != SHADER_PROGRAM_NULL)
-    {
-        glDeleteProgram(shaderProgramID);
-        shaderProgramID = SHADER_PROGRAM_NULL;
-    }
+    if (vertShader != 0) { glDeleteShader(vertShader); }
+    if (tescShader != 0) { glDeleteShader(tescShader); }
+    if (teseShader != 0) { glDeleteShader(teseShader); }
+    if (geomShader != 0) { glDeleteShader(geomShader); }
+    if (fragShader != 0) { glDeleteShader(fragShader); }
 
-    logVerbose("PROGRAM", "failed to created");
-    return shaderProgramID;
+    glDeleteProgram(shaderProgramID);
+    logError("PROGRAM", "failed to create shader program");
+
+    return SHADER_PROGRAM_NULL;
 }
 
-ShaderProgramID shaderProgramCreateV(const char* vertexShaderPath)
+ShaderProgramID shaderProgramCreateCompute(const char* computeShaderSource)
 {
-    GLuint vertexShader = SHADER_NULL;
-    ShaderProgramID shaderProgramID = SHADER_PROGRAM_NULL;
+    if (computeShaderSource == NULL)
+    {
+        logError("PROGRAM", "compute shader is missing");
+        return SHADER_PROGRAM_NULL;
+    }
 
-    vertexShader = createShader(vertexShaderPath, GL_VERTEX_SHADER);
-    if (vertexShader == SHADER_NULL) { goto cleanup; }
+    const GLuint shaderProgramID = glCreateProgram();
+    if (shaderProgramID == 0)
+    {
+        logError("PROGRAM", "failed to create shader program object");
+        return SHADER_PROGRAM_NULL;
+    }
 
-    shaderProgramID = glCreateProgram();
-    attachShader(shaderProgramID, vertexShader);
+    const GLuint compShader = createShader(computeShaderSource, GL_COMPUTE_SHADER);
+
+    if (computeShaderSource != NULL && compShader == 0) { goto cleanup; }
+
+    glAttachShader(shaderProgramID, compShader);
 
     if (linkShaderProgram(shaderProgramID)     != GL_TRUE) { goto cleanup; }
     if (validateShaderProgram(shaderProgramID) != GL_TRUE) { goto cleanup; }
 
-    detachShader(shaderProgramID, vertexShader);
-    destroyShader(vertexShader);
+    glDetachShader(shaderProgramID, compShader);
+    glDeleteShader(compShader);
 
     logVerbose("PROGRAM", "created: %u", shaderProgramID);
+
     return shaderProgramID;
 
 cleanup:
-    if (vertexShader != SHADER_NULL)
-    {
-        detachShader(shaderProgramID, vertexShader);
-        destroyShader(vertexShader);
-    }
-    if (shaderProgramID != SHADER_PROGRAM_NULL)
-    {
-        glDeleteProgram(shaderProgramID);
-        shaderProgramID = SHADER_PROGRAM_NULL;
-    }
+    if (compShader != 0) { glDeleteShader(compShader); }
 
-    logVerbose("PROGRAM", "failed to created");
-    return shaderProgramID;
-}
+    glDeleteProgram(shaderProgramID);
+    logError("PROGRAM", "failed to create shader program");
 
-ShaderProgramID shaderProgramCreateVF(
-    const char* vertexShaderPath,
-    const char* fragmentShaderPath)
-{
-    GLuint vertexShader = SHADER_NULL;
-    GLuint fragmentShader = SHADER_NULL;
-    ShaderProgramID shaderProgramID = SHADER_PROGRAM_NULL;
-
-    vertexShader = createShader(vertexShaderPath, GL_VERTEX_SHADER);
-    if (vertexShader == SHADER_NULL) { goto cleanup; }
-    fragmentShader = createShader(fragmentShaderPath, GL_FRAGMENT_SHADER);
-    if (fragmentShader == SHADER_NULL) { goto cleanup; }
-
-    shaderProgramID = glCreateProgram();
-    attachShader(shaderProgramID, vertexShader);
-    attachShader(shaderProgramID, fragmentShader);
-
-    if (linkShaderProgram(shaderProgramID)     != GL_TRUE) { goto cleanup; }
-    if (validateShaderProgram(shaderProgramID) != GL_TRUE) { goto cleanup; }
-
-    detachShader(shaderProgramID, vertexShader);
-    destroyShader(vertexShader);
-    detachShader(shaderProgramID, fragmentShader);
-    destroyShader(fragmentShader);
-
-    logVerbose("PROGRAM", "created: %u", shaderProgramID);
-    return shaderProgramID;
-
-cleanup:
-    if (vertexShader != SHADER_NULL)
-    {
-        detachShader(shaderProgramID, vertexShader);
-        destroyShader(vertexShader);
-    }
-    if (fragmentShader != SHADER_NULL)
-    {
-        detachShader(shaderProgramID, fragmentShader);
-        destroyShader(fragmentShader);
-    }
-    if (shaderProgramID != SHADER_PROGRAM_NULL)
-    {
-        glDeleteProgram(shaderProgramID);
-        shaderProgramID = SHADER_PROGRAM_NULL;
-    }
-
-    logVerbose("PROGRAM", "failed to created");
-    return shaderProgramID;
-}
-
-ShaderProgramID shaderProgramCreateVGF(
-    const char* vertexShaderPath,
-    const char* geometryShaderPath,
-    const char* fragmentShaderPath)
-{
-    GLuint vertexShader = SHADER_NULL;
-    GLuint geometryShader = SHADER_NULL;
-    GLuint fragmentShader = SHADER_NULL;
-    ShaderProgramID shaderProgramID = SHADER_PROGRAM_NULL;
-
-    vertexShader = createShader(vertexShaderPath, GL_VERTEX_SHADER);
-    if (vertexShader == SHADER_NULL) { goto cleanup; }
-    geometryShader = createShader(geometryShaderPath, GL_GEOMETRY_SHADER);
-    if (geometryShader == SHADER_NULL) { goto cleanup; }
-    fragmentShader = createShader(fragmentShaderPath, GL_FRAGMENT_SHADER);
-    if (fragmentShader == SHADER_NULL) { goto cleanup; }
-
-    shaderProgramID = glCreateProgram();
-    attachShader(shaderProgramID, vertexShader);
-    attachShader(shaderProgramID, geometryShader);
-    attachShader(shaderProgramID, fragmentShader);
-
-    if (linkShaderProgram(shaderProgramID)     != GL_TRUE) { goto cleanup; }
-    if (validateShaderProgram(shaderProgramID) != GL_TRUE) { goto cleanup; }
-
-    detachShader(shaderProgramID, vertexShader);
-    destroyShader(vertexShader);
-    detachShader(shaderProgramID, geometryShader);
-    destroyShader(geometryShader);
-    detachShader(shaderProgramID, fragmentShader);
-    destroyShader(fragmentShader);
-
-    logVerbose("PROGRAM", "created: %u", shaderProgramID);
-    return shaderProgramID;
-
-cleanup:
-    if (vertexShader != SHADER_NULL)
-    {
-        detachShader(shaderProgramID, vertexShader);
-        destroyShader(vertexShader);
-    }
-    if (geometryShader != SHADER_NULL)
-    {
-        detachShader(shaderProgramID, geometryShader);
-        destroyShader(geometryShader);
-    }
-    if (fragmentShader != SHADER_NULL)
-    {
-        detachShader(shaderProgramID, fragmentShader);
-        destroyShader(fragmentShader);
-    }
-    if (shaderProgramID != SHADER_PROGRAM_NULL)
-    {
-        glDeleteProgram(shaderProgramID);
-        shaderProgramID = SHADER_PROGRAM_NULL;
-    }
-
-    logVerbose("PROGRAM", "failed to created");
-    return shaderProgramID;
-}
-
-ShaderProgramID shaderProgramCreateVTTF(
-    const char* vertexShaderPath,
-    const char* tessControlShaderPath,
-    const char* tessEvaluationShaderPath,
-    const char* fragmentShaderPath)
-{
-    GLuint vertexShader = SHADER_NULL;
-    GLuint tessControlShader = SHADER_NULL;
-    GLuint tessEvaluationShader = SHADER_NULL;
-    GLuint fragmentShader = SHADER_NULL;
-    ShaderProgramID shaderProgramID = SHADER_PROGRAM_NULL;
-
-    vertexShader = createShader(vertexShaderPath, GL_VERTEX_SHADER);
-    if (vertexShader == SHADER_NULL) { goto cleanup; }
-    tessControlShader = createShader(tessControlShaderPath, GL_TESS_CONTROL_SHADER);
-    if (tessControlShader == SHADER_NULL) { goto cleanup; }
-    tessEvaluationShader = createShader(tessEvaluationShaderPath, GL_TESS_EVALUATION_SHADER);
-    if (tessEvaluationShader == SHADER_NULL) { goto cleanup; }
-    fragmentShader = createShader(fragmentShaderPath, GL_FRAGMENT_SHADER);
-    if (fragmentShader == SHADER_NULL) { goto cleanup; }
-
-    shaderProgramID = glCreateProgram();
-    attachShader(shaderProgramID, vertexShader);
-    attachShader(shaderProgramID, tessControlShader);
-    attachShader(shaderProgramID, tessEvaluationShader);
-    attachShader(shaderProgramID, fragmentShader);
-
-    if (linkShaderProgram(shaderProgramID)     != GL_TRUE) { goto cleanup; }
-    if (validateShaderProgram(shaderProgramID) != GL_TRUE) { goto cleanup; }
-
-    detachShader(shaderProgramID, vertexShader);
-    destroyShader(vertexShader);
-    detachShader(shaderProgramID, tessControlShader);
-    destroyShader(tessControlShader);
-    detachShader(shaderProgramID, tessEvaluationShader);
-    destroyShader(tessEvaluationShader);
-    detachShader(shaderProgramID, fragmentShader);
-    destroyShader(fragmentShader);
-
-    logVerbose("PROGRAM", "created: %u", shaderProgramID);
-    return shaderProgramID;
-
-cleanup:
-    if (vertexShader != SHADER_NULL)
-    {
-        detachShader(shaderProgramID, vertexShader);
-        destroyShader(vertexShader);
-    }
-    if (tessControlShader != SHADER_NULL)
-    {
-        detachShader(shaderProgramID, tessControlShader);
-        destroyShader(tessControlShader);
-    }
-    if (tessEvaluationShader != SHADER_NULL)
-    {
-        detachShader(shaderProgramID, tessEvaluationShader);
-        destroyShader(tessEvaluationShader);
-    }
-    if (fragmentShader != SHADER_NULL)
-    {
-        detachShader(shaderProgramID, fragmentShader);
-        destroyShader(fragmentShader);
-    }
-    if (shaderProgramID != SHADER_PROGRAM_NULL)
-    {
-        glDeleteProgram(shaderProgramID);
-        shaderProgramID = SHADER_PROGRAM_NULL;
-    }
-
-    logVerbose("PROGRAM", "failed to created");
-    return shaderProgramID;
-}
-
-ShaderProgramID shaderProgramCreateVTTGF(
-    const char* vertexShaderPath,
-    const char* tessControlShaderPath,
-    const char* tessEvaluationShaderPath,
-    const char* geometryShaderPath,
-    const char* fragmentShaderPath)
-{
-    GLuint vertexShader = SHADER_NULL;
-    GLuint tessControlShader = SHADER_NULL;
-    GLuint tessEvaluationShader = SHADER_NULL;
-    GLuint geometryShader = SHADER_NULL;
-    GLuint fragmentShader = SHADER_NULL;
-    ShaderProgramID shaderProgramID = SHADER_PROGRAM_NULL;
-
-    vertexShader = createShader(vertexShaderPath, GL_VERTEX_SHADER);
-    if (vertexShader == SHADER_NULL) { goto cleanup; }
-    tessControlShader = createShader(tessControlShaderPath, GL_TESS_CONTROL_SHADER);
-    if (tessControlShader == SHADER_NULL) { goto cleanup; }
-    tessEvaluationShader = createShader(tessEvaluationShaderPath, GL_TESS_EVALUATION_SHADER);
-    if (tessEvaluationShader == SHADER_NULL) { goto cleanup; }
-    geometryShader = createShader(geometryShaderPath, GL_GEOMETRY_SHADER);
-    if (geometryShader == SHADER_NULL) { goto cleanup; }
-    fragmentShader = createShader(fragmentShaderPath, GL_FRAGMENT_SHADER);
-    if (fragmentShader == SHADER_NULL) { goto cleanup; }
-
-    shaderProgramID = glCreateProgram();
-    attachShader(shaderProgramID, vertexShader);
-    attachShader(shaderProgramID, tessControlShader);
-    attachShader(shaderProgramID, tessEvaluationShader);
-    attachShader(shaderProgramID, geometryShader);
-    attachShader(shaderProgramID, fragmentShader);
-
-    if (linkShaderProgram(shaderProgramID)     != GL_TRUE) { goto cleanup; }
-    if (validateShaderProgram(shaderProgramID) != GL_TRUE) { goto cleanup; }
-
-    detachShader(shaderProgramID, vertexShader);
-    destroyShader(vertexShader);
-    detachShader(shaderProgramID, tessControlShader);
-    destroyShader(tessControlShader);
-    detachShader(shaderProgramID, tessEvaluationShader);
-    destroyShader(tessEvaluationShader);
-    detachShader(shaderProgramID, geometryShader);
-    destroyShader(geometryShader);
-    detachShader(shaderProgramID, fragmentShader);
-    destroyShader(fragmentShader);
-
-    logVerbose("PROGRAM", "created: %u", shaderProgramID);
-    return shaderProgramID;
-
-cleanup:
-    if (vertexShader != SHADER_NULL)
-    {
-        detachShader(shaderProgramID, vertexShader);
-        destroyShader(vertexShader);
-    }
-    if (tessControlShader != SHADER_NULL)
-    {
-        detachShader(shaderProgramID, tessControlShader);
-        destroyShader(tessControlShader);
-    }
-    if (tessEvaluationShader != SHADER_NULL)
-    {
-        detachShader(shaderProgramID, tessEvaluationShader);
-        destroyShader(tessEvaluationShader);
-    }
-    if (geometryShader != SHADER_NULL)
-    {
-        detachShader(shaderProgramID, geometryShader);
-        destroyShader(geometryShader);
-    }
-    if (fragmentShader != SHADER_NULL)
-    {
-        detachShader(shaderProgramID, fragmentShader);
-        destroyShader(fragmentShader);
-    }
-    if (shaderProgramID != SHADER_PROGRAM_NULL)
-    {
-        glDeleteProgram(shaderProgramID);
-        shaderProgramID = SHADER_PROGRAM_NULL;
-    }
-
-    logVerbose("PROGRAM", "failed to created");
-    return shaderProgramID;
+    return SHADER_PROGRAM_NULL;
 }
 
 void shaderProgramDestroy(ShaderProgramID shaderProgramID)
@@ -484,6 +246,18 @@ void shaderProgramDestroy(ShaderProgramID shaderProgramID)
     glDeleteProgram(shaderProgramID);
     logVerbose("PROGRAM", "destroyed: %u", shaderProgramID);
 }
+
+#ifndef NDEBUG
+void shaderProgramSetLabel(ShaderProgramID shaderProgramID, const char* label)
+{
+    glObjectLabel(GL_PROGRAM, shaderProgramID, (label == NULL) ? 0 : -1, label);
+}
+
+void shaderProgramGetLabel(ShaderProgramID shaderProgramID, int32_t maxLabelLength, int32_t* labelLengthOut, char* labelOut)
+{
+    glGetObjectLabel(GL_PROGRAM, shaderProgramID, maxLabelLength, labelLengthOut, labelOut);
+}
+#endif
 
 bool shaderProgramIsActive(ShaderProgramID shaderProgramID)
 {
@@ -493,7 +267,6 @@ bool shaderProgramIsActive(ShaderProgramID shaderProgramID)
 void shaderProgramBind(ShaderProgramID shaderProgramID)
 {
     glUseProgram(shaderProgramID);
-    logVerbose("PROGRAM", "binded: %u", shaderProgramID);
 }
 
 void shaderProgramSetUniformSampler(ShaderProgramID shaderProgramID, const char* uniform, uint32_t sampler)

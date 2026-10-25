@@ -1,4 +1,5 @@
 
+#include <assert.h>
 #include <string.h>
 #include "model.h"
 #include "log/log.h"

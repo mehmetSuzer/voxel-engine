@@ -10,9 +10,6 @@ typedef uint32_t SamplerID;
 
 typedef struct SamplerCreateInfo
 {
-#ifndef NDEBUG
-    const char* label;
-#endif
     TextureWrap textureWrapS;
     TextureWrap textureWrapT;
     TextureWrap textureWrapR;
@@ -32,6 +29,11 @@ void samplerGetDefaultCreateInfo(SamplerCreateInfo* samplerCreateInfoOut);
 SamplerID samplerCreate(const SamplerCreateInfo* samplerCreateInfo);
 
 void samplerDestroy(SamplerID samplerID);
+
+#ifndef NDEBUG
+void samplerSetLabel(SamplerID samplerID, const char* label);
+void samplerGetLabel(SamplerID samplerID, int32_t maxLabelLength, int32_t* labelLengthOut, char* labelOut);
+#endif
 
 bool samplerIsActive(SamplerID samplerID);
 

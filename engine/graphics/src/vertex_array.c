@@ -1,30 +1,13 @@
 
-#include <string.h>
 #include "log/log.h"
-#include "utils/macros.h"
-#include "graphics/graphics.h"
 #include "glad/glad.h"
 #include "vertex_array.h"
 
-#ifdef NDEBUG
 VertexArrayID vertexArrayCreate(void)
-#else
-VertexArrayID vertexArrayCreate(const char* label)
-#endif
 {
     GLuint vertexArrayID = 0;
     glCreateVertexArrays(1, &vertexArrayID);
     logVerbose("V_ARRAY", "created: %u", vertexArrayID);
-
-#ifndef NDEBUG
-    if (label != NULL)
-    {
-        const GLsizei maxDebugLabelLength = graphicsGetMaxDebugLabelLength();
-        const GLsizei labelLength = SMALLER((GLsizei)strlen(label), maxDebugLabelLength-1);
-        glObjectLabel(GL_VERTEX_ARRAY, vertexArrayID, labelLength, label);
-    }
-#endif
-
     return vertexArrayID;
 }
 
@@ -33,6 +16,18 @@ void vertexArrayDestroy(VertexArrayID vertexArrayID)
     glDeleteVertexArrays(1, &vertexArrayID);
     logVerbose("V_ARRAY", "destroyed: %u", vertexArrayID);
 }
+
+#ifndef NDEBUG
+void vertexArraySetLabel(VertexArrayID vertexArrayID, const char* label)
+{
+    glObjectLabel(GL_VERTEX_ARRAY, vertexArrayID, (label == NULL) ? 0 : -1, label);
+}
+
+void vertexArrayGetLabel(VertexArrayID vertexArrayID, int32_t maxLabelLength, int32_t* labelLengthOut, char* labelOut)
+{
+    glGetObjectLabel(GL_VERTEX_ARRAY, vertexArrayID, maxLabelLength, labelLengthOut, labelOut);
+}
+#endif
 
 bool vertexArrayIsActive(VertexArrayID vertexArrayID)
 {

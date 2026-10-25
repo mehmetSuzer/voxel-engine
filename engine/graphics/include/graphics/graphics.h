@@ -56,6 +56,5 @@ void graphicsMemoryBarrier(MemoryBarrierBit memoryBarrierBits);
 
 #ifndef NDEBUG
 void graphicsInsertDebugMessage(DebugSource debugSource, DebugType debugType, DebugSeverity debugSeverity, const char* debugMessage);
-int32_t graphicsGetMaxDebugLabelLength(void); // Includes the null-terminating character.
 #endif
 

@@ -1,5 +1,5 @@
 
-#include "utils/macros.h"
+#include <assert.h>
 #include "log/log.h"
 #include "glad/glad.h"
 #include "graphics/graphics.h"
@@ -459,8 +459,7 @@ static void APIENTRY debugMessageCallback(
     const char* message, 
     const void* userParameters)
 {
-    UNUSED(messageLength); 
-    UNUSED(userParameters);
+    (void)(messageLength); (void)(userParameters);
 
     const char* debugSource =
         (debugSourceNative == GL_DEBUG_SOURCE_API)             ? "API"             :
@@ -1336,11 +1335,6 @@ void graphicsInsertDebugMessage(DebugSource debugSource, DebugType debugType, De
         debugSeverityToNative(debugSeverity), 
         -1, 
         debugMessage);
-}
-
-int32_t graphicsGetMaxDebugLabelLength(void)
-{
-    return graphicsState.hardwareCapability.maxDebugLabelLength;
 }
 #endif
 

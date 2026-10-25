@@ -9,9 +9,6 @@ typedef uint32_t MeshID;
 
 typedef struct MeshCreateInfo
 {
-#ifndef NDEBUG
-    const char* label;
-#endif
     VertexLinkAttributesFunction vertexLinkAttributeFunction;
     const void* vertices;
     const uint32_t* indices;
@@ -25,6 +22,10 @@ MeshID meshCreate(const MeshCreateInfo* meshCreateInfo);
 
 void meshDestroy(MeshID meshID);
 void meshDestroyAll();
+
+#ifndef NDEBUG
+void meshSetLabel(MeshID meshID, const char* label);
+#endif
 
 bool meshIsActive(MeshID meshID);
 

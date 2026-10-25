@@ -3,41 +3,25 @@
 
 #include <cglm/cglm.h>
 
-// Vertex Shader:          .vert
-// Tess Control Shader:    .tesc
-// Tess Evaluation Shader: .tese
-// Geometry Shader:        .geom
-// Fragment Shader:        .frag
-// Compute Shader:         .comp
-
 typedef uint32_t ShaderProgramID;
 
 #define SHADER_PROGRAM_NULL ((ShaderProgramID)0)
 
-ShaderProgramID shaderProgramCreateC(
-    const char* computeShaderPath);
-ShaderProgramID shaderProgramCreateV(
-    const char* vertexShaderPath);
-ShaderProgramID shaderProgramCreateVF(
-    const char* vertexShaderPath,
-    const char* fragmentShaderPath);
-ShaderProgramID shaderProgramCreateVGF(
-    const char* vertexShaderPath,
-    const char* geometryShaderPath,
-    const char* fragmentShaderPath);
-ShaderProgramID shaderProgramCreateVTTF(
-    const char* vertexShaderPath,
-    const char* tessControlShaderPath,
-    const char* tessEvaluationShaderPath,
-    const char* fragmentShaderPath);
-ShaderProgramID shaderProgramCreateVTTGF(
-    const char* vertexShaderPath,
-    const char* tessControlShaderPath,
-    const char* tessEvaluationShaderPath,
-    const char* geometryShaderPath,
-    const char* fragmentShaderPath);
+ShaderProgramID shaderProgramCreateCompute(const char* computeShaderSource);
+
+ShaderProgramID shaderProgramCreateGraphics(
+    const char* vertexShaderSource,
+    const char* tessControlShaderSource,
+    const char* tessEvaluationShaderSource,
+    const char* geometryShaderSource,
+    const char* fragmentShaderSource);
 
 void shaderProgramDestroy(ShaderProgramID shaderProgramID);
+
+#ifndef NDEBUG
+void shaderProgramSetLabel(ShaderProgramID shaderProgramID, const char* label);
+void shaderProgramGetLabel(ShaderProgramID shaderProgramID, int32_t maxLabelLength, int32_t* labelLengthOut, char* labelOut);
+#endif
 
 bool shaderProgramIsActive(ShaderProgramID shaderProgramID);
 

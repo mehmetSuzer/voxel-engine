@@ -4,27 +4,12 @@
 #include "buffer.h"
 #include "log/log.h"
 #include "glad/glad.h"
-#include "utils/macros.h"
-#include "graphics/graphics.h"
 
-BufferID bufferCreate(const BufferCreateInfo* bufferCreateInfo)
+BufferID bufferCreate(size_t size, const void* data, BufferStorageBit bufferStorageBits)
 {
     GLuint bufferID = 0;
     glCreateBuffers(1, &bufferID);
-    glNamedBufferStorage(
-        bufferID, 
-        (GLsizeiptr)bufferCreateInfo->size, 
-        bufferCreateInfo->data, 
-        bufferStorageBitsToNative(bufferCreateInfo->bufferStorageBits));
-
-#ifndef NDEBUG
-    if (bufferCreateInfo->label != NULL)
-    {
-        const GLsizei maxDebugLabelLength = graphicsGetMaxDebugLabelLength();
-        const GLsizei labelLength = SMALLER((GLsizei)strlen(bufferCreateInfo->label), maxDebugLabelLength-1);
-        glObjectLabel(GL_BUFFER, bufferID, labelLength, bufferCreateInfo->label);
-    }
-#endif
+    glNamedBufferStorage(bufferID, (GLsizeiptr)size, data, bufferStorageBitsToNative(bufferStorageBits));
 
     logVerbose("BUFFER", "created: %u", bufferID);
     return bufferID;
@@ -35,6 +20,18 @@ void bufferDestroy(BufferID bufferID)
     glDeleteBuffers(1, &bufferID);
     logVerbose("BUFFER", "destroyed: %u", bufferID);
 }
+
+#ifndef NDEBUG
+void bufferSetLabel(BufferID bufferID, const char* label)
+{
+    glObjectLabel(GL_BUFFER, bufferID, (label == NULL) ? 0 : -1, label);
+}
+
+void bufferGetLabel(BufferID bufferID, int32_t maxLabelLength, int32_t* labelLengthOut, char* labelOut)
+{
+    glGetObjectLabel(GL_BUFFER, bufferID, maxLabelLength, labelLengthOut, labelOut);
+}
+#endif
 
 bool bufferIsActive(BufferID bufferID)
 {
